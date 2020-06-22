@@ -5,7 +5,7 @@ import sys
 import os
 import logging
 
-from fontconv import FontConv
+from indic2unicode.fontconv import FontConv
 
 class Regression:
     def __init__(self, populate, fontlist):
@@ -17,10 +17,10 @@ class Regression:
         else:
             self.fontnames = self.fontConverter.uniqfonts
 
-        self.testdir     = u'testdata'
-        self.outdir      = u'output'
-        self.diffdir     = u'diffs'
-        self.expectdir   = u'expected'
+        self.testdir     = 'testdata'
+        self.outdir      = 'output'
+        self.diffdir     = 'diffs'
+        self.expectdir   = 'expected'
 
         self.mk_dir(self.outdir)
         self.mk_dir(self.diffdir)
@@ -45,12 +45,12 @@ class Regression:
                                        out.splitlines(1))
         lines   = list(diffobj)
         if len(lines) > 0:
-            print '%s ... Failed. Check %s' %  (fontname, diffFile)
+            print('%s ... Failed. Check %s' %  (fontname, diffFile))
             diffhandle = codecs.open(diffFile, 'w', 'utf8')
-            diffhandle.write(u''.join(lines))
+            diffhandle.write(''.join(lines))
             diffhandle.close()
         else:
-            print '%s ... OK' % fontname
+            print('%s ... OK' % fontname)
 
     def to_unicode(self, fontname):
         f = codecs.open(os.path.join(self.testdir, fontname), 'r', 'utf-8')
@@ -74,7 +74,7 @@ class Regression:
                 self.compute_diff(fontname)
 
 def print_usage(progname):
-    print 'Usage: %s [-f font1 -f font2 ...] [-p (populate)] [-h (help)]' % progname
+    print('Usage: %s [-f font1 -f font2 ...] [-p (populate)] [-h (help)]' % progname)
     sys.exit(0)
 
 if __name__ == '__main__': 

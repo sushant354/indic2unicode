@@ -1,157 +1,157 @@
-from baselang import BaseLang
+from .baselang import BaseLang
 class DevanagariUnicode(BaseLang):
     def __init__(self):
         BaseLang.__init__(self)
         self.tokendict = { \
-          'CHANDRABINDU': u'\u0901', \
-          'BINDU'       : u'\u0902', \
-          'VISARGA'     : u'\u0903', \
+          'CHANDRABINDU': '\u0901', \
+          'BINDU'       : '\u0902', \
+          'VISARGA'     : '\u0903', \
           # PUNCTUATIONS             \
-          'STAR'             : u'*',        \
-          'QUOT'             : u'"',        \
-          'SINGLE_QUOT_OPEN' : u'\u0022',   \
-          'PROMPT'           : u'\u003a',   \
-          'SINGLE_QUOT_CLOSE': u'\u0022',   \
-          'PLUS'             : u'\u002b',   \
-          'EQ'               : u'\u003d',   \
-          'SPACE'            : u'\u0020',   \
-          'NEWLINE'          : u'\u000a',   \
-          'CARRIAGERET'      : u'\u000d',   \
-          'PERCENT'          : u'\u0025',   \
-          'LEFTPARAN'        : u'\u0028',   \
-          'RIGHTPARAN'       : u'\u0029',   \
-          'COMMA'            : u'\u002c',   \
-          'DASH'             : u'\u002d',   \
-          'DOT'              : u'\u002e',   \
-          'SLASH'            : u'\u002f',   \
-          'COLON'            : u'\u003a',   \
-          'SEMICOLON'        : u'\u003b',   \
-          'QUESTION'         : u'\u003f',   \
+          'STAR'             : '*',        \
+          'QUOT'             : '"',        \
+          'SINGLE_QUOT_OPEN' : '\u0022',   \
+          'PROMPT'           : '\u003a',   \
+          'SINGLE_QUOT_CLOSE': '\u0022',   \
+          'PLUS'             : '\u002b',   \
+          'EQ'               : '\u003d',   \
+          'SPACE'            : '\u0020',   \
+          'NEWLINE'          : '\u000a',   \
+          'CARRIAGERET'      : '\u000d',   \
+          'PERCENT'          : '\u0025',   \
+          'LEFTPARAN'        : '\u0028',   \
+          'RIGHTPARAN'       : '\u0029',   \
+          'COMMA'            : '\u002c',   \
+          'DASH'             : '\u002d',   \
+          'DOT'              : '\u002e',   \
+          'SLASH'            : '\u002f',   \
+          'COLON'            : '\u003a',   \
+          'SEMICOLON'        : '\u003b',   \
+          'QUESTION'         : '\u003f',   \
                                             \
           # VOWELS                   \
-          'SHORT_A'     : u'\u0904', \
-          'A'           : u'\u0905', \
-          'AA'          : u'\u0906', \
-          'I'           : u'\u0907', \
-          'II'          : u'\u0908', \
-          'U'           : u'\u0909', \
-          'UU'          : u'\u090a', \
-          'RE'          : u'\u090b', \
-          'LI'          : u'\u090c', \
-          'CHANDRA_E'   : u'\u090d', \
-          'SHORT_E'     : u'\u090e', \
-          'E'           : u'\u090f', \
-          'AI'          : u'\u0910', \
-          'CHANDRA_O'   : u'\u0911', \
-          'SHORT_O'     : u'\u0912', \
-          'OO'          : u'\u0913', \
-          'AU'          : u'\u0914', \
+          'SHORT_A'     : '\u0904', \
+          'A'           : '\u0905', \
+          'AA'          : '\u0906', \
+          'I'           : '\u0907', \
+          'II'          : '\u0908', \
+          'U'           : '\u0909', \
+          'UU'          : '\u090a', \
+          'RE'          : '\u090b', \
+          'LI'          : '\u090c', \
+          'CHANDRA_E'   : '\u090d', \
+          'SHORT_E'     : '\u090e', \
+          'E'           : '\u090f', \
+          'AI'          : '\u0910', \
+          'CHANDRA_O'   : '\u0911', \
+          'SHORT_O'     : '\u0912', \
+          'OO'          : '\u0913', \
+          'AU'          : '\u0914', \
                                      \
           # CONSONANTS               \
-          'KA'          : u'\u0915', \
-          'KHA'         : u'\u0916', \
-          'GA'          : u'\u0917', \
-          'GHA'         : u'\u0918', \
-          'NGA'         : u'\u0919', \
+          'KA'          : '\u0915', \
+          'KHA'         : '\u0916', \
+          'GA'          : '\u0917', \
+          'GHA'         : '\u0918', \
+          'NGA'         : '\u0919', \
                                      \
-          'CA'          : u'\u091a', \
-          'CHA'         : u'\u091b', \
-          'JA'          : u'\u091c', \
-          'JHA'         : u'\u091d', \
-          'NYA'         : u'\u091e', \
+          'CA'          : '\u091a', \
+          'CHA'         : '\u091b', \
+          'JA'          : '\u091c', \
+          'JHA'         : '\u091d', \
+          'NYA'         : '\u091e', \
                                      \
-          'TTA'         : u'\u091f', \
-          'TTHA'        : u'\u0920', \
-          'DDA'         : u'\u0921', \
-          'DDHA'        : u'\u0922', \
-          'NNA'         : u'\u0923', \
-          'TA'          : u'\u0924', \
-          'THA'         : u'\u0925', \
-          'DA'          : u'\u0926', \
-          'DHA'         : u'\u0927', \
-          'NA'          : u'\u0928', \
-          'NNNA'        : u'\u0929', \
+          'TTA'         : '\u091f', \
+          'TTHA'        : '\u0920', \
+          'DDA'         : '\u0921', \
+          'DDHA'        : '\u0922', \
+          'NNA'         : '\u0923', \
+          'TA'          : '\u0924', \
+          'THA'         : '\u0925', \
+          'DA'          : '\u0926', \
+          'DHA'         : '\u0927', \
+          'NA'          : '\u0928', \
+          'NNNA'        : '\u0929', \
                                      \
-          'PA'          : u'\u092a', \
-          'PHA'         : u'\u092b', \
-          'BA'          : u'\u092c', \
-          'BHA'         : u'\u092d', \
-          'MA'          : u'\u092e', \
+          'PA'          : '\u092a', \
+          'PHA'         : '\u092b', \
+          'BA'          : '\u092c', \
+          'BHA'         : '\u092d', \
+          'MA'          : '\u092e', \
                                      \
-          'YA'          : u'\u092f', \
-          'RA'          : u'\u0930', \
-          'RRA'         : u'\u0931', \
-          'LA'          : u'\u0932', \
-          'LLA'         : u'\u0933', \
-          'LLLA'        : u'\u0934', \
-          'VA'          : u'\u0935', \
+          'YA'          : '\u092f', \
+          'RA'          : '\u0930', \
+          'RRA'         : '\u0931', \
+          'LA'          : '\u0932', \
+          'LLA'         : '\u0933', \
+          'LLLA'        : '\u0934', \
+          'VA'          : '\u0935', \
                                      \
-          'SHA'         : u'\u0936', \
-          'SSA'         : u'\u0937', \
-          'SA'          : u'\u0938', \
-          'HA'          : u'\u0939', \
+          'SHA'         : '\u0936', \
+          'SSA'         : '\u0937', \
+          'SA'          : '\u0938', \
+          'HA'          : '\u0939', \
           # SIGNS                    \
-          'NUKTA'       : u'\u093c', \
-          'AVAGRAHA'    : u'\u093d', \
+          'NUKTA'       : '\u093c', \
+          'AVAGRAHA'    : '\u093d', \
           # MATRAS                   \
-          'MATRA_AA'    : u'\u093e', \
-          'MATRA_I'     : u'\u093f', \
-          'MATRA_II'    : u'\u0940', \
-          'MATRA_U'     : u'\u0941', \
-          'MATRA_UU'    : u'\u0942', \
+          'MATRA_AA'    : '\u093e', \
+          'MATRA_I'     : '\u093f', \
+          'MATRA_II'    : '\u0940', \
+          'MATRA_U'     : '\u0941', \
+          'MATRA_UU'    : '\u0942', \
                                       \
-          'MATRA_RI'    : u'\u0943', \
-          'MATRA_RR'    : u'\u0944', \
-          'CHANDRA'     : u'\u0945', \
-          'MATRA_SHORT_E': u'\u0946', \
-          'MATRA_E'     : u'\u0947', \
-          'MATRA_AI'    : u'\u0948', \
-          'MATRA_CHANDRA_O': u'\u0949', \
-          'MATRA_SHORT_O': u'\u094a', \
-          'MATRA_O'     : u'\u094b', \
-          'MATRA_AU'    : u'\u094c', \
+          'MATRA_RI'    : '\u0943', \
+          'MATRA_RR'    : '\u0944', \
+          'CHANDRA'     : '\u0945', \
+          'MATRA_SHORT_E': '\u0946', \
+          'MATRA_E'     : '\u0947', \
+          'MATRA_AI'    : '\u0948', \
+          'MATRA_CHANDRA_O': '\u0949', \
+          'MATRA_SHORT_O': '\u094a', \
+          'MATRA_O'     : '\u094b', \
+          'MATRA_AU'    : '\u094c', \
           # SIGNA                    \
-          'HALANT'      : u'\u094d', \
+          'HALANT'      : '\u094d', \
           #'RESERVERD_1': u'\u094e', \
           #'RESERVED_2' : u'\u094f', \
-          'OM'          : u'\u0950', \
-          'UDATTA'      : u'\u0951', \
-          'ANUDATTA'    : u'\u0952', \
-          'GRAVE_ACCENT': u'\u0953', \
-          'ACUTE_ACCENT': u'\u0954', \
+          'OM'          : '\u0950', \
+          'UDATTA'      : '\u0951', \
+          'ANUDATTA'    : '\u0952', \
+          'GRAVE_ACCENT': '\u0953', \
+          'ACUTE_ACCENT': '\u0954', \
           # UNKNOWNS                 \
           #'UNKNOWN1'   : u'\u0955', \
           #'UNKNOWN2'   : u'\u0956', \
           #'UNKNOWN3'   : u'\u0957', \
           # ADDITIONAL CONSONANTS     \
-          'QA'          : u'\u0958', \
-          'KHHA'        : u'\u0959', \
-          'GHHA'        : u'\u095a', \
-          'ZA'          : u'\u095b', \
-          'DDDHA'       : u'\u095c', \
-          'RHA'         : u'\u095d', \
-          'FA'          : u'\u095e', \
-          'YYA'         : u'\u095f', \
+          'QA'          : '\u0958', \
+          'KHHA'        : '\u0959', \
+          'GHHA'        : '\u095a', \
+          'ZA'          : '\u095b', \
+          'DDDHA'       : '\u095c', \
+          'RHA'         : '\u095d', \
+          'FA'          : '\u095e', \
+          'YYA'         : '\u095f', \
           # GENERIC ADDITIONS        \
-          'RRE'         : u'\u0960', \
-          'LLE'         : u'\u0961', \
-          'MATRA_L'     : u'\u0962', \
-          'MATRA_LL'    : u'\u0963', \
-          'VIRAM'       : u'\u0964', \
-          'DEERGH_VIRAM': u'\u0965', \
+          'RRE'         : '\u0960', \
+          'LLE'         : '\u0961', \
+          'MATRA_L'     : '\u0962', \
+          'MATRA_LL'    : '\u0963', \
+          'VIRAM'       : '\u0964', \
+          'DEERGH_VIRAM': '\u0965', \
                                        \
           # DIGITS                     \
-          'ZERO'        : u'\u0966', \
-          'ONE'         : u'\u0967', \
-          'TWO'         : u'\u0968', \
-          'THREE'       : u'\u0969', \
-          'FOUR'        : u'\u096a', \
-          'FIVE'        : u'\u096b', \
-          'SIX'         : u'\u096c', \
-          'SEVEN'       : u'\u096d', \
-          'EIGHT'       : u'\u096e', \
-          'NINE'        : u'\u096f', \
-          'ABBREV'      : u'\u0970', \
+          'ZERO'        : '\u0966', \
+          'ONE'         : '\u0967', \
+          'TWO'         : '\u0968', \
+          'THREE'       : '\u0969', \
+          'FOUR'        : '\u096a', \
+          'FIVE'        : '\u096b', \
+          'SIX'         : '\u096c', \
+          'SEVEN'       : '\u096d', \
+          'EIGHT'       : '\u096e', \
+          'NINE'        : '\u096f', \
+          'ABBREV'      : '\u0970', \
         }
 
 class Conjuncts(BaseLang):
@@ -316,7 +316,7 @@ class Surekh(BaseLang):
 
         halant = uMap['HALANT']
         self.tokendict = {\
-            'EXCLAMATION'      : u'!', \
+            'EXCLAMATION'      : '!', \
             'ADHA_HA'          : uMap['HA'] + halant, \
             'PHA_RA'           : uMap['PHA'] + halant + uMap['RA'], \
             'YA2'              : uMap['YA'],      \
@@ -361,9 +361,9 @@ class Aryan2(BaseLang):
         }
 
         self.tokendict = {\
-            'IGCHAR1'          : u'',         \
-            'IGCHAR2'          : u'',         \
-            'IGCHAR3'          : u' ',        \
+            'IGCHAR1'          : '',         \
+            'IGCHAR2'          : '',         \
+            'IGCHAR3'          : ' ',        \
             'ADHA_YA2'         : conTokendict['ADHA_YA'], \
             'ADHA_SSA2'        : conTokendict['ADHA_SSA'], \
             'VA2'              : uMap['VA'], \

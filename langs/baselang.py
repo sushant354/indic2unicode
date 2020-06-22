@@ -5,17 +5,17 @@ class BaseLang:
         self.conjunct_tokens = {}
  
     def get_unicode_string(self, tokenName):
-        if self.tokendict.has_key(tokenName):
+        if tokenName in self.tokendict:
             return self.tokendict[tokenName]
         else:
             return None
 
     def multiple_tokens(self, tokenName):
-        if self.conjunct_tokens.has_key(tokenName):
+        if tokenName in self.conjunct_tokens:
             return self.conjunct_tokens[tokenName]
         else:
             return None
 
     def get_tokens(self):
-        return self.tokendict.keys() + self.conjunct_tokens.keys()
+        return list(self.tokendict.keys()) + list(self.conjunct_tokens.keys())
 

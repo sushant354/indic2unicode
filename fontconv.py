@@ -1,4 +1,4 @@
-from fonts import aryan2, surekh
+from indic2unicode.fonts import aryan2, surekh
 
 class FontConv:
     def __init__(self):
@@ -13,11 +13,11 @@ class FontConv:
         return self.converters[fontname].to_unicode(text)
 
 def print_usage():
-    print '''
+    print('''
 USAGE:    
     python fontconv.py [-e encoding] -f fontname input_file output_file
     default encoding is utf8
-'''
+''')
 if __name__ == '__main__':
     import codecs
     import getopt
@@ -46,13 +46,13 @@ if __name__ == '__main__':
 
     font_convertor = FontConv()
     if not fontname:
-        print 'ERR: Supply a fontname'
+        print('ERR: Supply a fontname')
         print_usage()
         sys.exit(0)
  
     if fontname not in font_convertor.converters:
-        print 'ERR: %s font not supported yet. Supported fonts are %s' % \
-               (fontname, font_convertor.converters.keys())
+        print('ERR: %s font not supported yet. Supported fonts are %s' % \
+               (fontname, list(font_convertor.converters.keys())))
         sys.exit(0)
 
     f = codecs.open(inputfile, 'r', encoding)
