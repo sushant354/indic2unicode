@@ -7,7 +7,17 @@ class BaseFont:
         self.lexer         = None
         self.composeTokens = {}
         self.jumpbefore    = {}
-        self.waitdict      = {} 
+        self.waitdict      = {}
+        # tokens that are transparent to the two reordering passes.
+        # jumpover : not counted while another token jumps backwards over it
+        # waitover : not counted while another token is waiting to jump
+        #            ahead, and the waiting token stays behind it
+        # halftokens: not counted while another token is waiting to jump
+        #            ahead, but the waiting token is emitted before it as it
+        #            belongs to the syllable that is still coming
+        self.jumpover      = set()
+        self.waitover      = set()
+        self.halftokens    = set()
         self.logger = logging.getLogger(self.__class__.__name__)
         self.errchars      = {}
 
@@ -66,29 +76,44 @@ class BaseFont:
     def jump_before_tokens(self, tokentypes):
         out = []
         for t in tokentypes:
-            num = self.num_before(t)
-            if num == 0 or num > len(out):
+            num   = self.num_before(t)
+            index = len(out)
+            while num > 0 and index > 0:
+                index -= 1
+                if out[index] not in self.jumpover:
+                    num -= 1
+
+            if num > 0:
+                # not enough tokens to jump over
                 out.append(t)
             else:
-                index = len(out) - num
                 out.insert(index, t)
         return out
 
-    def jump_after_tokens(self, tokentypes): 
+    def jump_after_tokens(self, tokentypes):
         out = []
-        waitTokens = {} 
+        waitTokens = []
         for toktype in tokentypes:
              num = self.num_after(toktype)
-             if num == 0:
-                 for k in list(waitTokens.keys()):
-                     if waitTokens[k] == 0:
-                         waitTokens.pop(k)
-                         out.append(k)
-                     else:
-                         waitTokens[k] -= 1
+             if num != 0:
+                 waitTokens.append([toktype, num])
+             elif toktype in self.waitover:
                  out.append(toktype)
              else:
-                 waitTokens[toktype] = num
+                 pending = waitTokens
+                 waitTokens = []
+                 for waitToken in pending:
+                     if waitToken[1] == 0:
+                         out.append(waitToken[0])
+                     elif toktype in self.halftokens:
+                         waitTokens.append(waitToken)
+                     else:
+                         waitToken[1] -= 1
+                         waitTokens.append(waitToken)
+                 out.append(toktype)
+
+        for waitToken in waitTokens:
+            out.append(waitToken[0])
         return out
 
     def compose_tokens(self, out1):

@@ -20,7 +20,9 @@ documents in unicode can be easily processed, indexed and searched.
 
 indic2unicode converts data in proprietory fonts to unicode. It currently
 supports Aryan2, Divya and Surekh fonts for devanagari script that is used by
-the LokSabha website for publishing debates.
+the LokSabha website for publishing debates. It also supports Chanakya, the
+ascii font of the Kruti Dev/DevLys family that the Gazette of India is
+published in.
 
 MAIN IDEA
 
@@ -60,5 +62,27 @@ example, fonts/aryan2.py specifies self.waitdict = {'MATRA_I': 1, 'MATRAIBINDU'
 : 1, 'MATRAIBINDU2': 1, 'MATRA_I2': 2} indicating tokens MATRA_I, MATRAIBINDU
 and MATRAIBINDU2 should jump 1 step head and token MATRA_I2 should jump two
 positions ahead.
+
+TOKENS THAT ARE NOT A STEP
+
+In a font like Chanakya the distance a token has to travel is not fixed
+because a syllable is made of a variable number of tokens. Three sets tell
+the two reordering passes which tokens are not to be counted as a step:
+
+1. self.jumpover: tokens that a backward jumping token is not counted
+against. fonts/chanakya.py puts all the matras and the signs in it because
+the reph is typed after the whole syllable it sits on, so it has to travel
+past 'ी' in वर्ती as well as past 'ा' in अर्थात्.
+
+2. self.waitover: tokens that a forward jumping token is not counted against
+and that it stays behind. fonts/chanakya.py puts NUKTA, RAKAR and YAKAR in
+it since they belong to the syllable that matra_i has already passed, as in
+चिड़िया and प्रिय.
+
+3. self.halftokens: tokens that a forward jumping token is not counted
+against but that it is emitted before, since they are the head of the
+syllable that is still coming. fonts/chanakya.py puts all the half
+consonants in it, which is what makes पश्चिम come out of if"pe while दिल्ली
+comes out of fnYyh.
 
 

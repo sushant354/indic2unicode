@@ -231,7 +231,7 @@ class Conjuncts(BaseLang):
           'TRA'     : uMap['TA']   + halant + uMap['RA'],     \
           'THRA'    : uMap['THA']  + halant + uMap['RA'],     \
                                                               \
-          'DRI'     : uMap['DA']   + halant + uMap['MATRA_RI'],\
+          'DRI'     : uMap['DA']   + uMap['MATRA_RI'],\
           'DRA'     : uMap['DA']   + halant + uMap['RA'],     \
           'DADA'    : uMap['DA']   + halant + uMap['DA'],     \
           'DADHA'   : uMap['DA']   + halant + uMap['DHA'],    \
@@ -262,7 +262,7 @@ class Conjuncts(BaseLang):
           'HARA'    : uMap['HA'] + halant + uMap['RA'],       \
           'HAMA'    : uMap['HA'] + halant + uMap['MA'],       \
           'HAYA'    : uMap['HA'] + halant + uMap['YA'],       \
-          'HARI'    : uMap['HA'] + halant + uMap['MATRA_RI'], \
+          'HARI'    : uMap['HA'] + uMap['MATRA_RI'], \
           'HALA'    : uMap['HA'] + halant + uMap['LA'],       \
           'HAVA'    : uMap['HA'] + halant + uMap['VA'],       \
           'HANA'    : uMap['HA'] + halant + uMap['NA'],       \
@@ -340,6 +340,75 @@ class Surekh(BaseLang):
             'MATRACHANDRAADHRA_BINDU': ['ADHA_RA' + 'MATRA_CHANDRA_E', 'BINDU'],\
             'MATRAIRIBINDU2'   : conMap['MATRAIRIBINDU'], \
             'MATRAIRI2'        : conMap['MATRAIRI'], \
+        }
+
+class Chanakya(BaseLang):
+    def __init__(self):
+        BaseLang.__init__(self)
+        devUnicode = DevanagariUnicode()
+        uMap = devUnicode.tokendict
+
+        conjunctobj  = Conjuncts()
+        conTokendict = conjunctobj.tokendict
+
+        halant = uMap['HALANT']
+        # the font draws an explicit halant where unicode would form a
+        # ligature, so keep the ligature broken with a ZWNJ
+        zwnj   = '‌'
+
+        self.tokendict = {\
+            'FORMFEED'         : '', \
+            'EXPLICIT_HALANT'  : halant + zwnj, \
+                                                \
+            # glyphs that hang below/around the syllable      \
+            'RAKAR'            : halant + uMap['RA'], \
+            'YAKAR'            : halant + uMap['YA'], \
+            # reph that is already in front of its consonant   \
+            'ADHA_RA2'         : conTokendict['ADHA_RA'], \
+                                                          \
+            'ADHA_HA'          : uMap['HA'] + halant, \
+            'ADHA_TATA'        : conTokendict['TATA'] + halant, \
+            'ADHA_NANA'        : conTokendict['NANA'] + halant, \
+            'ADHA_TRA'         : conTokendict['TRA']  + halant, \
+                                                                \
+            'KTA'              : uMap['KA'] + halant + uMap['TA'], \
+            'KAKA'             : uMap['KA'] + halant + uMap['KA'], \
+            'KRI'              : uMap['KA'] + uMap['MATRA_RI'], \
+            'PHRA'             : uMap['PHA'] + halant + uMap['RA'], \
+                                                                    \
+            'IIBINDU'          : uMap['II'] + uMap['BINDU'], \
+                                                             \
+            # punctuation of the font that has no devanagari token \
+            'LEFTBRACE'        : '{',        \
+            'RIGHTBRACE'       : '}',        \
+            'LEFTSQBRACE'      : '[',        \
+            'RIGHTSQBRACE'     : ']',        \
+            'ENDASH'           : '–',   \
+            'EMDASH'           : '—',   \
+            'LSQUOTE'          : '‘',   \
+            'RSQUOTE'          : '’',   \
+            'LDQUOTE'          : '“',   \
+            'RDQUOTE'          : '”',   \
+            # the font keeps latin digits, the devanagari ones are   \
+            # on separate glyphs                                     \
+            'ASCII_ZERO'       : '0',        \
+            'ASCII_ONE'        : '1',        \
+            'ASCII_TWO'        : '2',        \
+            'ASCII_THREE'      : '3',        \
+            'ASCII_FOUR'       : '4',        \
+            'ASCII_FIVE'       : '5',        \
+            'ASCII_SIX'        : '6',        \
+            'ASCII_SEVEN'      : '7',        \
+            'ASCII_EIGHT'      : '8',        \
+            'ASCII_NINE'       : '9',        \
+        }
+
+        self.conjunct_tokens = { \
+            # reph + matra_i drawn as one glyph, the reph is already \
+            # sitting in front of the consonant it belongs to        \
+            'MATRAIRI2'        : ['ADHA_RA2', 'MATRA_I'],      \
+            'MATRAIRIBINDU2'   : ['ADHA_RA2', 'MATRAIBINDU'],  \
+            'ADHA_RA_BINDU'    : ['ADHA_RA', 'BINDU'],         \
         }
 
 class Aryan2(BaseLang):
