@@ -1,14 +1,16 @@
-from indic2unicode.fonts import aryan2, surekh, chanakya
+from indic2unicode.fonts import aryan2, surekh, chanakya, arialuni
 
 class FontConv:
     def __init__(self):
         aryanObj = aryan2.Aryan2()
         surekhObj = surekh.Surekh()
         chanakyaObj = chanakya.Chanakya()
+        arialuniObj = arialuni.ArialUni()
         self.converters = {'aryan2': aryanObj, 'divya':  aryanObj, \
-                           'surekh': surekhObj, 'chanakya': chanakyaObj}
+                           'surekh': surekhObj, 'chanakya': chanakyaObj, \
+                           'arialuni': arialuniObj}
 
-        self.uniqfonts = ['aryan2', 'surekh', 'chanakya']
+        self.uniqfonts = ['aryan2', 'surekh', 'chanakya', 'arialuni']
  
     def to_unicode(self, fontname, text):
         return self.converters[fontname].to_unicode(text)

@@ -1,3 +1,5 @@
+import string
+
 from .baselang import BaseLang
 class DevanagariUnicode(BaseLang):
     def __init__(self):
@@ -455,4 +457,45 @@ class Aryan2(BaseLang):
             'PHA_RI'            : uMap['PHA'] + uMap['MATRA_RI'], \
             'PHA_RA'            : uMap['PHA'] + halant + uMap['RA'], \
         }
+
+class ArialUni(BaseLang):
+    def __init__(self):
+        BaseLang.__init__(self)
+        devUnicode = DevanagariUnicode()
+        uMap = devUnicode.tokendict
+
+        halant = uMap['HALANT']
+
+        self.tokendict = {\
+            # half consonants that the conjunct table does not have  \
+            'ADHA_CHA'         : uMap['CHA']  + halant, \
+            'ADHA_TTA'         : uMap['TTA']  + halant, \
+            'ADHA_TTHA'        : uMap['TTHA'] + halant, \
+            'ADHA_DDA'         : uMap['DDA']  + halant, \
+            'ADHA_DA'          : uMap['DA']   + halant, \
+            'ADHA_HA'          : uMap['HA']   + halant, \
+                                                        \
+            # punctuation of the font that has no devanagari token \
+            'EXCLAMATION'      : '!',        \
+            'LEFTSQBRACE'      : '[',        \
+            'RIGHTSQBRACE'     : ']',        \
+            'ENDASH'           : '–',   \
+            'EMDASH'           : '—',   \
+            'LSQUOTE'          : '‘',   \
+            'RSQUOTE'          : '’',   \
+            'LDQUOTE'          : '“',   \
+            'RDQUOTE'          : '”',   \
+        }
+
+        # the english text of the document is set in a latin font, so its
+        # letters and digits come out of the pdf as themselves
+        digitnames = ['ZERO', 'ONE', 'TWO', 'THREE', 'FOUR', 'FIVE', 'SIX', \
+                      'SEVEN', 'EIGHT', 'NINE']
+        for digit, name in enumerate(digitnames):
+            self.tokendict['ASCII_' + name] = '%d' % digit
+
+        for char in string.ascii_uppercase:
+            self.tokendict['LATIN_' + char] = char
+        for char in string.ascii_lowercase:
+            self.tokendict['LATIN_SMALL_' + char.upper()] = char
 

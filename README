@@ -22,7 +22,8 @@ indic2unicode converts data in proprietory fonts to unicode. It currently
 supports Aryan2, Divya and Surekh fonts for devanagari script that is used by
 the LokSabha website for publishing debates. It also supports Chanakya, the
 ascii font of the Kruti Dev/DevLys family that the Gazette of India is
-published in.
+published in, and Arial Unicode MS as it comes out of the Gazette pdfs that
+are set in it.
 
 MAIN IDEA
 
@@ -84,5 +85,30 @@ against but that it is emitted before, since they are the head of the
 syllable that is still coming. fonts/chanakya.py puts all the half
 consonants in it, which is what makes पश्चिम come out of if"pe while दिल्ली
 comes out of fnYyh.
+
+A UNICODE FONT THAT NEEDS THE SAME TREATMENT
+
+Arial Unicode MS is a unicode font, but the Gazette pdfs that are set in it
+carry a broken ToUnicode map: the map holds all the right strings, it just
+hands them to the wrong glyphs. The text that comes out of such a pdf is
+therefore devanagari that is in the visual order of the glyphs and that is
+spelled with the wrong characters for a part of the alphabet, e.g. निर्माण
+comes out as जिमावण, where 'ज' is matra_i, 'ि' is na and 'व' is the reph.
+
+fonts/arialuni.py treats every glyph of that font as a token in exactly the
+way the ascii fonts are treated, and the two reordering passes above put
+matra_i and the reph back where unicode wants them.
+
+The map cannot be inverted completely. The font has one glyph of matra_i per
+width of the syllable that follows it and one glyph of the reph per width of
+the syllable it sits on, and the broken map hands those strings to more than
+one consonant each: ja, na, pha, sha, ksha and the conjunct bra all come out
+as 'ि', and va as well as tha come out as 'र्'. Neither group can be told
+apart any more, so 'ि' is read as na and 'र्' is read as va, the most common
+member of each. In the same way a nukta is lost, ड़ comes out as plain ड.
+
+The pdf extraction also puts a space in the middle of a word every now and
+then, e.g. रेलवे comes out as 'रे लवे'. That is not a glyph of the font and a
+converter cannot tell such a space from a real one, so it is left alone.
 
 
