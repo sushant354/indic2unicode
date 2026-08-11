@@ -76,6 +76,16 @@ class Chanakya(BaseFont):
                 self.composeTokens[(tokenName, 'NUKTA', 'MATRA_AA')] = \
                     [fullName, 'NUKTA']
 
+    def to_unicode(self, data):
+        # A zero width non joiner/joiner is not a glyph of the font. The pdf
+        # extraction puts them in and if one lands in the middle of a
+        # multiple character glyph like '[k' it splits the glyph in two, so
+        # they are dropped before the text is tokenized
+        for zerowidth in ['‌', '‍']:
+            data = data.replace(zerowidth, '')
+
+        return BaseFont.to_unicode(self, data)
+
     def get_lexer(self):
         tokens = []
         for obj in self.langobjs:
