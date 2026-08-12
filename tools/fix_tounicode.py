@@ -35,21 +35,38 @@ import pymupdf
 from fontTools.ttLib import TTFont
 
 # the glyphs that the shaper made. They have no name of their own in the
-# font, so the string of every one of them is repaired by hand. The first
-# string is what the broken map says, and a glyph is only repaired if it
-# still says exactly that
+# font, so the string of every one of them is repaired by hand. The string
+# that the broken map hands such a glyph is the character it happened to be
+# paired with in that document, and that differs from document to document:
+# the matra_i of दि is handed a द in one gazette and the matra_i of कि a क
+# in another, both by the same glyph. So a glyph is repaired to what it
+# really is whatever its map says, and the comment only records the string
+# that was seen first. A map that is already right says the same thing that
+# the table does, so repairing it changes nothing
 ARIAL_UNICODE_MS = { \
-    6979: ('ि',   'क्ष'), \
-    6981: ('व',   'र्'),  \
-    7021: ('स्ट्', 'स्'),  \
-    7069: ('र',   'ट्र'),  \
-    7081: ('ि',   'ब्र'),  \
-    7278: ('ी',   'र्'),  \
-    7399: ('ि',   'ष्ठ'),  \
+    # the half forms, which the font lays out in the order of the consonants
+    # they belong to, क् at 6989 through ह् at 7022. A pdf whose map hands
+    # them the halant and a zwj instead of the consonant loses the consonant
+    # of every one of them, उक्त comes out as उ त and उपलब्ध as उपल् ध \
+    6989: 'क्',  # seen as ‍ \
+    6990: 'ख्',  # seen as ्‍ \
+    6991: 'ग्',  # seen as ‍ \
+    7005: 'थ्',  # seen as ्‍ \
+    7007: 'ध्',  # seen as ‍ \
+    7009: 'प्',  # seen as ‍ \
+    7011: 'ब्',  # seen as ्‍ \
+    7021: 'स्',  # seen as स्ट् \
+    # the glyphs the shaper made out of a whole cluster \
+    6979: 'क्ष', # seen as ि \
+    6981: 'र्',  # seen as व, ा \
+    7069: 'ट्र',  # seen as र \
+    7081: 'ब्र',  # seen as ि \
+    7278: 'र्',  # seen as ी \
+    7399: 'ष्ठ',  # seen as ि \
     # the width variants of matra_i \
-    7407: ('र',   'ि'),   \
-    7408: ('क',   'ि'),   \
-    7410: ('ल',   'ि'),   \
+    7407: 'ि',   # seen as र \
+    7408: 'ि',   # seen as क, द \
+    7410: 'ि',   # seen as ल, स \
 }
 
 BROKEN_FONTS = {'Arial Unicode MS': ARIAL_UNICODE_MS}
@@ -59,6 +76,28 @@ BROKEN_FONTS = {'Arial Unicode MS': ARIAL_UNICODE_MS}
 # through this converter of indic2unicode and not through the one that is
 # named after the font, which is for the text of a pdf that was not repaired
 FONT_CONVERTERS = {'Arial Unicode MS': 'arialuni_glyphs'}
+
+def font_lookup_key(fontname):
+    '''one font is embedded under more than one spelling of its name, Arial
+       Unicode MS is carried both as "Arial Unicode MS" and as
+       "ArialUnicodeMS", so a font is looked up by a spelling of its name
+       that the separators and the case do not change'''
+    return re.sub(r'[\s\-_,]+', '', fontname).lower()
+
+BROKEN_FONTS_BY_KEY    = {font_lookup_key(name): fixes \
+                          for name, fixes in BROKEN_FONTS.items()}
+FONT_CONVERTERS_BY_KEY = {font_lookup_key(name): conv  \
+                          for name, conv  in FONT_CONVERTERS.items()}
+
+def get_glyph_fixes(fontname):
+    '''the glyphs to repair by hand for a font known to carry a broken map,
+       None for every other font'''
+    return BROKEN_FONTS_BY_KEY.get(font_lookup_key(fontname))
+
+def get_font_converter(fontname):
+    '''the converter that puts the text of a repaired font in the order that
+       unicode wants, None if there is none for it'''
+    return FONT_CONVERTERS_BY_KEY.get(font_lookup_key(fontname))
 
 class ToUnicodeFixer:
     def __init__(self):
@@ -195,13 +234,10 @@ class ToUnicodeFixer:
                 correct = unicodedata.normalize('NFC', \
                                                 chr(int(match.group(1), 16)))
             elif code in glyphfixes:
-                broken, repl = glyphfixes[code]
-                if ustr == broken:
-                    correct = repl
-                else:
-                    self.logger.info(\
-                        'Glyph %d of %s says %r and not the expected %r, ' \
-                        'leaving it alone', code, fontname, ustr, broken)
+                # a glyph that the shaper made, repaired to what it really
+                # is whatever the character it was paired with in this
+                # document happens to be
+                correct = glyphfixes[code]
 
             if correct != None and correct != ustr:
                 num += 1
@@ -228,7 +264,7 @@ class ToUnicodeFixer:
         for xref in sorted(fonts):
             fontname, encoding = fonts[xref]
             basefont   = self.base_font(fontname)
-            glyphfixes = BROKEN_FONTS.get(basefont)
+            glyphfixes = get_glyph_fixes(basefont)
             if glyphfixes == None:
                 continue
 
