@@ -467,16 +467,24 @@ class ArialUni(BaseLang):
         halant = uMap['HALANT']
 
         self.tokendict = {\
+            # the reph of the font that is drawn together with the consonant \
+            # it sits on, so it is already in front of that consonant        \
+            'RA_MA'            : uMap['RA'] + halant + uMap['MA'], \
+                                                                   \
             # half consonants that the conjunct table does not have  \
             'ADHA_CHA'         : uMap['CHA']  + halant, \
             'ADHA_TTA'         : uMap['TTA']  + halant, \
             'ADHA_TTHA'        : uMap['TTHA'] + halant, \
             'ADHA_DDA'         : uMap['DDA']  + halant, \
+            'ADHA_DDHA'        : uMap['DDHA'] + halant, \
             'ADHA_DA'          : uMap['DA']   + halant, \
             'ADHA_HA'          : uMap['HA']   + halant, \
                                                         \
             # punctuation of the font that has no devanagari token \
             'EXCLAMATION'      : '!',        \
+            'BAR'              : '|',        \
+            'AMPERSAND'        : '&',        \
+            'APOSTROPHE'       : "'",        \
             'LEFTSQBRACE'      : '[',        \
             'RIGHTSQBRACE'     : ']',        \
             'ENDASH'           : '–',   \

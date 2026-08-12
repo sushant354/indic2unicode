@@ -107,8 +107,43 @@ as 'ि', and va as well as tha come out as 'र्'. Neither group can be told
 apart any more, so 'ि' is read as na and 'र्' is read as va, the most common
 member of each. In the same way a nukta is lost, ड़ comes out as plain ड.
 
+Where the syllable that follows tells the two apart, composeTokens is used to
+pick the right one. The half sa is handed the string of the half sta, so both
+of them come out as 'स्ट्': the one that a full consonant follows is the half
+sa of स्टेशनों, while the one that ra follows is the half sta of रजिस्ट्री.
+
 The pdf extraction also puts a space in the middle of a word every now and
 then, e.g. रेलवे comes out as 'रे लवे'. That is not a glyph of the font and a
 converter cannot tell such a space from a real one, so it is left alone.
+
+REPAIRING THE PDF INSTEAD
+
+None of that guessing is needed if the pdf itself is at hand. The glyphs of
+the page are drawn from their glyph ids and the ToUnicode map is not looked
+at while drawing, so the page is right and only its extraction is wrong. The
+map was built by pairing the glyphs of a run with the characters of that run
+one by one, and devanagari shaping moves matra_i to the left of its cluster
+and the reph to the right of its syllable, so the pairing slips exactly on
+the glyphs that were moved.
+
+tools/fix_tounicode.py builds the map again from the names that the font
+gives to its own glyphs, which the subset in the pdf keeps for the whole
+devanagari block, and repairs the glyphs that the shaper made from a table.
+It only touches the fonts that are known to carry a broken map. After that
+the text can be extracted in the usual way:
+
+    doc = pymupdf.open(pdffile)
+    ToUnicodeFixer().fix_document(doc)
+    text = doc[pagenum].get_text()
+
+The text that comes out is still in the visual order of the glyphs, so it
+goes through fonts/arialuni_glyphs.py, which does nothing but the two
+reordering passes. Unlike the arialuni font above, that path loses nothing:
+ja, na, pha, sha and ksha are all still there, and so are va, tha and the
+nuktas.
+
+A bar in the middle of a devanagari word, e.g. द|शरथी, is not a glyph that
+was mapped wrong. The gazette itself types a bar where a matra_aa belongs
+and the page shows a bar, so it is left as it is.
 
 
