@@ -10,7 +10,7 @@ class FontConv:
         glyphsObj   = arialuni_glyphs.ArialUniGlyphs()
         self.converters = {'aryan2': aryanObj, 'divya':  aryanObj, \
                            'surekh': surekhObj, 'chanakya': chanakyaObj, \
-                           'arialuni': arialuniObj, \
+                           'arialuni': arialuniObj, 'krutidev': chanakyaObj, \
                            'Arial Unicode MS': arialuniObj, \
                            'arialuni_glyphs': glyphsObj}
 
