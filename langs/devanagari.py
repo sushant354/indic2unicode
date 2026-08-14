@@ -507,3 +507,26 @@ class ArialUni(BaseLang):
         for char in string.ascii_lowercase:
             self.tokendict['LATIN_SMALL_' + char.upper()] = char
 
+
+class NirmalaUI(BaseLang):
+    def __init__(self):
+        BaseLang.__init__(self)
+        devUnicode = DevanagariUnicode()
+        uMap = devUnicode.tokendict
+
+        halant = uMap['HALANT']
+
+        # the half consonants that the conjunct table does not have, the
+        # punctuation that has no devanagari token of its own and the latin
+        # letters and digits of the english text are the same ones that
+        # Arial Unicode MS needs, so they are taken from there
+        self.tokendict = dict(ArialUni().tokendict)
+
+        self.tokendict.update({\
+            # conjuncts of the font that are handed a string that ends in a
+            # consonant that is a glyph of its own, so they have to be
+            # matched as a whole
+            'KTA'     : uMap['KA']  + halant + uMap['TA'],  \
+            'SSATTARA': uMap['SSA'] + halant + uMap['TTA'] + \
+                        halant + uMap['RA'],                 \
+        })

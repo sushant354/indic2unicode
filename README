@@ -22,8 +22,8 @@ indic2unicode converts data in proprietory fonts to unicode. It currently
 supports Aryan2, Divya and Surekh fonts for devanagari script that is used by
 the LokSabha website for publishing debates. It also supports Chanakya, the
 ascii font of the Kruti Dev/DevLys family that the Gazette of India is
-published in, and Arial Unicode MS as it comes out of the Gazette pdfs that
-are set in it.
+published in, and Arial Unicode MS as well as Nirmala UI as they come out of
+the Gazette pdfs that are set in them.
 
 MAIN IDEA
 
@@ -145,5 +145,31 @@ nuktas.
 A bar in the middle of a devanagari word, e.g. द|शरथी, is not a glyph that
 was mapped wrong. The gazette itself types a bar where a matra_aa belongs
 and the page shows a bar, so it is left as it is.
+
+ANOTHER UNICODE FONT WITH THE SAME BROKEN MAP
+
+Nirmala UI is the other unicode font the Gazette is set in, and its pdfs
+carry a map that was broken in the very same way. Which glyph ends up with
+which string differs from document to document, because it depends on the
+first cluster of the document that each glyph was drawn in, so the font needs
+a converter of its own: fonts/nirmalaui.py. There, दिल्ली comes out as कदल्ली
+and के comes out as िे, i.e. 'क' is matra_i and 'ि' is ka.
+
+The losses are of the same kind as the ones above. ka and sha, and the
+conjunct shcha as well, all come out as 'ि', which is read as ka. The reph is
+drawn together with the matra of its syllable, so it comes out as 'ा', 'ी',
+'ो' or as nothing at all, and only the reph over a matra_aa can be found
+again, by the 'ाा' that कार्यालय leaves behind as िायाा लय. matra_o is handed
+no string at all and comes out as the space of its own advance, so को is left
+as 'ि' and only the matra_o of a plural ending can be brought back, from the
+'ों' that the anusvara behind it carries.
+
+composeTokens does the same work here as it does for Arial Unicode MS. The
+three matra_i glyphs of the font carry the strings of ka, of ra and of the
+conjunct kta, so a ra in front of ra is a matra (रिज comes out as ररज) and so
+is a kta in front of kta (व्यक्ति comes out as व्यक्तक्त). The sta ligature
+carries the string of the half sa, so a 'स्' that a matra follows is that
+ligature and its ta is put back, which is what turns हस्ाों तररत back into
+हस्तांतरित, while a 'स्' that a consonant follows is the half sa of स्थान.
 
 
