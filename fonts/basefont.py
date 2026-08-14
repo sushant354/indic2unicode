@@ -1,5 +1,11 @@
 import logging
 import types
+import unicodedata
+
+# a character that the lexer of a font has no token of its own for but that
+# is text rather than a glyph of that font travels through the passes as
+# (LITERAL, character), see is_text_char() and fonts/arialuni_glyphs.py
+LITERAL = 'LITERAL'
 
 class BaseFont:
     def __init__(self):
@@ -33,7 +39,31 @@ class BaseFont:
         else:
             return 0
 
+    def is_text_char(self, char):
+        '''whether a character that the lexer has no token for is text that
+           can be handed on as it is - an ellipsis, a bullet, a zero width
+           joiner - rather than a glyph code that no map could turn into a
+           character, which is all a control character or a private use
+           character can be here'''
+        if char in '\t\n\r':
+            return True
+
+        return unicodedata.category(char) not in ('Cc', 'Co', 'Cn', 'Cs')
+
+    def is_invisible_literal(self, tokenName):
+        '''whether a token is a character carried through as itself that
+           marks a join in the text rather than standing on the page - a
+           zero width joiner, a zero width non joiner. It is no glyph of the
+           syllable it sits in, so the two reordering passes have to look
+           straight through it: a matra_i that has one between itself and
+           its consonant is still waiting for that consonant'''
+        return type(tokenName) == tuple and tokenName[0] == LITERAL and \
+               unicodedata.category(tokenName[1]) == 'Cf'
+
     def token_to_unicode(self, tokenName):
+        if type(tokenName) == tuple and tokenName[0] == LITERAL:
+            return tokenName[1]
+
         for obj in self.langobjs:
             ustr = obj.get_unicode_string(tokenName)
             if ustr != None:
@@ -66,6 +96,11 @@ class BaseFont:
              tok = self.lexer.token()
              if not tok:
                  break
+             if tok.type == LITERAL:
+                 # a character that is text and not a glyph of the font
+                 # carries itself through the passes
+                 tokentypes.append((LITERAL, tok.value))
+                 continue
              multipleTokens = self.multiple_tokens(tok.type)
              if multipleTokens:
                  tokentypes.extend(multipleTokens)
@@ -80,7 +115,8 @@ class BaseFont:
             index = len(out)
             while num > 0 and index > 0:
                 index -= 1
-                if out[index] not in self.jumpover:
+                if out[index] not in self.jumpover and \
+                        not self.is_invisible_literal(out[index]):
                     num -= 1
 
             if num > 0:
@@ -97,7 +133,7 @@ class BaseFont:
              num = self.num_after(toktype)
              if num != 0:
                  waitTokens.append([toktype, num])
-             elif toktype in self.waitover:
+             elif toktype in self.waitover or self.is_invisible_literal(toktype):
                  out.append(toktype)
              else:
                  pending = waitTokens
@@ -149,30 +185,47 @@ class BaseFont:
     
         tokentypes = self.compose_tokens(tokentypes)
         tokentypes = self.jump_before_tokens(tokentypes)
-        tokentypes = self.jump_after_tokens(tokentypes)      
-
-        errs = list(self.errchars.keys())
-        if errs:
-            errs.sort(key = lambda x: self.errchars[x], reverse=True)
-            self.logger.debug('Num of err chars %d' % len(errs))
-            for char in errs:
-                self.logger.error('Err char: %s count: %d' % \
-                                   (char, self.errchars[char]))
+        tokentypes = self.jump_after_tokens(tokentypes)
 
         return self.tokens_to_unicode(tokentypes)
 
+    def log_error_summary(self):
+        '''how often every character that could not be converted was seen.
+           to_unicode() is called once per run of text of a document, so the
+           totals are only whole once the whole document has gone through'''
+        errs = sorted(self.errchars, key = lambda x: self.errchars[x], \
+                      reverse = True)
+        if not errs:
+            return
+
+        self.logger.info('%d character(s) had no token of this font', len(errs))
+        for char in errs:
+            self.logger.info('U+%04X %s: %d time(s)', ord(char), \
+                             unicodedata.name(char, 'unnamed'), \
+                             self.errchars[char])
+
     def report_error(self, token):
-        pos = endpos = startpos = token.lexer.lexpos
-        window = 10 
-        if startpos > window:
-            startpos -= window
-        if endpos + window < len(token.lexer.lexdata):
-            endpos += window
+        pos    = token.lexer.lexpos
+        window = 10
+        # the text around the character, as much of it as there is: a run of
+        # a pdf is often shorter than the window and clipping the end to
+        # pos + window rather than to the end of the text left every one of
+        # them without any context at all
+        startpos = max(pos - window, 0)
+        endpos   = min(pos + window, len(token.lexer.lexdata))
 
         s = token.lexer.lexdata[startpos:endpos]
         char = token.lexer.lexdata[pos]
-        if char in self.errchars:
-            self.errchars[char] += 1
+        count = self.errchars.get(char, 0) + 1
+        self.errchars[char] = count
+
+        # a document draws the same unknown glyph over and over and
+        # to_unicode() is called once per run of its text, so a character is
+        # only worth a line the first time it is seen. The counts are kept
+        # for log_error_summary(), which has the whole document to report on
+        if count == 1:
+            self.logger.warning('No token for U+%04X %s, dropping it. Seen ' \
+                                'in %r', ord(char), \
+                                unicodedata.name(char, 'unnamed'), s)
         else:
-            self.errchars[char] = 1
-        self.logger.debug('TokenError. char: %s string: %s' % (char, s))
+            self.logger.debug('TokenError. char: %r string: %r' % (char, s))

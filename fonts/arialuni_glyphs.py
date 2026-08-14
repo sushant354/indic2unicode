@@ -3,7 +3,7 @@ import string
 import types
 
 from indic2unicode.langs import devanagari
-from .basefont import BaseFont
+from .basefont import BaseFont, LITERAL
 import ply.lex as lex
 
 class ArialUniGlyphs(BaseFont):
@@ -42,6 +42,8 @@ class ArialUniGlyphs(BaseFont):
             'MATRA_RI', 'MATRA_RR', 'MATRA_E', 'MATRA_AI', 'MATRA_O',      \
             'MATRA_AU', 'MATRA_CHANDRA_O', 'CHANDRA', 'BINDU',             \
             'CHANDRABINDU', 'VISARGA', 'NUKTA',                            \
+            'MATRA_SHORT_E', 'MATRA_SHORT_O', 'MATRA_L', 'MATRA_LL',       \
+            'UDATTA', 'ANUDATTA', 'GRAVE_ACCENT', 'ACUTE_ACCENT',          \
         ])
 
         # nukta belongs to the syllable matra_i has already passed, so it
@@ -68,6 +70,7 @@ class ArialUniGlyphs(BaseFont):
             return '|'.join([re.escape(glyph) for glyph in glyphs])
 
         # VOWELS
+        t_SHORT_A        = pat('ऄ')
         t_A              = pat('अ')
         t_AA             = pat('आ')
         t_I              = pat('इ')
@@ -75,8 +78,14 @@ class ArialUniGlyphs(BaseFont):
         t_U              = pat('उ')
         t_UU             = pat('ऊ')
         t_RE             = pat('ऋ')
+        t_LI             = pat('ऌ')
+        t_RRE            = pat('ॠ')
+        t_LLE            = pat('ॡ')
+        t_CHANDRA_E      = pat('ऍ')
+        t_SHORT_E        = pat('ऎ')
         t_E              = pat('ए')
         t_AI             = pat('ऐ')
+        t_SHORT_O        = pat('ऒ')
         t_OO             = pat('ओ')
         t_AU             = pat('औ')
         t_CHANDRA_O      = pat('ऑ')
@@ -125,6 +134,7 @@ class ArialUniGlyphs(BaseFont):
         t_DHA            = pat('ध')
         t_ADHA_NA        = pat('न्')
         t_NA             = pat('न')
+        t_NNNA           = pat('ऩ')
 
         t_ADHA_PA        = pat('प्')
         t_PA             = pat('प')
@@ -144,9 +154,11 @@ class ArialUniGlyphs(BaseFont):
         t_RA_MA          = pat('र्म')
         t_ADHA_RA        = pat('र्')
         t_RA             = pat('र')
+        t_RRA            = pat('ऱ')
         t_ADHA_LA        = pat('ल्')
         t_LA             = pat('ल')
         t_LLA            = pat('ळ')
+        t_LLLA           = pat('ऴ')
         t_ADHA_VA        = pat('व्')
         t_VA             = pat('व')
 
@@ -177,8 +189,13 @@ class ArialUniGlyphs(BaseFont):
         t_MATRA_U        = pat('ु')
         t_MATRA_UU       = pat('ू')
         t_MATRA_RI       = pat('ृ')
+        t_MATRA_RR       = pat('ॄ')
+        t_MATRA_L        = pat('ॢ')
+        t_MATRA_LL       = pat('ॣ')
+        t_MATRA_SHORT_E  = pat('ॆ')
         t_MATRA_E        = pat('े')
         t_MATRA_AI       = pat('ै')
+        t_MATRA_SHORT_O  = pat('ॊ')
         t_MATRA_O        = pat('ो')
         t_MATRA_AU       = pat('ौ')
         t_CHANDRA        = pat('ॅ')
@@ -191,8 +208,15 @@ class ArialUniGlyphs(BaseFont):
         t_NUKTA          = pat('़')
         t_HALANT         = pat('्')
         t_AVAGRAHA       = pat('ऽ')
+        t_OM             = pat('ॐ')
         t_VIRAM          = pat('।')
         t_DEERGH_VIRAM   = pat('॥')
+        t_ABBREV         = pat('॰')
+        # the vedic accents, which sit on a syllable like the signs do
+        t_UDATTA         = pat('॑')
+        t_ANUDATTA       = pat('॒')
+        t_GRAVE_ACCENT   = pat('॓')
+        t_ACUTE_ACCENT   = pat('॔')
 
         # DIGITS
         t_ZERO           = pat('०')
@@ -238,8 +262,24 @@ class ArialUniGlyphs(BaseFont):
         t_CARRIAGERET    = pat('\r')
 
         def t_error(t):
-            self.report_error(t)
+            # the text of a repaired pdf is unicode already and only its
+            # order is wrong, so a character with no token of its own is not
+            # a glyph waiting to be reordered, it is text - an ellipsis, an
+            # underscore of a form, a bullet, a zero width joiner - and has
+            # to come out the way it went in rather than be dropped. Only a
+            # glyph code that no map could turn into a character is dropped,
+            # and that is reported
+            char = t.value[0]
+
+            if not self.is_text_char(char):
+                self.report_error(t)
+                t.lexer.skip(1)
+                return None
+
             t.lexer.skip(1)
+            t.type  = LITERAL
+            t.value = char
+            return t
 
         rules = dict(locals())
 

@@ -68,6 +68,10 @@ if __name__ == '__main__':
     f.close()
 
     out = font_convertor.to_unicode(fontname, testdata)
+    # every character that the font has no token for was reported the first
+    # time it was seen, here is how often each of them turned up
+    font_convertor.converters[fontname].log_error_summary()
+
     f = codecs.open(outputfile, 'w', 'utf8')
     f.write(out)
     f.close()
