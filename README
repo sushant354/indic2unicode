@@ -126,11 +126,19 @@ one by one, and devanagari shaping moves matra_i to the left of its cluster
 and the reph to the right of its syllable, so the pairing slips exactly on
 the glyphs that were moved.
 
-tools/fix_tounicode.py builds the map again from the names that the font
-gives to its own glyphs, which the subset in the pdf keeps for the whole
-devanagari block, and repairs the glyphs that the shaper made from a table.
-It only touches the fonts that are known to carry a broken map. After that
-the text can be extracted in the usual way:
+tools/fix_tounicode.py builds the map again out of the font program that the
+pdf carries, which says what its glyphs are three times over: the cmap of the
+subset maps a character to the glyph that draws it, the subset keeps the
+uniXXXX name of the glyphs it did not have to rename, and the GSUB of the
+font says which glyphs the shaper made out of which other ones, so a conjunct
+is spelled out of the glyphs it was made of, a half form comes out as its
+consonant and a halant and a below base form as a halant and its consonant.
+A glyph that a subset carries neither a name nor a cmap entry nor a rule for
+is filled in from another subset of the same font in the same document, which
+is where the glyph id of a font one subset drops and another keeps - the
+halant of "Nirmala UI,Bold" among them - is found, and what is left after
+that is repaired from a table. It only touches the fonts that are known to
+carry a broken map. After that the text can be extracted in the usual way:
 
     doc = pymupdf.open(pdffile)
     ToUnicodeFixer().fix_document(doc)
@@ -171,5 +179,21 @@ is a kta in front of kta (व्यक्ति comes out as व्यक्त�
 carries the string of the half sa, so a 'स्' that a matra follows is that
 ligature and its ta is put back, which is what turns हस्ाों तररत back into
 हस्तांतरित, while a 'स्' that a consonant follows is the half sa of स्थान.
+
+Here too none of that guessing is needed when the pdf itself is at hand.
+tools/fix_tounicode.py repairs a Nirmala UI pdf the same way it repairs an
+Arial Unicode MS one, and the text of it goes through
+fonts/nirmalaui_glyphs.py, which is the same two reordering passes and loses
+nothing: sha and matra_o and the reph are all still there, so प्रकाशित and को
+and सर्वोच्च come out whole rather than as प्रकाकित and क and सवोच्च.
+
+Nirmala UI spells out as two characters what Arial Unicode MS carries as one
+glyph - a half form comes out as its consonant and a halant, a rakar as a
+halant and a ra - but the lexer reads a half form out of that pair anyway, so
+matra_i still waits for the whole cluster and 'ि' + 'क' + '्र' comes out as
+क्रि. The reph is drawn together with the matra of the syllable it sits on,
+which is one glyph of the font and two characters of the repaired map, and
+the matra is one of the tokens the reph jumps over on its way back, so
+निकटवर्ती is drawn as िनकटवतीर् and comes out whole all the same.
 
 

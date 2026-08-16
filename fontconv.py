@@ -1,5 +1,5 @@
 from indic2unicode.fonts import aryan2, surekh, chanakya, arialuni, \
-                                arialuni_glyphs, nirmalaui
+                                arialuni_glyphs, nirmalaui, nirmalaui_glyphs
 
 class FontConv:
     def __init__(self):
@@ -9,16 +9,18 @@ class FontConv:
         arialuniObj = arialuni.ArialUni()
         glyphsObj   = arialuni_glyphs.ArialUniGlyphs()
         nirmalaObj  = nirmalaui.NirmalaUI()
+        nirglyphObj = nirmalaui_glyphs.NirmalaUIGlyphs()
         self.converters = {'aryan2': aryanObj, 'divya':  aryanObj, \
                            'surekh': surekhObj, 'chanakya': chanakyaObj, \
                            'arialuni': arialuniObj, 'krutidev': chanakyaObj, \
                            'Arial Unicode MS': arialuniObj, \
                            'arialuni_glyphs': glyphsObj, \
                            'nirmalaui': nirmalaObj, \
+                           'nirmalaui_glyphs': nirglyphObj, \
                            'Nirmala UI': nirmalaObj}
 
         self.uniqfonts = ['aryan2', 'surekh', 'chanakya', 'arialuni', \
-                          'arialuni_glyphs', 'nirmalaui']
+                          'arialuni_glyphs', 'nirmalaui', 'nirmalaui_glyphs']
  
     def to_unicode(self, fontname, text):
         return self.converters[fontname].to_unicode(text)

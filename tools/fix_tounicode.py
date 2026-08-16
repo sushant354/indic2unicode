@@ -10,15 +10,24 @@ the 'ि' of that cluster, matra_i is handed a consonant back, va and tha are
 handed the reph of र्व and र्थ, and the reph is handed a va. A nukta pair and
 a ligature lose a character in the same way.
 
+The gazettes that are set in Nirmala UI carry a map that was built the same
+way and is broken in the same way, ka and sha both being handed the 'ि' of
+the cluster they were first drawn in and matra_i a consonant back.
+
 The glyphs themselves are drawn correctly, so the text on the page is right
-and only its extraction is wrong. The subset of the font that the pdf carries
-keeps the original name of every glyph of the devanagari block, so the map of
-those glyphs can be built again from the font itself. The glyphs that the
-shaper made have no name of their own and are repaired from a table.
+and only its extraction is wrong. The map is built again out of the font
+itself, which says what its glyphs are three times over: the cmap of the
+subset says which glyph draws which character, the subset keeps the original
+uniXXXX name of the glyphs of the devanagari block, and the GSUB of the font
+says which glyphs the shaper made out of which other ones, so a conjunct or a
+half form is spelled out of the glyphs it was made of however it is named.
+The glyphs that are left - the ones of a subset that carries neither a name
+nor a cmap entry nor a rule for them - are repaired from a table.
 
 The text that comes out of the repaired pdf is in the visual order of the
-glyphs, so it still has to go through fonts/arialuni_glyphs.py to be put in
-the order that unicode wants.
+glyphs, so it still has to go through fonts/arialuni_glyphs.py (Arial Unicode
+MS) or fonts/nirmalaui_glyphs.py (Nirmala UI) to be put in the order that
+unicode wants.
 
 USAGE:
     python fix_tounicode.py input.pdf output.pdf
@@ -61,7 +70,11 @@ ARIAL_UNICODE_MS = { \
     6981: 'र्',  # seen as व, ा \
     7069: 'ट्र',  # seen as र \
     7081: 'ब्र',  # seen as ि \
-    7278: 'र्',  # seen as ी \
+    # the reph and the matra of the syllable it sits on, which the font
+    # draws as one glyph. The GSUB of the font makes it out of matra_ii and
+    # the reph, so a syllable that carries it keeps its matra: पूर्वी is
+    # पूर्वी and not पूर्व \
+    7278: 'ीर्', # seen as ी \
     7399: 'ष्ठ',  # seen as ि \
     # the width variants of matra_i \
     7407: 'ि',   # seen as र \
@@ -96,7 +109,15 @@ ARIAL_UNICODE_MS = { \
     7398: 'ष्ट्र', \
 }
 
-BROKEN_FONTS = {'Arial Unicode MS': ARIAL_UNICODE_MS}
+# Nirmala UI needs no glyph repaired by hand: the subsets of it that these
+# gazettes carry keep the GSUB of the font, so every glyph the shaper made is
+# read out of the rule that made it. The table is here for the same reason
+# the one above is - a subset that keeps no rule for a glyph - and is filled
+# as such a glyph turns up
+NIRMALA_UI = {}
+
+BROKEN_FONTS = {'Arial Unicode MS': ARIAL_UNICODE_MS, \
+                'Nirmala UI'      : NIRMALA_UI}
 
 # the font whose glyph ids a type3 font of a distilled gazette names its
 # glyphs after, see fix_type3_fonts below
@@ -106,19 +127,45 @@ TYPE3_GLYPH_FONT = 'Arial Unicode MS'
 # but still in the order in which the glyphs are drawn, so it has to go
 # through this converter of indic2unicode and not through the one that is
 # named after the font, which is for the text of a pdf that was not repaired
-FONT_CONVERTERS = {'Arial Unicode MS': 'arialuni_glyphs'}
+FONT_CONVERTERS = {'Arial Unicode MS': 'arialuni_glyphs', \
+                   'Nirmala UI'      : 'nirmalaui_glyphs'}
+
+# the styles of a family, which a pdf carries as fonts of their own named
+# "Nirmala UI,Bold" or "NirmalaUI-Bold"
+STYLE_SUFFIX_RE = re.compile(r'(bold|italic|oblique|regular|light|medium'  \
+                             r'|semibold|black|condensed)+$')
 
 def font_lookup_key(fontname):
     '''one font is embedded under more than one spelling of its name, Arial
        Unicode MS is carried both as "Arial Unicode MS" and as
        "ArialUnicodeMS", so a font is looked up by a spelling of its name
-       that the separators and the case do not change'''
-    return re.sub(r'[\s\-_,]+', '', fontname).lower()
+       that the separators and the case do not change. The bold of a family
+       is drawn with the same glyphs as its regular and carries the same
+       broken map, so it is looked up as the family too, and a subset is
+       looked up as the font it is a subset of'''
+    fontname = re.sub(r'^[A-Z]{6}\+', '', fontname)
+    key = re.sub(r'[\s\-_,]+', '', fontname.split(',')[0]).lower()
+    return STYLE_SUFFIX_RE.sub('', key) or key
 
 BROKEN_FONTS_BY_KEY    = {font_lookup_key(name): fixes \
                           for name, fixes in BROKEN_FONTS.items()}
 FONT_CONVERTERS_BY_KEY = {font_lookup_key(name): conv  \
                           for name, conv  in FONT_CONVERTERS.items()}
+
+# the lookups of a GSUB that say what a glyph was made of, and the wrapper
+# that a font of this size keeps them in
+SINGLE_SUBST     = 1
+LIGATURE_SUBST   = 4
+EXTENSION_LOOKUP = 7
+
+HALANT = '्'
+
+# the features that make a form which is written as a halant and then its
+# consonant - the below base, post base and pre base forms - and the ones
+# that make a form which is written the other way round, the half forms and
+# the reph
+BELOW_FORM_FEATURES = frozenset(['blwf', 'pstf', 'pref'])
+HALF_FORM_FEATURES  = frozenset(['half', 'rphf'])
 
 def get_glyph_fixes(fontname):
     '''the glyphs to repair by hand for a font known to carry a broken map,
@@ -135,6 +182,17 @@ class ToUnicodeFixer:
         self.logger = logging.getLogger('fix_tounicode')
         # the fonts of the last document that were actually repaired
         self.fixed_fonts = set()
+        # the font program of a pdf font, read once per font
+        self.fontcache   = {}
+        # what the font program of a pdf font names its own glyphs, read
+        # once per font
+        self.seedcache   = {}
+
+    def to_nfc(self, ustr):
+        '''a string in the form unicode composes it in. A nukta consonant
+           comes out of this as its consonant and a nukta, which is the
+           canonical form of it'''
+        return unicodedata.normalize('NFC', ustr)
 
     def base_font(self, fontname):
         # a subsetted font is named like ABCDEE+Arial Unicode MS
@@ -202,23 +260,246 @@ class ToUnicodeFixer:
                       'end', 'end'])
         return ('\n'.join(lines) + '\n').encode('latin-1')
 
-    def glyph_names(self, doc, xref):
-        '''the name that the font gives to every one of its glyphs'''
+    def open_font(self, doc, xref):
+        '''the font program that the pdf carries for a font, None if there
+           is none or it cannot be read'''
+        if xref in self.fontcache:
+            return self.fontcache[xref]
+
+        font = None
         try:
             name, ext, ftype, buf = doc.extract_font(xref, named = False)
         except Exception as e:
             self.logger.warning('Could not extract the font %d: %s', xref, e)
-            return []
+            buf = None
 
-        if not buf:
+        if buf:
+            try:
+                font = TTFont(io.BytesIO(buf), fontNumber = 0, lazy = True)
+            except Exception as e:
+                self.logger.warning('Could not read the font %d: %s', xref, e)
+
+        self.fontcache[xref] = font
+        return font
+
+    def glyph_names(self, doc, xref):
+        '''the name that the font gives to every one of its glyphs'''
+        font = self.open_font(doc, xref)
+        if font == None:
             return []
 
         try:
-            font = TTFont(io.BytesIO(buf), fontNumber = 0, lazy = True)
             return font.getGlyphOrder()
         except Exception as e:
-            self.logger.warning('Could not read the font %d: %s', xref, e)
+            self.logger.warning('Could not read the glyphs of %d: %s', xref, e)
             return []
+
+    # ------------------------------------------------------------------
+    # what the font says its own glyphs are
+    #
+    # The map that the pdf carries is broken, but the font program that it
+    # carries with it is not, and it says what its glyphs are three times
+    # over: the cmap of the subset maps a character to the glyph that draws
+    # it, the subset keeps the uniXXXX name of the glyphs it did not have to
+    # rename, and the GSUB of the font says which glyphs the shaper made out
+    # of which other ones. The first two are read straight off, the third is
+    # followed until nothing more can be spelled out: a conjunct is the
+    # string of the glyphs it was made of, a half form is its consonant and
+    # a halant, and a below base form is a halant and its consonant, which
+    # is the order they are written in.
+    # ------------------------------------------------------------------
+
+    def glyph_seed_strings(self, doc, xref):
+        '''the glyphs of a font whose character the font names outright, as
+           a glyph id -> string dict'''
+        if xref in self.seedcache:
+            return self.seedcache[xref]
+
+        strings = {}
+        font    = self.open_font(doc, xref)
+        if font == None:
+            self.seedcache[xref] = strings
+            return strings
+
+        try:
+            order = font.getGlyphOrder()
+            cmap  = font.getBestCmap() or {}
+        except Exception as e:
+            self.logger.warning('Could not read the cmap of the font %d: %s', \
+                                xref, e)
+            self.seedcache[xref] = strings
+            return strings
+
+        gids = {gname: gid for gid, gname in enumerate(order)}
+
+        for code, gname in cmap.items():
+            gid = gids.get(gname)
+            if gid != None:
+                strings.setdefault(gid, self.to_nfc(chr(code)))
+
+        for gid, gname in enumerate(order):
+            ustr = self.unicode_glyph_name(gname)
+            if ustr != None:
+                strings.setdefault(gid, ustr)
+
+        self.seedcache[xref] = strings
+        return strings
+
+    def gsub_lookups(self, font):
+        '''the substitutions of the GSUB of a font that say what a glyph was
+           made of, as (lookup type, subtable, feature tags) with the
+           extension lookups unwrapped. A lookup is taken on its own and
+           the context it is used in is not looked at: what is wanted here
+           is only which glyph stands for which characters, and a glyph that
+           one context makes out of a cluster is that cluster in every
+           other context too'''
+        lookups = []
+
+        if 'GSUB' not in font:
+            return lookups
+
+        try:
+            gsub = font['GSUB'].table
+            if gsub == None or gsub.LookupList == None:
+                return lookups
+
+            tags = {}
+            if gsub.FeatureList != None:
+                for record in gsub.FeatureList.FeatureRecord:
+                    for index in record.Feature.LookupListIndex:
+                        tags.setdefault(index, set()).add(record.FeatureTag)
+
+            for index, lookup in enumerate(gsub.LookupList.Lookup):
+                for subtable in lookup.SubTable:
+                    if lookup.LookupType == EXTENSION_LOOKUP:
+                        ltype    = subtable.ExtensionLookupType
+                        subtable = subtable.ExtSubTable
+                    else:
+                        ltype = lookup.LookupType
+
+                    if ltype in (SINGLE_SUBST, LIGATURE_SUBST):
+                        lookups.append((ltype, subtable, tags.get(index, set())))
+        except Exception as e:
+            self.logger.warning('Could not read the GSUB of a font: %s', e)
+
+        return lookups
+
+    def substituted_string(self, parts, tags):
+        '''the string of the glyph that a substitution made out of the
+           glyphs whose strings these are'''
+        # a half form and a reph are their consonant and a halant, which is
+        # how they are written; a below base, post base or pre base form is
+        # a halant and its consonant, the other way round. A substitution
+        # that takes the halant in as a glyph of its own already carries it,
+        # one that leaves it to the context has to be given it
+        if tags & BELOW_FORM_FEATURES:
+            if len(parts) == 2 and parts[1] == HALANT:
+                return HALANT + parts[0]
+            if len(parts) == 1:
+                return HALANT + parts[0]
+        elif tags & HALF_FORM_FEATURES and len(parts) == 1:
+            return parts[0] + HALANT
+
+        return ''.join(parts)
+
+    def expand_gsub(self, font, strings):
+        '''spell out every glyph that the shaper made out of the glyphs it
+           was made of, until no more of them can be spelled out'''
+        try:
+            order = font.getGlyphOrder()
+        except Exception:
+            return strings
+
+        gids    = {gname: gid for gid, gname in enumerate(order)}
+        lookups = self.gsub_lookups(font)
+        num     = 0
+
+        while True:
+            found = 0
+
+            for ltype, subtable, tags in lookups:
+                if ltype == SINGLE_SUBST:
+                    pairs = [([source], target) for source, target \
+                             in getattr(subtable, 'mapping', {}).items()]
+                else:
+                    pairs = []
+                    for first, ligatures in \
+                            getattr(subtable, 'ligatures', {}).items():
+                        for ligature in ligatures:
+                            pairs.append(([first] + list(ligature.Component), \
+                                          ligature.LigGlyph))
+
+                for sources, target in pairs:
+                    gid = gids.get(target)
+                    if gid == None or gid in strings:
+                        continue
+
+                    parts = [strings.get(gids.get(source, -1)) \
+                             for source in sources]
+                    if None in parts:
+                        continue
+
+                    strings[gid] = self.to_nfc(\
+                                       self.substituted_string(parts, tags))
+                    found += 1
+
+            num += found
+            if not found:
+                break
+
+        if num:
+            self.logger.debug('%d glyph(s) spelled out of the GSUB of the ' \
+                              'font', num)
+        return strings
+
+    def glyph_strings(self, doc, xref, learnt = None):
+        '''what every glyph of a font stands for, as a glyph id -> string
+           dict, read out of the font itself and out of what the other
+           subsets of the same font in this document say'''
+        font = self.open_font(doc, xref)
+        if font == None:
+            return {}
+
+        strings = dict(self.glyph_seed_strings(doc, xref))
+
+        # a subset that draws a character only inside a conjunct keeps
+        # neither a cmap entry nor a name for the glyph of that character,
+        # and then nothing that is made out of it can be spelled out either.
+        # Another subset of the same font in the same document does name it,
+        # and a glyph id means the same glyph in every subset of one font
+        for gid, ustr in (learnt or {}).items():
+            strings.setdefault(gid, ustr)
+
+        return self.expand_gsub(font, strings)
+
+    def learn_font_gids(self, doc, fonts):
+        '''what the subsets of a font that this document carries say about
+           the glyphs they name, as a font key -> {glyph id: string} dict.
+           A subset that names a glyph fills in the subsets that do not'''
+        learnt = {}
+
+        for xref, (fontname, encoding) in sorted(fonts.items()):
+            key = font_lookup_key(self.base_font(fontname))
+            if key not in BROKEN_FONTS_BY_KEY:
+                continue
+
+            known = learnt.setdefault(key, {})
+            for gid, ustr in self.glyph_seed_strings(doc, xref).items():
+                if known.get(gid, ustr) != ustr:
+                    # two subsets that are named alike do not draw the same
+                    # glyphs, so neither of them can be trusted for it
+                    self.logger.warning('Subsets of %s disagree on glyph ' \
+                                        '%d: %r and %r', fontname, gid, \
+                                        known[gid], ustr)
+                    known[gid] = None
+                else:
+                    known[gid] = ustr
+
+        for key in learnt:
+            learnt[key] = {gid: ustr for gid, ustr in learnt[key].items() \
+                           if ustr != None}
+
+        return learnt
 
     def is_identity(self, doc, xref, encoding):
         '''the code of a glyph is its glyph id only if the font is encoded
@@ -236,7 +517,7 @@ class ToUnicodeFixer:
                     return False
         return True
 
-    def fix_font(self, doc, xref, fontname, encoding, glyphfixes):
+    def fix_font(self, doc, xref, fontname, encoding, glyphfixes, learnt = None):
         cmapxref = self.get_cmap_xref(doc, xref)
         if cmapxref == None:
             return 0
@@ -246,29 +527,22 @@ class ToUnicodeFixer:
                              xref, fontname)
             return 0
 
-        names = self.glyph_names(doc, xref)
-        if not names:
+        if self.open_font(doc, xref) == None:
             return 0
+
+        strings = self.glyph_strings(doc, xref, learnt)
 
         table = self.parse_cmap(doc, cmapxref)
         fixed = {}
         num   = 0
         for code, ustr in table.items():
-            correct = None
-
-            gname = names[code] if code < len(names) else ''
-            match = re.fullmatch(r'uni([0-9A-Fa-f]{4})', gname)
-            if match:
-                # the font itself says which character this glyph is. A
-                # nukta consonant is handed out in its canonical form, i.e.
-                # ड़ as ड and a nukta
-                correct = unicodedata.normalize('NFC', \
-                                                chr(int(match.group(1), 16)))
-            elif code in glyphfixes:
-                # a glyph that the shaper made, repaired to what it really
-                # is whatever the character it was paired with in this
-                # document happens to be
-                correct = glyphfixes[code]
+            # what the font says this glyph is, and failing that - a subset
+            # that keeps neither a name nor a rule for a glyph the shaper
+            # made - what it is repaired to by hand, whatever the character
+            # it was paired with in this document happens to be
+            correct = strings.get(code)
+            if correct == None:
+                correct = glyphfixes.get(code)
 
             if correct != None and correct != ustr:
                 num += 1
@@ -497,6 +771,10 @@ class ToUnicodeFixer:
 
         num = 0
         self.fixed_fonts = set()
+        self.fontcache   = {}
+        self.seedcache   = {}
+        learnt = self.learn_font_gids(doc, fonts)
+
         for xref in sorted(fonts):
             fontname, encoding = fonts[xref]
             basefont   = self.base_font(fontname)
@@ -504,13 +782,18 @@ class ToUnicodeFixer:
             if glyphfixes == None:
                 continue
 
-            numfixed = self.fix_font(doc, xref, fontname, encoding, glyphfixes)
+            numfixed = self.fix_font(doc, xref, fontname, encoding, glyphfixes,
+                                     learnt.get(font_lookup_key(basefont)))
             if numfixed:
                 self.fixed_fonts.add(basefont)
             num += numfixed
 
         if type3s:
             num += self.fix_type3_fonts(doc, sorted(type3s))
+
+        # the font programs of a document are of no use once it is repaired
+        self.fontcache = {}
+        self.seedcache = {}
 
         self.logger.info('Repaired %d glyphs in the fonts: %s', num, \
                          ', '.join(sorted(self.fixed_fonts)))
