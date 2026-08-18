@@ -10,14 +10,14 @@ class FontConv:
         glyphsObj   = arialuni_glyphs.ArialUniGlyphs()
         nirmalaObj  = nirmalaui.NirmalaUI()
         nirglyphObj = nirmalaui_glyphs.NirmalaUIGlyphs()
-        self.converters = {'aryan2': aryanObj, 'divya':  aryanObj, \
-                           'surekh': surekhObj, 'chanakya': chanakyaObj, \
-                           'arialuni': arialuniObj, 'krutidev': chanakyaObj, \
-                           'Arial Unicode MS': arialuniObj, \
-                           'arialuni_glyphs': glyphsObj, \
-                           'nirmalaui': nirmalaObj, \
-                           'nirmalaui_glyphs': nirglyphObj, \
-                           'Nirmala UI': nirmalaObj}
+        self.converters = { 
+            'aryan2': aryanObj, 'divya':  aryanObj, 'surekh': surekhObj,
+            'chanakya': chanakyaObj, 'arialuni': arialuniObj, 
+            'krutidev': chanakyaObj,  'vivek': chanakyaObj, 
+            'Arial Unicode MS': arialuniObj,  'arialuni_glyphs': glyphsObj, 
+            'nirmalaui': nirmalaObj, 'Nirmala UI': nirmalaObj, 
+            'nirmalaui_glyphs': nirglyphObj, 
+        }
 
         self.uniqfonts = ['aryan2', 'surekh', 'chanakya', 'arialuni', \
                           'arialuni_glyphs', 'nirmalaui', 'nirmalaui_glyphs']
