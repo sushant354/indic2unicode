@@ -14,6 +14,16 @@ The gazettes that are set in Nirmala UI carry a map that was built the same
 way and is broken in the same way, ka and sha both being handed the 'ि' of
 the cluster they were first drawn in and matra_i a consonant back.
 
+The gazettes that are set in Mangal are broken a third way: their map hands
+every glyph that the shaper made <0000> outright, so the half forms, the
+conjuncts, the matra_i and the reph are not the wrong characters in the
+extracted text, they are no character at all - निम्नलिखित comes out as
+"न न ल खत" with a raw NUL where each missing glyph was, which is not even
+well formed xml. That subset carries neither a cmap nor a post nor a GSUB,
+only outlines, so nothing in it says what those glyphs are and they are
+repaired from MANGAL_OUTLINES, a table keyed by what a glyph draws rather
+than by its glyph id - this producer renumbers the glyphs of every subset.
+
 The glyphs themselves are drawn correctly, so the text on the page is right
 and only its extraction is wrong. The map is built again out of the font
 itself, which says what its glyphs are three times over: the cmap of the
@@ -26,14 +36,15 @@ nor a cmap entry nor a rule for them - are repaired from a table.
 
 The text that comes out of the repaired pdf is in the visual order of the
 glyphs, so it still has to go through fonts/arialuni_glyphs.py (Arial Unicode
-MS) or fonts/nirmalaui_glyphs.py (Nirmala UI) to be put in the order that
-unicode wants.
+MS), fonts/nirmalaui_glyphs.py (Nirmala UI) or fonts/mangal_glyphs.py
+(Mangal) to be put in the order that unicode wants.
 
 USAGE:
     python fix_tounicode.py input.pdf output.pdf
 '''
 
 import getopt
+import hashlib
 import io
 import logging
 import re
@@ -41,6 +52,7 @@ import sys
 import unicodedata
 
 import pymupdf
+from fontTools.pens.recordingPen import DecomposingRecordingPen
 from fontTools.ttLib import TTFont
 
 # the glyphs that the shaper made. They have no name of their own in the
@@ -116,8 +128,99 @@ ARIAL_UNICODE_MS = { \
 # as such a glyph turns up
 NIRMALA_UI = {}
 
+# Mangal is repaired by what its glyphs draw and not by their glyph ids, see
+# MANGAL_OUTLINES below, so it has no table of its own here. The entry is
+# what puts the font on the list of the ones that are repaired at all
+MANGAL = {}
+
+# The Mangal of these gazettes is subsetted with a map that hands a glyph the
+# shaper made <0000> outright - not the wrong character, no character at all -
+# so 3234 glyphs of a 31 page gazette extract as a NUL that is not even well
+# formed xml. The subset keeps neither a cmap nor a post nor a GSUB, only the
+# outlines, so there is nothing in it to read the glyphs back out of and the
+# table below is the whole of what is known about them.
+#
+# It is keyed by what a glyph draws and not by its glyph id, because this
+# subset renumbers its glyphs: the id of a glyph here is a number the producer
+# gave it and means something else in the next document, while an outline is
+# the same wherever the same font is subsetted. Keying by outline is also what
+# makes the table safe - a subset that draws something else is simply not
+# matched, rather than being handed the characters of a glyph it does not have.
+#
+# The readings were established by lining the glyph stream of the pdf up
+# against an ocr of the same pages, each one recorded below with the word it
+# was read in.
+MANGAL_OUTLINES = { \
+    # the width variants of matra_i, which the font draws to the left of the \
+    # consonant they belong to \
+    '233a733e6b03a9a7': 'ि',                # gid 9, seen in वाहिनी \
+    '745fe5bd181e6cc3': 'ि',                # gid 24, seen in निम्नलिखित \
+    'e64b5d043ea51c85': 'ि',                # gid 26, seen in प्रादेशिक \
+    '6a77510666defc45': 'ि',                # gid 28, seen in निम्नलिखित \
+    'ff00bd70814fa8c8': 'ि',                # gid 31, seen in अधिकारियों \
+    'df9cda2ad9aa1d9b': 'ि',                # gid 33, seen in अधिकारियों \
+    'f4a20fa72af9f09b': 'ि',                # gid 81, seen in गोविन्दराज \
+    'bb9d7ee07e3e10d0': 'ि',                # gid 95, seen in ग्रनेडियर्स \
+    '8d8a9accdd8a6e7e': 'ि',                # gid 96, seen in बिहार \
+    '9d67d0f6f101bab9': 'ि',                # gid 103, seen in किशोर \
+    # the width variants of matra_ii \
+    '18f71f0bf42961ec': 'ी',                # gid 42, seen in सोलंकी \
+    'b9c2883268791fe8': 'ी',                # gid 56, seen in फरवरी \
+    # the half forms, the consonant and its halant drawn as one glyph \
+    '4d3220112544804c': 'म्',               # gid 15, seen in नवम्बर \
+    '94fbc6be8858a3a3': 'ष्',               # gid 21, seen in राष्ट्रपति \
+    '67ee8428d64f973b': 'न्',               # gid 40, seen in पदोन्नति \
+    'ef848c5e1d8722b2': 'क्',               # gid 63, seen in अक्टूबर \
+    '3da0a4696801a385': 'स्',               # gid 71, seen in अगस्त \
+    '8b86b3a561de9f6d': 'ब्',               # gid 75, seen in डब्ल्यू \
+    '8b987d39b172bb73': 'श्',               # gid 85, seen in घनश्याम \
+    '261ac6a6ad743b16': 'ड्',               # gid 87, seen in वालागड्डे \
+    'd79e3821cab531ef': 'त्',               # gid 91, seen in उत्तम \
+    '4f76f7ab7fde5b03': 'ज्',               # gid 98, seen in ज्योति \
+    'dad21a41912d1d3c': 'ण्',               # gid 100, seen in एण्ड \
+    '46c3c918364e13c9': 'च्',               # gid 112, seen in पच्चापन \
+    '2e7690bab3d4fb93': 'थ्',               # gid 115, seen in पृथ्वी \
+    '2e5b528112122ebd': 'ग्',               # gid 119, seen in भोनडग्गे \
+    'b4251e5faf4c6810': 'द्',               # gid 120, seen in द्वेदी \
+    'a8905cf229fac9e9': 'ह्',               # gid 121, seen in ब्रह्म \
+    'bb3012ff1fb05d86': 'ध्',               # gid 123, seen in उपाध्याय \
+    '47dd06fac6a101c4': 'क्ष्',             # gid 124, seen in लक्ष्मण \
+    # the glyphs the shaper made out of a whole cluster \
+    '53962e9d48c1e61a': 'ट्र',              # gid 22, seen in राष्ट्रपति \
+    'cda166ec7f48543e': 'प्र',              # gid 45, seen in प्रदान \
+    'b62c67cd69b449d8': 'द्र',              # gid 77, seen in सुरेन्द्र \
+    '929ba8f2772ebf69': 'प्प',              # gid 80, seen in कोनडाप्पा \
+    '4f08418e9b5afbe2': 'श्र',              # gid 83, seen in श्रीकान्त \
+    '914a0f0cb0945287': 'ग्र',              # gid 94, seen in ग्रनेडियर्स \
+    'e73330abe626649e': 'त्र',              # gid 101, seen in त्रिलोचन \
+    '01e9507d182e386b': 'क्र',              # gid 102, seen in चक्रधारा \
+    'e1e6473771b38f04': 'द्ध',              # gid 104, seen in सिद्धू \
+    'd8b5ec6855202b02': 'ट्ट',              # gid 105, seen in भट्ट \
+    '0abd7f1fa796d21b': 'ब्र',              # gid 109, seen in अब्राहम \
+    '2b2a2e17f2b9bfa0': 'द्द',              # gid 122, seen in योद्द \
+    # the reph, which the font draws after the whole syllable it sits on \
+    '231a9cfbb99c138f': 'र्',               # gid 39, seen in सहर्ष \
+    # the reph and the matra of the syllable it sits on, drawn as one glyph \
+    '9b014eadb17fd075': 'ीर्',              # gid 54, seen in आर्मी \
+    'e3f6f3fc3233e883': 'ेर्',              # gid 110, seen in कुर्रे \
+    # a matra and the anusvara of its syllable, drawn as one glyph \
+    '51337a819da041b0': 'ों',               # gid 35, seen in अधिकारियों \
+    '01bcb2133e589127': 'ैं',               # gid 46, seen in रैंक \
+    'f7c9a3a95b373c83': 'ें',               # gid 111, seen in वेंकटेश \
+    # a vowel and its anusvara, drawn as one glyph \
+    'b240fc4583c5ca08': 'ईं',               # gid 90, seen in ईंगलेश्वर \
+    # the ra with its matra_u, and the two letters of a name drawn as one \
+    '0b52abc5e77e9e39': 'रू',               # gid 86, seen in अरूण \
+    '79ff8103748e6385': 'ल्यू',             # gid 76, seen in डब्ल्यू \
+}
+
 BROKEN_FONTS = {'Arial Unicode MS': ARIAL_UNICODE_MS, \
-                'Nirmala UI'      : NIRMALA_UI}
+                'Nirmala UI'      : NIRMALA_UI,       \
+                'Mangal'          : MANGAL}
+
+# the glyphs to repair by what they draw rather than by their glyph id, for a
+# font whose subsets are renumbered - see MANGAL_OUTLINES above
+BROKEN_FONT_OUTLINES = {'Mangal': MANGAL_OUTLINES}
 
 # the font whose glyph ids a type3 font of a distilled gazette names its
 # glyphs after, see fix_type3_fonts below
@@ -128,7 +231,8 @@ TYPE3_GLYPH_FONT = 'Arial Unicode MS'
 # through this converter of indic2unicode and not through the one that is
 # named after the font, which is for the text of a pdf that was not repaired
 FONT_CONVERTERS = {'Arial Unicode MS': 'arialuni_glyphs', \
-                   'Nirmala UI'      : 'nirmalaui_glyphs'}
+                   'Nirmala UI'      : 'nirmalaui_glyphs', \
+                   'Mangal'          : 'mangal_glyphs'}
 
 # the styles of a family, which a pdf carries as fonts of their own named
 # "Nirmala UI,Bold" or "NirmalaUI-Bold"
@@ -149,6 +253,8 @@ def font_lookup_key(fontname):
 
 BROKEN_FONTS_BY_KEY    = {font_lookup_key(name): fixes \
                           for name, fixes in BROKEN_FONTS.items()}
+BROKEN_OUTLINES_BY_KEY = {font_lookup_key(name): fixes \
+                          for name, fixes in BROKEN_FONT_OUTLINES.items()}
 FONT_CONVERTERS_BY_KEY = {font_lookup_key(name): conv  \
                           for name, conv  in FONT_CONVERTERS.items()}
 
@@ -172,6 +278,11 @@ def get_glyph_fixes(fontname):
        None for every other font'''
     return BROKEN_FONTS_BY_KEY.get(font_lookup_key(fontname))
 
+def get_outline_fixes(fontname):
+    '''the glyphs to repair by their outline for a font whose subsets do not
+       number their glyphs alike, an empty dict for every other font'''
+    return BROKEN_OUTLINES_BY_KEY.get(font_lookup_key(fontname), {})
+
 def get_font_converter(fontname):
     '''the converter that puts the text of a repaired font in the order that
        unicode wants, None if there is none for it'''
@@ -187,6 +298,8 @@ class ToUnicodeFixer:
         # what the font program of a pdf font names its own glyphs, read
         # once per font
         self.seedcache   = {}
+        # the outline of a glyph of a pdf font, read once per glyph
+        self.sigcache    = {}
 
     def to_nfc(self, ustr):
         '''a string in the form unicode composes it in. A nukta consonant
@@ -452,6 +565,78 @@ class ToUnicodeFixer:
                               'font', num)
         return strings
 
+    def glyph_count(self, doc, xref):
+        '''how many glyphs the font program of a pdf font has.
+
+           Two subsets of one font number their glyphs alike when both keep
+           the glyph order of the font they were cut out of, and a subset
+           that does keep it counts all of that font's glyphs however few it
+           actually carries - the two styles of Nirmala UI in
+           test/test_pdfs/gazette1.pdf both count 4923. A subset that
+           renumbers what it kept counts only what it kept, so a difference
+           here says the two number their glyphs differently and neither can
+           be read through the other's ids: the Mangal of a 223221 gazette is
+           carried both as a subset of 886 glyphs and as one of 136.
+
+           Outlines cannot answer this. The bold of a family draws every
+           glyph differently from its regular and still numbers them alike,
+           so holding a donation to a matching outline would refuse exactly
+           the sharing that font_lookup_key folds the styles together for'''
+        font = self.open_font(doc, xref)
+        if font == None:
+            return None
+
+        try:
+            return font['maxp'].numGlyphs
+        except Exception as e:
+            self.logger.debug('Could not read the glyph count of the font ' \
+                              '%d: %s', xref, e)
+            return None
+
+    def glyph_signature(self, doc, xref, gid):
+        '''what the glyph of an id draws, as a signature of its outline.
+
+           Two subsets of one font number their glyphs alike only sometimes:
+           a subset that keeps the glyph ids of the font it came out of does,
+           one that renumbers what it kept does not, and nothing in the pdf
+           says which of the two a subset is. What a glyph draws is the same
+           either way, so it is the outline and not the id that says whether
+           the glyph of an id in one subset is the glyph of that id in
+           another. Composites are decomposed, since their components are
+           renumbered with everything else.
+
+           None for a glyph the font does not have, the empty string for one
+           it draws nothing for - a space is a space in every subset'''
+        cached = self.sigcache.get((xref, gid))
+        if cached != None:
+            return cached
+
+        font = self.open_font(doc, xref)
+        if font == None:
+            return None
+
+        try:
+            order = font.getGlyphOrder()
+            if gid < 0 or gid >= len(order):
+                return None
+
+            glyphset = font.getGlyphSet()
+            pen      = DecomposingRecordingPen(glyphset)
+            glyphset[order[gid]].draw(pen)
+
+            outline = [(op, tuple(tuple(round(c) for c in point)          \
+                                  for point in points if point != None))  \
+                       for op, points in pen.value]
+            sig = hashlib.sha1(repr(outline).encode()).hexdigest()[:16]   \
+                  if outline else ''
+        except Exception as e:
+            self.logger.debug('Could not read the outline of glyph %d of ' \
+                              'the font %d: %s', gid, xref, e)
+            return None
+
+        self.sigcache[(xref, gid)] = sig
+        return sig
+
     def glyph_strings(self, doc, xref, learnt = None):
         '''what every glyph of a font stands for, as a glyph id -> string
            dict, read out of the font itself and out of what the other
@@ -465,10 +650,20 @@ class ToUnicodeFixer:
         # a subset that draws a character only inside a conjunct keeps
         # neither a cmap entry nor a name for the glyph of that character,
         # and then nothing that is made out of it can be spelled out either.
-        # Another subset of the same font in the same document does name it,
-        # and a glyph id means the same glyph in every subset of one font
-        for gid, ustr in (learnt or {}).items():
-            strings.setdefault(gid, ustr)
+        # Another subset of the same font in the same document does name it.
+        #
+        # That only holds where the two subsets number their glyphs alike,
+        # though - see glyph_count. A producer that renumbers a subset gives
+        # the same id to another glyph entirely, and taking a string across
+        # such a pair hands this font the characters of glyphs it does not
+        # draw: the Mangal of a 223221 gazette is carried as a subset of 886
+        # glyphs that names 339 of them and as one of 136 that names none,
+        # and without this check the first hands the second its own digits
+        # and punctuation, turning a whole document into rubbish
+        count = self.glyph_count(doc, xref)
+        for gid, (ustr, donorcount) in (learnt or {}).items():
+            if count != None and count == donorcount:
+                strings.setdefault(gid, ustr)
 
         return self.expand_gsub(font, strings)
 
@@ -485,19 +680,23 @@ class ToUnicodeFixer:
 
             known = learnt.setdefault(key, {})
             for gid, ustr in self.glyph_seed_strings(doc, xref).items():
-                if known.get(gid, ustr) != ustr:
+                # the glyph count is carried along so that the subset this
+                # is handed to can tell whether the id means the same glyph
+                # there, see glyph_strings
+                seen = (ustr, self.glyph_count(doc, xref))
+                if known.get(gid, seen) != seen:
                     # two subsets that are named alike do not draw the same
                     # glyphs, so neither of them can be trusted for it
                     self.logger.warning('Subsets of %s disagree on glyph ' \
                                         '%d: %r and %r', fontname, gid, \
-                                        known[gid], ustr)
+                                        known[gid], seen)
                     known[gid] = None
                 else:
-                    known[gid] = ustr
+                    known[gid] = seen
 
         for key in learnt:
-            learnt[key] = {gid: ustr for gid, ustr in learnt[key].items() \
-                           if ustr != None}
+            learnt[key] = {gid: seen for gid, seen in learnt[key].items() \
+                           if seen != None}
 
         return learnt
 
@@ -517,7 +716,16 @@ class ToUnicodeFixer:
                     return False
         return True
 
-    def fix_font(self, doc, xref, fontname, encoding, glyphfixes, learnt = None):
+    def has_map_holes(self, table):
+        '''whether a ToUnicode map hands any of its glyphs no character at
+           all. A map is built to say what a glyph draws, so a <0000> in it
+           is not a character but the absence of an answer, and a font whose
+           map is full of them extracts as raw NULs rather than as the wrong
+           text'''
+        return any(ustr and set(ustr) == {'\x00'} for ustr in table.values())
+
+    def fix_font(self, doc, xref, fontname, encoding, glyphfixes, \
+                 learnt = None, outlinefixes = None):
         cmapxref = self.get_cmap_xref(doc, xref)
         if cmapxref == None:
             return 0
@@ -533,6 +741,25 @@ class ToUnicodeFixer:
         strings = self.glyph_strings(doc, xref, learnt)
 
         table = self.parse_cmap(doc, cmapxref)
+
+        # a font that is repaired from its outlines is one whose map hands a
+        # glyph no character at all. That hole is the fault the outline table
+        # was read for and the only one it can speak to: a subset of the same
+        # font that does describe its own glyphs - a cmap, a post, a GSUB -
+        # carries the other fault instead, the pairing that slips on the
+        # glyphs devanagari shaping moved, and this build repairs that one
+        # only in part. Repairing it in part is worse than not at all, since
+        # a map that is wrong in a way that happens to read correctly is then
+        # made wrong in a way that does not: the Mangal of
+        # test/test_pdfs/sebicirculars4.pdf draws बोर्ड out of a map that has
+        # the reph and the da the wrong way round, and repairing only the da
+        # turns it into बोडड. So such a font is left exactly as it is
+        if outlinefixes and not self.has_map_holes(table):
+            self.logger.debug('Font %d (%s) has no hole in its map, so it ' \
+                              'is not the one the outline table was read ' \
+                              'for and is left as it is', xref, fontname)
+            return 0
+
         fixed = {}
         num   = 0
         for code, ustr in table.items():
@@ -543,6 +770,11 @@ class ToUnicodeFixer:
             correct = strings.get(code)
             if correct == None:
                 correct = glyphfixes.get(code)
+            if correct == None and outlinefixes:
+                # a font whose subsets are renumbered, so the glyph is looked
+                # up by what it draws rather than by the number it has here
+                correct = outlinefixes.get( \
+                              self.glyph_signature(doc, xref, code))
 
             if correct != None and correct != ustr:
                 num += 1
@@ -773,6 +1005,7 @@ class ToUnicodeFixer:
         self.fixed_fonts = set()
         self.fontcache   = {}
         self.seedcache   = {}
+        self.sigcache    = {}
         learnt = self.learn_font_gids(doc, fonts)
 
         for xref in sorted(fonts):
@@ -783,7 +1016,8 @@ class ToUnicodeFixer:
                 continue
 
             numfixed = self.fix_font(doc, xref, fontname, encoding, glyphfixes,
-                                     learnt.get(font_lookup_key(basefont)))
+                                     learnt.get(font_lookup_key(basefont)),
+                                     get_outline_fixes(basefont))
             if numfixed:
                 self.fixed_fonts.add(basefont)
             num += numfixed
@@ -794,6 +1028,7 @@ class ToUnicodeFixer:
         # the font programs of a document are of no use once it is repaired
         self.fontcache = {}
         self.seedcache = {}
+        self.sigcache  = {}
 
         self.logger.info('Repaired %d glyphs in the fonts: %s', num, \
                          ', '.join(sorted(self.fixed_fonts)))

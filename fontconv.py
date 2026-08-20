@@ -1,5 +1,6 @@
 from indic2unicode.fonts import aryan2, surekh, chanakya, arialuni, \
-                                arialuni_glyphs, nirmalaui, nirmalaui_glyphs
+                                arialuni_glyphs, nirmalaui, nirmalaui_glyphs, \
+                                mangal_glyphs
 
 class FontConv:
     def __init__(self):
@@ -10,6 +11,7 @@ class FontConv:
         glyphsObj   = arialuni_glyphs.ArialUniGlyphs()
         nirmalaObj  = nirmalaui.NirmalaUI()
         nirglyphObj = nirmalaui_glyphs.NirmalaUIGlyphs()
+        mangalObj   = mangal_glyphs.MangalGlyphs()
         self.converters = { 
             'aryan2': aryanObj, 'divya':  aryanObj, 'surekh': surekhObj,
             'chanakya': chanakyaObj, 'krutidev': chanakyaObj,  
@@ -18,10 +20,20 @@ class FontConv:
             'Arial Unicode MS': arialuniObj,  'arialuni_glyphs': glyphsObj, 
             'nirmalaui': nirmalaObj, 'Nirmala UI': nirmalaObj, 
             'nirmalaui_glyphs': nirglyphObj, 
+            # no bare 'Mangal' key here, unlike the two fonts above: theirs
+            # name the lossy converters, which are for the text of a pdf that
+            # was never repaired, while mangal_glyphs only reorders text the
+            # repair already put right. A Mangal whose map is sound extracts
+            # correct text, and name matching it onto a reordering pass would
+            # turn निर्माण into नर्मिाण - so this converter is reached through
+            # get_repaired_font_res() alone, which names only the fonts that
+            # were actually repaired in this document
+            'mangal_glyphs': mangalObj, 
         }
 
         self.uniqfonts = ['aryan2', 'surekh', 'chanakya', 'arialuni', \
-                          'arialuni_glyphs', 'nirmalaui', 'nirmalaui_glyphs']
+                          'arialuni_glyphs', 'nirmalaui', 'nirmalaui_glyphs', \
+                          'mangal_glyphs']
  
     def to_unicode(self, fontname, text):
         return self.converters[fontname].to_unicode(text)
