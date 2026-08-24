@@ -23,7 +23,9 @@ supports Aryan2, Divya and Surekh fonts for devanagari script that is used by
 the LokSabha website for publishing debates. It also supports Chanakya, the
 ascii font of the Kruti Dev/DevLys family that the Gazette of India is
 published in, and Arial Unicode MS as well as Nirmala UI as they come out of
-the Gazette pdfs that are set in them.
+the Gazette pdfs that are set in them. Beyond devanagari it supports Tunga,
+the unicode kannada font that the Karnataka gazette is published in, as it
+comes out of those pdfs.
 
 MAIN IDEA
 
@@ -197,3 +199,70 @@ the matra is one of the tokens the reph jumps over on its way back, so
 निकटवर्ती is drawn as िनकटवतीर् and comes out whole all the same.
 
 
+
+A KANNADA FONT WHOSE MAP IS SOUND AND WHOSE ORDER IS NOT
+
+Tunga is the unicode kannada font that the Karnataka gazette is published
+in, and the pdfs that are set in it carry a ToUnicode map that is nearly
+sound: every glyph carries the characters it stands for. What is wrong with
+the text is the order, because the glyphs are stored in the order in which
+they are drawn and kannada draws a syllable as
+
+    base [first half of the matra] vattu(s) [length mark] [anusvara]
+
+while unicode wants the base, the vattus and then the whole matra. So a
+vattu comes out behind the matra of its syllable and spelled the other way
+round, the consonant before the virama rather than after it, and ಪ್ರಸ್ತಾವನೆ
+comes out as ಪರ್ಸಾತ್ವನೆ and ಸಲ್ಲಿಸಿದ as ಸಲಿಲ್ಸಿದ. The arkavattu is drawn on top of
+the syllable it belongs to and is stored behind the whole of it, so ಕರ್ನಾಟಕ
+comes out as ಕನಾರ್ಟಕ and ಸರ್ಕಾರದ as ಸಕಾರ್ರದ, which is the same journey the reph
+of devanagari makes.
+
+A two part matra comes out in its two parts - ೀ as ಿ + ೕ, ೇ as ೆ + ೕ, ೊ as
+ೆ + ೂ - and a vattu of that syllable stands between them, so ಶ್ರೀ comes out
+as ಶಿ + ರ್ + ೕ. Unicode has one character for each of these matras and NFC
+will not compose them, being composition exclusions, so fonts/kannada/tunga.py
+puts the halves back together itself.
+
+fonts/kannada/tunga.py reads every syllable of the text as a whole and writes
+it out again in the order unicode wants, rather than moving single tokens the
+way the devanagari fonts do: the distance a vattu would have to travel is
+not a number of tokens, it is however many matra glyphs its syllable has.
+
+WHAT THE TEXT OF A TUNGA PDF CANNOT SAY
+
+The map spells a vattu as its consonant and a virama, which is exactly what
+a dead consonant at the end of a word looks like, and it hands the
+arkavattu, the vattu of ra and a dead ra the same 'ರ್'. The pdf itself keeps
+all three apart - they are drawn from different glyphs - but the text does
+not, so the font has to guess. A vattu that a length mark follows is a vattu
+(ಶ್ರೀ), a 'C ್' behind a length mark is not a vattu of that syllable, since a
+vattu is drawn before that mark, and is a dead consonant (ಎಂಪ್ಲಾಯೀಸ್, ವೆಲ್ಫೇರ್)
+or the arkavattu of the syllable that follows (ನಿರ್ದೇಶನ), and a 'C ್' that a
+vowel carries is a dead consonant (ಆರ್). Everything else in the middle of a
+word is a vattu, kannada writing every virama between two consonants that
+way, and at the end of a word everything is a vattu but the few consonants
+that a kannada word is written to end with, ಸ ಶ ಥ ನ ಲ - ಎಸ್, ಲೋಕೇಶ್, ಮಂಜುನಾಥ್,
+ಅಸೋಸಿಯೇಷನ್ - while a doubled consonant is a vattu all the same, so ಗಳನ್ನು and
+ರಲ್ಲಿ come out whole.
+
+A 'ರ್' is read as the vattu of ra on the consonants that ra is most often
+written under, ಪ ಫ ಬ ಭ ತ ದ ಗ, and as the arkavattu everywhere else. ಕ takes
+either about as often, and there the matra of the syllable decides, the ರ್ಕ
+of ಸರ್ಕಾರ carrying one and the ಕ್ರ of ಕ್ರಮ not. Both readings are ordinary
+kannada, so what is left of this is a real loss: ಆಶ್ರಯ comes out as ಆರ್ಶಯ and
+ತರ್ಕ as ತಕ್ರ. A word that is written with a dead consonant in the middle,
+which is an english loan every time, is lost the same way: ವೆಲ್ಫೇರ್ comes out
+as ವ್ಲೆಫೇರ್ where the pdf leaves no space between the two halves of it.
+
+WHAT THE EXTRACTOR LOSES BEFORE ANY OF THIS
+
+Tunga draws a consonant and the matra i or the matra o of it in one glyph
+and the maps of these pdfs have no entry at all for a number of those
+ligatures. An extractor that falls back on the cid of a glyph it has no
+string for, e.g. pymupdf, hands them out as the character of that cid, which
+is a latin letter here because the cids are the glyph ids of Tunga itself -
+ವಿ comes out as U+013B. Those cids are tokens of this font, so ವಿಷಯ comes back
+whole. An extractor that drops such a glyph, e.g. pdftotext, loses them
+before the converter ever sees the text, and there ವಿಷಯ is ಷಯ for good and
+ನಡವಳಿಗಳು is ನಡವ ಗಳು.
