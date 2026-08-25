@@ -130,11 +130,16 @@ class Nudi(BaseFont):
         # so that they are not taken for the head of one
         self.emptytokens = set(['INHERENT_A', 'SPACER'])
 
-        self.vattutokens = set()
+        self.vattutokens     = set()
+        self.consonanttokens = set()
         for obj in self.langobjs:
             for tokenName in obj.get_tokens():
                 if tokenName.startswith('VATTU_'):
                     self.vattutokens.add(tokenName)
+
+                ustr = self.token_to_unicode(tokenName)
+                if ustr and kannada.is_consonant(ustr):
+                    self.consonanttokens.add(tokenName)
 
     def to_unicode(self, data):
         tokentypes = self.tokenize(data)
@@ -142,6 +147,7 @@ class Nudi(BaseFont):
         tokentypes = self.compose_tokens(tokentypes)
         tokentypes = [t for t in tokentypes if t not in self.emptytokens]
         tokentypes = self.reorder_clusters(tokentypes)
+        tokentypes = self.separate_dead_consonants(tokentypes)
 
         return self.tokens_to_unicode(tokentypes)
 
@@ -182,6 +188,25 @@ class Nudi(BaseFont):
             out.extend(vattus)
             out.extend(self.join_matras(matras))
             out.extend(signs)
+        return out
+
+    def separate_dead_consonants(self, tokentypes):
+        """a virama between two consonants binds them into a conjunct in
+           unicode, and in this font it does not: a conjunct is written
+           with the vattu glyph of its second consonant and the virama key
+           is the one that ends a word or an abbreviation. ¦J¸ï¹ is ಪಿಎಸ್‌ಸಿ
+           and not ಪಿಎಸ್ಸಿ, ¥Á¸ï¥ÉÆÃmïð is ಪಾಸ್‌ಪೋರ್ಟ್ and not ಪಾಸ್ಪೋರ್ಟ್, so
+           a zero width non joiner is put in to keep the two letters apart.
+           The virama of a vattu or of the arkavattu is part of that token
+           and never one of these, and a virama that no consonant follows
+           needs nothing: it already ends the word it is written in
+        """
+        out = []
+        for i, token in enumerate(tokentypes):
+            out.append(token)
+            if token == 'VIRAMA' and i + 1 < len(tokentypes) and \
+                    tokentypes[i + 1] in self.consonanttokens:
+                out.append('ZWNJ')
         return out
 
     def join_matras(self, matras):

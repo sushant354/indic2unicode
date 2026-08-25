@@ -285,6 +285,10 @@ class Nudi(BaseLang):
             'INHERENT_A'       : '',         \
             'SPACER'           : '',         \
                                              \
+            # no key of the font draws this one. It is put in behind a     \
+            # virama that a consonant follows, see fonts/kannada/nudi.py   \
+            'ZWNJ'             : '\u200c',   \
+                                             \
             # the aspiration stroke, see 3. above. It is put back together \
             # with the letter it sits on in fonts/kannada/nudi.py and is   \
             # no character of its own if it ever stands alone              \

@@ -310,9 +310,20 @@ same way and fonts/kannada/tunga.py has to guess which of the three was drawn.
 Nudi has a glyph of its own for every vattu, another for the arkavattu and
 another for the virama, and they are different keys, so nothing here has to
 guess: ಕ್ರ, ರ್ಕ and ಕ್ ರ are three different strings and ಆಶ್ರಯ and ತರ್ಕ, which
-Tunga loses, come out whole. What is lost instead is everything the keyboard
-never pressed. The pdfs this was built from draw 132 of the glyphs of the font
-and nothing says what the rest of them are. The vattus are laid out in the
+Tunga loses, come out whole.
+
+That same split is why a virama of this font sometimes needs a zero width non
+joiner behind it. A virama between two consonants binds them into a conjunct
+in unicode, and in this font it does not - a conjunct is written with the
+vattu glyph of its second consonant, and the virama key is the one that ends a
+word or an abbreviation. So '¦J¸ï¹' is ಪಿಎಸ್‌ಸಿ and not ಪಿಎಸ್ಸಿ and '¥Á¸ï¥ÉÆÃmïð'
+is ಪಾಸ್‌ಪೋರ್ಟ್ and not ಪಾಸ್ಪೋರ್ಟ್, and fonts/kannada/nudi.py puts the joiner in
+to keep the two letters apart. A virama that no consonant follows needs
+nothing, it already ends the word it is written in.
+
+What is lost instead is everything the keyboard never pressed. The pdfs this
+was built from draw 132 of the glyphs of the font and nothing says what the
+rest of them are. The vattus are laid out in the
 order of the alphabet over an unbroken run of keys and the twelve that these
 documents never use are read off that run, and so are the three vowels they
 never use, the thirteen vowels filling thirteen keys in that same order. The
