@@ -23,10 +23,10 @@ supports Aryan2, Divya and Surekh fonts for devanagari script that is used by
 the LokSabha website for publishing debates. It also supports Chanakya, the
 ascii font of the Kruti Dev/DevLys family that the Gazette of India is
 published in, and Arial Unicode MS as well as Nirmala UI as they come out of
-the Gazette pdfs that are set in them. Beyond devanagari it supports two
+the Gazette pdfs that are set in them. Beyond devanagari it supports three
 kannada fonts that the Karnataka gazette is published in, Tunga, which is a
-unicode font, and Nudi, which is an ascii one, as they come out of those
-pdfs.
+unicode font, and Nudi and Aklite, which are 8-bit ones, as they come out of
+those pdfs.
 
 MAIN IDEA
 
@@ -337,3 +337,57 @@ The weights of Nudi differ only in what the digit keys draw. The roman ones
 the kannada digits, so the 15 on the cover of a gazette is ೧೫ - which is why
 there are two converters, 'nudi' and 'nudi_kannada_digits', for one font.
 
+
+AN 8-BIT KANNADA FONT WHOSE GLYPHS ARE NAMED TWO DIFFERENT WAYS
+
+AkliteKndIpsita is the display font that the masthead of the Karnataka
+gazette - ಕರ್ನಾಟಕ ರಾಜ್ಯಪತ್ರ, drawn as an outlined title across the top of the
+front page - is set in. It is an 8-bit font like Nudi, so the text of such a
+pdf is the keys the typist pressed rather than any kannada, and its glyphs
+are the pieces of a syllable spelled in the order they are drawn,
+
+    base [head stroke] [matra] vattu(s) [arkavattu]
+
+so fonts/kannada/aklite.py reads a syllable as a whole and writes it out the
+way unicode wants it, the arkavattu in front of the base it sits on and the
+matra behind the vattus, exactly as fonts/kannada/nudi.py does. The head
+stroke of a consonant that carries the vowel a is a glyph of its own here
+too - ಕ is the ka glyph and that stroke - while ಟ, which kannada writes no
+head stroke on, is the letter alone.
+
+What is peculiar to this font is that the same glyph comes out of two of
+these pdfs as two different characters. The glyphs of an 8-bit font sit on
+the bytes of a latin table and carry the glyph names of whatever characters
+live there, and those names say nothing about what is drawn; the byte 0xC2
+draws ನ, and one producer names that glyph the macroman way (/logicalnot)
+while the other names it the windows way (/Acircumflex), so an extractor
+reads it back out as '¬' from the one pdf and as 'Â' from the other. Every
+one of the glyphs sits on the same byte in both.
+
+The glyph table of fonts/kannada/aklite.py is therefore keyed by the byte,
+and a lexer is built over each of the two conventions. pick_lexer() chooses
+between them for each run of text, by how many of the run's characters each
+convention has a glyph for - a document is written by one producer and never
+mixes them. U+00C2 is the only character that means anything under both, the
+byte 0xE5 read the macroman way (the vattu of ya) and the byte 0xC2 read the
+windows way (ನ), so a run made of nothing but that character and spaces ties,
+and is read the windows way, where it is a letter that can stand on its own
+rather than a vattu with no consonant in front of it.
+
+WHAT IS NOT KNOWN ABOUT AKLITE
+
+The pdfs this was built from draw thirteen glyphs of the font, the ones the
+masthead is written with, and nothing in them says what the rest of it draws:
+the subsets carry no other glyph, the encoding names no other byte, and the
+ToUnicode map of the one pdf that has a map is the same list of latin glyph
+names again. The thirteen were identified by rendering the outlines the
+subset itself carries, one glyph at a time, and lining them up against an OCR
+of the same region of the page (tesseract -l eng+kan). A byte outside them is
+reported and dropped.
+
+The masthead is drawn twice over in some of these pdfs, once for the outline
+and once for the fill, and a pdf hands the overlapping pieces out as runs of
+their own - so a run can begin in the middle of a syllable. A matra or a
+vattu that starts one is written out where it stands rather than dropped, and
+a character that is no glyph of the font at all heads no syllable, so the
+arkavattu of the piece that follows a newline is not carried back across it.

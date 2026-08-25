@@ -349,3 +349,20 @@ class Nudi(BaseLang):
             self.conjunct_tokens[consonant + '_E'] = [consonant, 'MATRA_E']
             self.conjunct_tokens[consonant + '_O'] = [consonant, 'MATRA_E', \
                                                       'MATRA_UU']
+
+class Aklite(BaseLang):
+    '''the tokens that the text of an Aklite document carries beyond the
+       kannada of it.
+
+       Aklite is an 8-bit display font like Nudi, so the head stroke of a
+       consonant that carries the vowel a is a glyph of its own there too -
+       it draws a part of a letter and stands for no character, ಕ being the
+       ka glyph and that stroke while ಟ, which kannada writes no head
+       stroke on, is the letter alone. See fonts/kannada/aklite.py
+    '''
+    def __init__(self):
+        BaseLang.__init__(self)
+
+        self.tokendict = {\
+            'INHERENT_A'       : '',         \
+        }

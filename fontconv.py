@@ -1,7 +1,7 @@
 from indic2unicode.fonts import aryan2, surekh, chanakya, arialuni, \
                                 arialuni_glyphs, nirmalaui, nirmalaui_glyphs, \
                                 mangal_glyphs
-from indic2unicode.fonts.kannada import tunga, nudi
+from indic2unicode.fonts.kannada import tunga, nudi, aklite
 
 class FontConv:
     def __init__(self):
@@ -16,6 +16,7 @@ class FontConv:
         tungaObj    = tunga.Tunga()
         nudiObj     = nudi.Nudi()
         nudikObj    = nudi.NudiKannadaDigits()
+        akliteObj   = aklite.Aklite()
         self.converters = { 
             'aryan2': aryanObj, 'divya':  aryanObj, 'surekh': surekhObj,
             'chanakya': chanakyaObj, 'krutidev': chanakyaObj,  
@@ -41,12 +42,16 @@ class FontConv:
             'Nudi05e': nudiObj,
             'nudi_kannada_digits': nudikObj, 'Nudi01k': nudikObj,
             'Nudi01k,Bold': nudikObj,
+            # the masthead of the Karnataka gazette. An 8-bit font like
+            # Nudi, and named after nothing but itself in the pdfs that
+            # carry it, so the whole pdf font name is a key here too
+            'aklite': akliteObj, 'AkliteKndIpsita': akliteObj,
         }
 
         self.uniqfonts = ['aryan2', 'surekh', 'chanakya', 'arialuni', \
                           'arialuni_glyphs', 'nirmalaui', 'nirmalaui_glyphs', \
                           'mangal_glyphs', 'tunga', 'nudi', \
-                          'nudi_kannada_digits']
+                          'nudi_kannada_digits', 'aklite']
  
     def to_unicode(self, fontname, text):
         return self.converters[fontname].to_unicode(text)
