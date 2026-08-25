@@ -240,3 +240,97 @@ class Tunga(BaseLang):
             'LIG_PA_O'    : ['PA',  'MATRA_O'], \
             'LIG_YA_O'    : ['YA',  'MATRA_O'], \
         }
+
+class Nudi(BaseLang):
+    '''the tokens that the text of a Nudi document carries beyond the
+       kannada of it, and the glyphs of the font that draw more than one
+       character or less than a whole one.
+
+       Nudi is an ascii font: every glyph of it sits on a key of the
+       keyboard and the text of a pdf that is set in it is the sequence of
+       keys the typist pressed, so what the glyphs draw is a syllable of
+       kannada and what they say is latin. The font has a glyph for the
+       consonant, one for every vowel sign of it and one for every vattu,
+       and a syllable is spelled out of those in the order they are drawn.
+
+       Three kinds of glyph are neither a character of their own nor a
+       whole one:
+
+       1. INHERENT_A, the glyph a consonant that carries the vowel a is
+          written with. It draws the head stroke of the consonant it
+          follows, which is already part of the letter in unicode, so it
+          stands for no character at all - 'PÀ' is ಕ and 'Pï' is ಕ್.
+       2. SPACER, a glyph of no width that the typist puts between two
+          vattus that would otherwise be drawn into each other. It stands
+          for no character either, ನಿರ್ಲಕ್ಷ್ಯತೆ being typed '¤®ðPÀëöåvÉ'.
+       3. ASPIRATION and ASPIRATION_I, the stroke that turns ಪ into ಫ, ಬ
+          into ಭ and ದ into ಧ. The font draws it as a glyph of its own on
+          top of the letter, so ಫ is typed '¥s' and ಫಿ is '¦ü', and the
+          two are put back together in fonts/kannada/nudi.py
+
+       The conjunct tokens below are the other way round: one glyph of the
+       font draws a whole syllable. Every consonant that changes shape when
+       the vowel sign i replaces its head stroke has a glyph of its own for
+       that syllable, so ಕಿ is one glyph and not two, and ಮ and ಯ are drawn
+       out of pieces that are shared with other letters - ಮ is the ವ glyph
+       and the tail that also draws the vowel sign u, ಯ is the anusvara
+       glyph, a stem and that same tail
+    '''
+    def __init__(self):
+        BaseLang.__init__(self)
+
+        self.tokendict = {\
+            # the two glyphs that draw a part of a letter rather than a  \
+            # letter, see 1. and 2. above                                \
+            'INHERENT_A'       : '',         \
+            'SPACER'           : '',         \
+                                             \
+            # the aspiration stroke, see 3. above. It is put back together \
+            # with the letter it sits on in fonts/kannada/nudi.py and is   \
+            # no character of its own if it ever stands alone              \
+            'ASPIRATION'       : '',         \
+            'ASPIRATION_I'     : '',         \
+                                             \
+            # punctuation of the document that has no kannada token \
+            'AMPERSAND'        : '&',        \
+            'APOSTROPHE'       : "'",        \
+            'UNDERSCORE'       : '_',        \
+            'LSQUOTE'          : '‘',   \
+            'RSQUOTE'          : '’',   \
+            'LDQUOTE'          : '“',   \
+            'RDQUOTE'          : '”',   \
+            # pdftotext ends a page with a form feed, which is text of the \
+            # document rather than a glyph of the font                     \
+            'FORMFEED'         : '\f',       \
+        }
+
+        # the latin digits, which the roman weight of Nudi keeps on the
+        # digit keys. The kannada weight draws the kannada digits there
+        # instead, see fonts/kannada/nudi.py
+        digitnames = ['ZERO', 'ONE', 'TWO', 'THREE', 'FOUR', 'FIVE', 'SIX', \
+                      'SEVEN', 'EIGHT', 'NINE']
+        for digit, name in enumerate(digitnames):
+            self.tokendict['ASCII_' + name] = '%d' % digit
+
+        # the glyphs that draw a consonant and the vowel sign i of it in
+        # one, i.e. every consonant whose head stroke that sign replaces.
+        # ಣ is not one of them: it keeps its head stroke and the sign is a
+        # glyph of its own there, ಣಿ being 'tÂ'
+        ivowels = ['KA', 'KHA', 'GA', 'GHA', 'CA', 'CHA', 'JA', 'TTA',    \
+                   'DDA', 'TA', 'THA', 'DA', 'NA', 'PA', 'BA', 'MA', 'YA', \
+                   'RA', 'LA', 'VA', 'SHA', 'SSA', 'SA', 'HA', 'LLA']
+
+        self.conjunct_tokens = {}
+        for consonant in ivowels:
+            self.conjunct_tokens[consonant + '_I'] = [consonant, 'MATRA_I']
+
+        # ma and ya are drawn out of pieces, and the piece that ends them
+        # is the same glyph that draws the vowel sign u. A vowel sign that
+        # is drawn in front of that piece therefore sits inside the letter
+        # rather than behind it, so ಮೆ is one token here and not two. The
+        # second half of a two part vowel sign follows as it always does,
+        # ಮೇ being 'ªÉÄ' and the length mark
+        for consonant in ['MA', 'YA']:
+            self.conjunct_tokens[consonant + '_E'] = [consonant, 'MATRA_E']
+            self.conjunct_tokens[consonant + '_O'] = [consonant, 'MATRA_E', \
+                                                      'MATRA_UU']

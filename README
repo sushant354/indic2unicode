@@ -23,9 +23,10 @@ supports Aryan2, Divya and Surekh fonts for devanagari script that is used by
 the LokSabha website for publishing debates. It also supports Chanakya, the
 ascii font of the Kruti Dev/DevLys family that the Gazette of India is
 published in, and Arial Unicode MS as well as Nirmala UI as they come out of
-the Gazette pdfs that are set in them. Beyond devanagari it supports Tunga,
-the unicode kannada font that the Karnataka gazette is published in, as it
-comes out of those pdfs.
+the Gazette pdfs that are set in them. Beyond devanagari it supports two
+kannada fonts that the Karnataka gazette is published in, Tunga, which is a
+unicode font, and Nudi, which is an ascii one, as they come out of those
+pdfs.
 
 MAIN IDEA
 
@@ -266,3 +267,62 @@ is a latin letter here because the cids are the glyph ids of Tunga itself -
 whole. An extractor that drops such a glyph, e.g. pdftotext, loses them
 before the converter ever sees the text, and there ವಿಷಯ is ಷಯ for good and
 ನಡವಳಿಗಳು is ನಡವ ಗಳು.
+
+
+AN ASCII KANNADA FONT
+
+Nudi is the ascii kannada font family that the Karnataka gazette is published
+in, and an ascii font stores no kannada at all: every glyph of it sits on a
+key of the keyboard, so what comes out of the pdf is the sequence of keys the
+typist pressed, read as latin1. ಸಂಪುಟ comes out as '¸ÀA¥ÀÄl' and ಕರ್ನಾಟಕ as
+'PÀ£ÁðlPÀ'. The glyphs are the pieces a syllable of kannada is drawn out of
+and the keys spell those pieces in the order they are drawn, which is the
+order that kannada writes them in and that Tunga stores them in as well:
+
+    [arkavattu of the syllable before] base [first half of the matra]
+    vattu(s) [length mark] [signs] [arkavattu]
+
+so fonts/kannada/nudi.py reads every syllable as a whole and writes it out
+again the way unicode wants it, the arkavattu in front of the base it sits on
+and the whole matra behind the vattus, exactly as fonts/kannada/tunga.py does.
+
+WHAT THE PIECES OF A NUDI SYLLABLE ARE
+
+A consonant that carries the vowel a is written with the glyph of the letter
+and a mark that draws its head stroke, which is part of the letter in unicode
+and no character of its own, so 'PÀ' is ಕ while 'Pï' - the same letter and the
+virama - is ಕ್. A consonant that the vowel sign i replaces the head stroke of
+is one glyph and not two, ಕಿ being 'Q'. ಫ, ಭ and ಧ are ಪ, ಬ and ದ and a stroke
+on top of them that the font draws as a glyph of its own, so ಫ is '¥s' and ಫಿ
+is '¦ü', the letter under the stroke being a different glyph there. ಮ is the ವ
+glyph and a tail, and ಯ is the anusvara glyph, a stem and that same tail; the
+tail is also the glyph that draws the vowel sign u, so a vowel sign of ಮ or ಯ
+that is drawn in front of the tail sits inside the letter and ಮ is 'ªÀÄ' while
+ಮೆ is 'ªÉÄ'. ವ takes a second glyph for its own vowel sign u so that ವು and ಮ
+stay apart, 'ªÀÅ' against 'ªÀÄ'. Six letters - ಖ ಜ ಟ ಣ ಬ ಲ - take a second
+glyph for the shape they have in front of a matra that changes it, ಖ being 'R'
+at the end of a word and 'S' in ಖೆ.
+
+WHAT AN ASCII FONT SAYS THAT A UNICODE FONT DOES NOT
+
+The text of a Tunga pdf spells a vattu, a dead consonant and the arkavattu the
+same way and fonts/kannada/tunga.py has to guess which of the three was drawn.
+Nudi has a glyph of its own for every vattu, another for the arkavattu and
+another for the virama, and they are different keys, so nothing here has to
+guess: ಕ್ರ, ರ್ಕ and ಕ್ ರ are three different strings and ಆಶ್ರಯ and ತರ್ಕ, which
+Tunga loses, come out whole. What is lost instead is everything the keyboard
+never pressed. The pdfs this was built from draw 132 of the glyphs of the font
+and nothing says what the rest of them are. The vattus are laid out in the
+order of the alphabet over an unbroken run of keys and the twelve that these
+documents never use are read off that run, and so are the three vowels they
+never use, the thirteen vowels filling thirteen keys in that same order. The
+letters are laid out in no order that holds, so a key that no document here
+presses has a token only where its neighbours leave one reading open, and what
+is left over is reported and dropped: ಝ, ಞ, ಢ, ಱ and ೞ have no token, nor does
+the vowel sign i of ಙ, ಠ and ಢ.
+
+The weights of Nudi differ only in what the digit keys draw. The roman ones
+(Nudi01e, Nudi05e) draw the latin digits and the kannada one (Nudi01k) draws
+the kannada digits, so the 15 on the cover of a gazette is ೧೫ - which is why
+there are two converters, 'nudi' and 'nudi_kannada_digits', for one font.
+

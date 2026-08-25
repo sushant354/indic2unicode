@@ -1,7 +1,7 @@
 from indic2unicode.fonts import aryan2, surekh, chanakya, arialuni, \
                                 arialuni_glyphs, nirmalaui, nirmalaui_glyphs, \
                                 mangal_glyphs
-from indic2unicode.fonts.kannada import tunga
+from indic2unicode.fonts.kannada import tunga, nudi
 
 class FontConv:
     def __init__(self):
@@ -14,6 +14,8 @@ class FontConv:
         nirglyphObj = nirmalaui_glyphs.NirmalaUIGlyphs()
         mangalObj   = mangal_glyphs.MangalGlyphs()
         tungaObj    = tunga.Tunga()
+        nudiObj     = nudi.Nudi()
+        nudikObj    = nudi.NudiKannadaDigits()
         self.converters = { 
             'aryan2': aryanObj, 'divya':  aryanObj, 'surekh': surekhObj,
             'chanakya': chanakyaObj, 'krutidev': chanakyaObj,  
@@ -32,11 +34,19 @@ class FontConv:
             # were actually repaired in this document
             'mangal_glyphs': mangalObj,
             'tunga': tungaObj, 'Tunga': tungaObj, 'Tunga-Bold': tungaObj,
+            # the weights of Nudi differ only in what the digit keys draw,
+            # the roman ones the latin digits and the kannada ones the
+            # kannada digits, so the 15 on the cover of a gazette is ೧೫
+            'nudi': nudiObj, 'Nudi01e': nudiObj, 'Nudi01e,Bold': nudiObj,
+            'Nudi05e': nudiObj,
+            'nudi_kannada_digits': nudikObj, 'Nudi01k': nudikObj,
+            'Nudi01k,Bold': nudikObj,
         }
 
         self.uniqfonts = ['aryan2', 'surekh', 'chanakya', 'arialuni', \
                           'arialuni_glyphs', 'nirmalaui', 'nirmalaui_glyphs', \
-                          'mangal_glyphs', 'tunga']
+                          'mangal_glyphs', 'tunga', 'nudi', \
+                          'nudi_kannada_digits']
  
     def to_unicode(self, fontname, text):
         return self.converters[fontname].to_unicode(text)
