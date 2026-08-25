@@ -55,6 +55,8 @@ import pymupdf
 from fontTools.pens.recordingPen import DecomposingRecordingPen
 from fontTools.ttLib import TTFont
 
+from indic2unicode.langs import kannada
+
 # the glyphs that the shaper made. They have no name of their own in the
 # font, so the string of every one of them is repaired by hand. The string
 # that the broken map hands such a glyph is the character it happened to be
@@ -120,6 +122,108 @@ ARIAL_UNICODE_MS = { \
     7397: 'ष्ट',  \
     7398: 'ष्ट्र', \
 }
+
+# THE KANNADA OF THE SAME FONT
+#
+# A Karnataka gazette is set in Arial Unicode MS too, and its map is broken a
+# fourth way: it carries an entry for the letters of the block and for a
+# handful of the forms the shaper made, and none at all for the rest. Every
+# consonant that a vowel sign i or e was drawn into, every plain consonant
+# that a vattu sits under, ksha and jna and the vattus of ma and ya come out
+# as (cid:8243) and the like - 17,360 glyphs of the 69 page gazette this
+# table was read from, one in every seven.
+#
+# The font lays these forms out in blocks, one glyph per consonant in the
+# order of the unicode block, which is what makes them a table that can be
+# written down rather than a list of a few hundred readings: the vattus run
+# from 8136, the plain consonants from 8174, the dead consonants from 8206,
+# the vowel sign i forms from 8243 and the vowel sign e forms from 8275. The
+# blocks of the plain consonant and of the two vowel signs leave out nga,
+# nya and rra, the three letters kannada writes none of these forms of, and
+# the two blocks that carry a virama do not. Every anchor the document's own
+# map does carry - 8136 ka, 8162 ra, 8169 sa, 8174 ka, 8206 ka, 8232 ra,
+# 8243 ka, 8275 ka - falls where the blocks put it, and the glyphs of the
+# blocks were read off the outlines of the subset to check it.
+#
+# A vattu is spelled here as the virama and its consonant, which is the
+# order unicode writes a subjoined consonant in and the order the glyph
+# really stands for, while a dead consonant is spelled the other way round.
+# That is what keeps the two apart: the map of the pdf spells both of them
+# 'ಟ್' and fonts/kannada/tunga.py has to guess between them, while this
+# repair hands fonts/kannada/arialuni.py a text that says which is which.
+# The virama of a dead consonant is the virama of the whole cluster, so it
+# still has to move behind the vattus that follow it, which is a move of the
+# order and not of the reading and is done in that converter
+
+KANNADA_VIRAMA = kannada.KannadaUnicode().tokendict['VIRAMA']
+
+# every kannada consonant in the order of the unicode block, ka through ha
+KANNADA_CONSONANTS = [chr(code) for code in range(0x0c95, 0x0cba) \
+                                if code not in (0x0ca9, 0x0cb4)]
+
+# the same, without the three that the blocks below leave out
+KANNADA_COMMON_CONSONANTS = [char for char in KANNADA_CONSONANTS \
+                             if char not in ('ಙ', 'ಞ', 'ಱ')]
+
+def kannada_block(gid, consonants, prefix = '', suffix = ''):
+    '''a block of the font, one glyph per consonant in the order of the
+       unicode block, drawn with the same mark before or after each of them'''
+    return {gid + i: prefix + char + suffix \
+            for i, char in enumerate(consonants)}
+
+ARIAL_UNICODE_MS_KANNADA = { \
+    # the arkavattu, the ra that is drawn as a mark on top of the consonant
+    # that follows it and is stored behind the whole syllable it sits on.
+    # It is spelled like a dead ra and the font draws the two with glyphs of
+    # their own - 8135 and 8232 - so it carries the mark that says which of
+    # the two it is, see langs/kannada.ARKAVATTU_MARK. Both of them stand at
+    # the end of a word in the drawn order, ಅರ್ಥ as ಅಥರ್ and ಡೈರೆಕ್ಟರ್ as
+    # ಡೈರೆಕ್ಟರ್, so nothing in the text around them tells them apart \
+    8135: 'ರ್' + kannada.ARKAVATTU_MARK, \
+}
+# the vattus, ka through ha, spelled the way unicode writes them
+ARIAL_UNICODE_MS_KANNADA.update(kannada_block(8136, KANNADA_CONSONANTS, \
+                                              prefix = KANNADA_VIRAMA))
+# the plain consonants, the form the font draws one in when a vattu or a
+# vowel sign that is a glyph of its own is drawn onto it
+ARIAL_UNICODE_MS_KANNADA.update(kannada_block(8174, KANNADA_COMMON_CONSONANTS))
+# the dead consonants, the consonant and the virama of its cluster
+ARIAL_UNICODE_MS_KANNADA.update(kannada_block(8206, KANNADA_CONSONANTS, \
+                                              suffix = KANNADA_VIRAMA))
+# the consonants that the vowel sign i and the vowel sign e are drawn into.
+# The second half of a two part sign - ee, ii, ai, o, oo - is a glyph of its
+# own and follows, so ಕೀ is the ಕಿ of this block and the length mark
+ARIAL_UNICODE_MS_KANNADA.update(kannada_block(8243, KANNADA_COMMON_CONSONANTS, \
+                                              suffix = 'ಿ'))
+ARIAL_UNICODE_MS_KANNADA.update(kannada_block(8275, KANNADA_COMMON_CONSONANTS, \
+                                              suffix = 'ೆ'))
+ARIAL_UNICODE_MS_KANNADA.update({ \
+    # the vowel signs u and uu where they stand on their own \
+    8307: 'ು', \
+    8308: 'ೂ', \
+    # ma and ya end in the same stroke the vowel sign u is drawn with, so
+    # the sign o of them is drawn into the letter and is one glyph \
+    8309: 'ಮೊ', \
+    8310: 'ಯೊ', \
+    # the two clusters kannada writes as a letter of their own. Each of them
+    # has a form with a headstroke, for a syllable that carries a vowel sign
+    # drawn beside it, and one without \
+    8319: 'ಕ್ಷ', \
+    8320: 'ಕ್ಷ', \
+    8322: 'ಕ್ಷಿ', \
+    8323: 'ಕ್ಷೆ', \
+    8324: 'ಜ್ಞ', \
+    8325: 'ಜ್ಞ', \
+})
+
+# 8311 through 8318 are ligatures of a consonant and the vattu of ra that no
+# page of that gazette draws, so there is nothing to read them off but the
+# map that is broken - it spells 8312 'ಪ್ರ್' and 8315 'ಟ್ರ್', a virama more
+# than either can stand for. They are left as the pdf has them rather than
+# guessed at: a glyph left alone loses the improvement, a glyph read wrongly
+# destroys the text around it
+
+ARIAL_UNICODE_MS.update(ARIAL_UNICODE_MS_KANNADA)
 
 # Nirmala UI needs no glyph repaired by hand: the subsets of it that these
 # gazettes carry keep the GSUB of the font, so every glyph the shaper made is
@@ -782,8 +886,31 @@ class ToUnicodeFixer:
                                   xref, code, ustr, correct)
             fixed[code] = correct if correct != None else ustr
 
+        num += self.add_missing_glyphs(doc, xref, fixed, glyphfixes)
+
         if num:
             doc.update_stream(cmapxref, self.build_cmap(fixed), compress = True)
+        return num
+
+    def add_missing_glyphs(self, doc, xref, fixed, glyphfixes):
+        '''put back the glyphs the map has no entry for at all. A map that is
+           merely wrong hands every glyph the wrong character and is repaired
+           by walking it, but the kannada map of Arial Unicode MS is short
+           instead: it names the letters of the block and leaves out the
+           forms the shaper made, so a seventh of the text of a Karnataka
+           gazette extracts as (cid:8243) and the like and there is no entry
+           to walk. Only a glyph the hand table has a reading for is added,
+           and only one the subset really carries, so this can add nothing
+           that was not read off that font'''
+        count = self.glyph_count(doc, xref)
+        num   = 0
+        for code, correct in glyphfixes.items():
+            if code in fixed or (count != None and code >= count):
+                continue
+            fixed[code] = correct
+            num += 1
+            self.logger.debug('Font %d glyph %d: no entry -> %r', \
+                              xref, code, correct)
         return num
 
     # ------------------------------------------------------------------

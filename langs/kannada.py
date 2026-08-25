@@ -2,6 +2,17 @@ import string
 
 from .baselang import BaseLang
 
+# The arkavattu - the ra of a cluster, written as a mark on top of the
+# consonant that follows it - is spelled 'ರ್' like a dead ra, and a font
+# draws the two with different glyphs. A pdf whose ToUnicode map has been
+# repaired by tools/fix_tounicode.py keeps them apart by writing this after
+# the arkavattu: unicode writes a virama and a zero width joiner for the
+# half form of a consonant, which is what that glyph draws, so the mark says
+# what the glyph is rather than standing for anything of its own and is
+# dropped again once the syllable has been put in order. Without it a
+# converter has to guess, as fonts/kannada/tunga.py does
+ARKAVATTU_MARK = '\u200d'
+
 def is_consonant(ustr):
     '''whether the string of a token is a single kannada consonant, which is
        what a vattu can be made of'''
