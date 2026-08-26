@@ -1,8 +1,9 @@
 from indic2unicode.langs import devanagari
-from .basefont import BaseFont
+from ..basefont import BaseFont
 import ply.lex as lex
+import logging
 
-class Divya(BaseFont):
+class Aryan2(BaseFont):
     def __init__(self):
         BaseFont.__init__(self)
         self.langobjs  = []
@@ -31,13 +32,20 @@ class Divya(BaseFont):
         danda  = '\u00c9'
 
         # conjuncts
-        t_CHHHA              = '\u0046' + danda
+        t_KALA               = '\u201a'
+        t_KHARA              = '\u004c' + danda
+        t_NGAKA              = '\u2030' 
+        t_NGAGA              = '\u2039' 
+        t_ADHA_CHHHA         = '\u0046' 
+        t_CHHHA              = t_ADHA_CHHHA + danda
         t_GRA                = '\u004f' + danda
         t_GRHA               = '\u0051' + danda
         t_CHRA               = '\u0054' + danda
         t_JRA                = '\u0058' + danda
         t_GYAN               = '\u0059' + danda
         t_JHRA               = '\\\u005b' + danda
+        t_NYAJA              = '\u201d' + danda
+        t_NYACHA             = '\u2022' + danda
 
         t_TTATTA             = '\\\u005e'
         t_TTATTHA            = '\u005f'
@@ -56,6 +64,7 @@ class Divya(BaseFont):
         t_DAMA               = '\u0073' + danda
         t_DAYA               = '\u0074' + danda
         t_DAWA               = '\u0075'
+        t_DABHA              = '\u2013'
         t_DHARA              = '\u0077'
 
         t_NARA               = '\u0079' + danda
@@ -70,6 +79,7 @@ class Divya(BaseFont):
         t_MRA                = '\u00a9' + danda 
         t_RAUU               = '\u00b0'
         t_SHACHA             = '\u00b2' + danda
+        t_SHANA              = '\u2014' + danda
         t_SSATTA             = '\u00b3'
         t_VRA                = '\u00b5' + danda
         t_KRA                = t_VRA + '\u0045' 
@@ -83,10 +93,14 @@ class Divya(BaseFont):
         t_HAYA               = '\u00c1' + danda
         t_MATRA_RA           = '\u00c5'
         t_HARI               = '\u00d8'
+        t_HALA               = '\u2026'
+        t_HAVA               = '\u2020'
+        t_HANA               = '\u2021'
 
         t_NGAGHA             = '\u0152'
         t_NGAKHA             = '\u0160'
         t_ADHA_RA            = '\u00c7'
+        t_ADHA_RA_BINDU      = '\u00c8'
         t_AA_ADHARA          = danda + t_ADHA_RA 
         
         t_MATRAIBINDU        = danda + '\u00cb'
@@ -117,8 +131,10 @@ class Divya(BaseFont):
         t_MATRAAURIBINDU     = danda + '\u00eb' 
         
         # Aryan2 Lang specific
-        t_SINGLE_QUOT_OPEN   = '\u0022'
+        t_STAR               = '\u00af'
+        t_QUOT               = '\u00de'
         t_PROMPT             = '\u0026'
+        t_SINGLE_QUOT_OPEN   = '\u0022'
         t_SINGLE_QUOT_CLOSE  = '\u0027'
         t_PLUS               = '\u00a8'
         t_EQ                 = '\u00ac'
@@ -141,6 +157,13 @@ class Divya(BaseFont):
         t_ADHA_KA_U          = '\u0042' + danda + '\u00d6' + '\u0044'
         t_ADHA_KA_UU         = '\u0042' + danda + '\u00da' + '\u0044'
         t_ADHA_KA_RI         = '\u0042' + danda + '\u00df' + '\u0044'
+        t_ADHA_SSA2          = '\u00ad' 
+        t_SSA2               = t_ADHA_SSA2 + danda
+
+        t_PHA_U              = '\u007b' + danda + '\u00d6' + '\u0045' 
+        t_PHA_UU             = '\u007b' + danda + '\u00da' + '\u0045'
+        t_PHA_RI             = '\u007b' + danda + '\u00df' + '\u0045'
+        t_PHA_RA             = '\\\u007c' + danda + '\u0045'
         # Half Letters
         t_ADHA_A       = '\\\u002b'
         t_ADHA_KA      = '\u0042' + danda + '\u0044'
@@ -162,6 +185,7 @@ class Divya(BaseFont):
         tokens.remove('NNNA')
 
         t_ADHA_PA      = '\u007b' 
+        t_ADHA_PHA     = t_ADHA_PA + danda + '\u0044' 
         t_ADHA_BA      = '\u00a4'
         t_ADHA_BHA     = '\u00a3' 
         t_ADHA_MA      = '\u00e0' 
@@ -169,8 +193,9 @@ class Divya(BaseFont):
         t_ADHA_YA      = '\u00aa'
         t_ADHA_LA      = '\u00e3' 
         t_ADHA_VA      = '\u0042'
+        t_ADHA_VA2     = '\u00b4'
         t_ADHA_SHA     = '\u00b6' 
-        t_ADHA_SSA     = '\u00ad' 
+        t_ADHA_SSA     = '\u2212' 
         t_ADHA_SA      = '\u00ba'
  
         t_ADHA_QA      = '\u0043' + danda 
@@ -187,6 +212,7 @@ class Divya(BaseFont):
         tokens.remove('VISARGA') # t_VISARGA      = u'\u003a'
 
         # VOWELS
+        chandra = '\u00ec'
         tokens.remove('SHORT_A') # t_SHORT_A      = u''
         t_A            = t_ADHA_A + danda
         t_I            = '\u003c'
@@ -195,10 +221,10 @@ class Divya(BaseFont):
         t_UU           = '\u003e'
         t_RE           = t_TRA + '\u0040'
         t_LI           = '\u0161\u00df'
-        tokens.remove('CHANDRA_E') #t_CHANDRA_E    = u''
         t_E            = '\u0041'
+        t_CHANDRA_E    = t_E + chandra
         t_AI           = t_E + '\u00e4'
-        tokens.remove('CHANDRA_O') # t_CHANDRA_O    = u''
+        t_CHANDRA_O    = t_A + danda + chandra
         tokens.remove('SHORT_O') # t_SHORT_O      = u''
         t_OO           = t_A + danda + '\u00e4'
         t_AU           = t_A + danda + '\u00e8'
@@ -239,11 +265,13 @@ class Divya(BaseFont):
         t_LA           = t_ADHA_LA + danda
         t_LLA          = '\u0178'
         t_LLLA         = '\u00c3'+ t_LLA
-        t_VA           = '\u00b4' + danda
+        t_VA           = t_ADHA_VA + danda
+        t_VA2          = t_ADHA_VA2 + danda
         t_SHA          = t_ADHA_SHA + danda
         t_SSA          = t_ADHA_SSA + danda
         t_SA           = t_ADHA_SA + danda
         t_HA           = '\u0063'
+        t_HA2          = '\u00ff'
   
         # SIGNS
         t_NUKTA        = '\u00c3'
@@ -262,11 +290,11 @@ class Divya(BaseFont):
         t_YA2          = '\u00e1' + danda
         t_MATRA_RI     = '\u00df'
         tokens.remove('MATRA_RR') # t_MATRA_RR     = u''
-        t_CHANDRA      = '\u00ec'
+        t_CHANDRA      = chandra 
         tokens.remove('MATRA_SHORT_E') # t_MATRA_SHORT_E = u''
         t_MATRA_E      = '\u00e4'
         t_MATRA_AI     = '\u00e8'
-        tokens.remove('MATRA_CHANDRA_O') # t_MATRA_CHANDRA_O  = u''
+        t_MATRA_CHANDRA_O  = danda + chandra
         t_MATRA_SHORT_O  = '\u00f1'
         t_MATRA_O      = '\u00c9' + t_MATRA_E
         t_MATRA_AU     = '\u00c9' + t_MATRA_AI
@@ -311,10 +339,12 @@ class Divya(BaseFont):
         t_NINE         = '\u0039'
         tokens.remove('ABBREV') #t_ABBREV       = ''  
 
-        t_ignore_IGCHARS = '\u00f4'
+        t_ignore_IGCHAR1 = '\u00f3'
+        t_ignore_IGCHAR2 = '\u00f4'
+        t_ignore_IGCHAR3 = '\u00a0'
         t_ignore_CARRIAGERET = '\\\u000d'
         def t_error(t):
-            print(t)
+            self.report_error(t)
             t.lexer.skip(1)
 
         return lex.lex()

@@ -1,12 +1,12 @@
 from .arialuni_glyphs import ArialUniGlyphs
-from .kannada.nirmalaui import NirmalaUIKannadaGlyphs
+from ..kannada.nirmalaui import NirmalaUIKannadaGlyphs
 
 class NirmalaUIGlyphs(ArialUniGlyphs):
     '''The text of a pdf set in Nirmala UI whose ToUnicode map has been
        repaired by tools/fix_tounicode.py. Every glyph now carries the
        characters it really stands for, ka and sha and matra_i included, and
        the conjuncts and the matra_o that the broken map dropped are back,
-       so nothing of the text is lost any more - unlike fonts/nirmalaui.py,
+       so nothing of the text is lost any more - unlike fonts/hindi/nirmalaui.py,
        which works on the text of a pdf whose map is still broken.
 
        What is left is the order: the glyphs are stored in the order in

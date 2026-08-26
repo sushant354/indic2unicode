@@ -3,42 +3,54 @@ import string
 import types
 
 from indic2unicode.langs import devanagari
-from .basefont import BaseFont
+from ..basefont import BaseFont
 import ply.lex as lex
 
-class ArialUni(BaseFont):
-    '''Arial Unicode MS is a unicode font, but the pdfs of the Gazette that
-       are set in it carry a broken ToUnicode map: the map has all the right
-       strings in it, they are just handed to the wrong glyphs. The text that
-       comes out of such a pdf is therefore devanagari that is
+class NirmalaUI(BaseFont):
+    '''Nirmala UI is a unicode font, and the pdfs of the Gazette that are set
+       in it carry the same kind of broken ToUnicode map as the ones that are
+       set in Arial Unicode MS: the map was built by pairing the glyphs of a
+       run with the characters of that run one by one, so every glyph that
+       devanagari shaping moved was handed the string of its neighbour. The
+       text that comes out of such a pdf is therefore devanagari that is
 
        1. in the visual order of the glyphs and not in the order of unicode,
           so matra_i sits in front of the consonant it belongs to and the
           reph sits behind the whole syllable it sits on, and
 
        2. spelled with the wrong characters for a part of the alphabet, e.g.
-          'ि' for the consonant that is really there and 'ज' for matra_i.
+          'ि' for ka and 'क' for matra_i, which are the two that were paired
+          with each other in the first 'कि' of the document.
 
        So the text is treated like any other font of this package: every
        glyph of the font is a token, the token is given the unicode string
        it really stands for and the tokens are put back in the order that
        unicode wants.
 
-       The map cannot be inverted completely. The font has one glyph of
-       matra_i per width of the syllable that follows it, and the broken map
-       hands the strings of those glyphs to the consonants ja, na, pha, sha,
-       ksha and to the conjunct bra. All of them therefore come out as 'ि'
-       and cannot be told apart any more, so 'ि' is read as na, the most
-       common of them. The same happens to the glyphs of the reph, whose
-       strings land on both va and tha, and 'र्' is read as va. A nukta is
-       lost in the same way, ड़ comes out as plain ड.
+       The map cannot be inverted completely. What is lost is
+
+       * sha. Both ka and sha, and the conjunct shcha as well, are handed the
+         'ि' of the cluster they were first drawn in, so all of them come out
+         as 'ि' and cannot be told apart any more. 'ि' is read as ka, which
+         is by far the more common of the two, and sha is lost.
+
+       * matra_o. Its glyph is handed no string at all and comes out of the
+         pdf as the space of its own advance, so को is left as 'क'. Only a
+         matra_o that carries an anusvara can be brought back, because the
+         anusvara of the pair is handed 'ों' and the two together are the
+         'ों' of every plural that the document has.
+
+       * the reph. The font draws it together with the matra of the syllable
+         it sits on, so it is handed 'ा', 'ी', 'ो' or nothing at all,
+         depending on that matra. Only the reph over a matra_aa can be found
+         again, by the 'ाा' that it leaves behind.
     '''
     def __init__(self):
         BaseFont.__init__(self)
         self.langobjs  = []
         self.langobjs.append(devanagari.DevanagariUnicode())
         self.langobjs.append(devanagari.Conjuncts())
-        self.langobjs.append(devanagari.ArialUni())
+        self.langobjs.append(devanagari.NirmalaUI())
 
         self.lexer = self.get_lexer()
 
@@ -50,23 +62,34 @@ class ArialUni(BaseFont):
         self.jumpbefore = {'ADHA_RA': 1}
 
         self.composeTokens = { \
-            # the narrow and the wide matra_i of the font are handed the
-            # strings of ka and ra, so a ka in front of a syllable that the
-            # font draws with the narrow matra_i, and a ra in front of the
-            # syllable ra, is a matra and not a consonant
-            # (a real ka before da, as in कदम, is lost to this, but दि is
-            # far more common than कद and कक does not occur at all)
-            ('KA', 'KA')  : ['MATRA_I', 'KA'], \
-            ('KA', 'DA')  : ['MATRA_I', 'DA'], \
-            ('RA', 'RA')  : ['MATRA_I', 'RA'], \
-                                               \
-            # the half sa of the font is handed the string of the half sta,
-            # so a 'स्ट्' that a full consonant follows is the half sa and
-            # the tta of the string is not there, while a 'स्ट्' that ra
-            # follows is the half sta that is really there, as in रजिस्ट्री
-            # (a real स्र, as in स्रोत, is lost to this)
-            ('ADHA_SA', 'RA') : ['ADHA_SA', 'ADHA_TTA', 'RA'], \
+            # the font has one glyph of matra_i per width of the syllable
+            # that follows it, and those glyphs are handed the strings of
+            # ka, of ra and of the conjunct kta. So a ra in front of the
+            # syllable ra, and a kta in front of a syllable that the font
+            # draws with the wide matra_i, is a matra and not a consonant
+            # (a real रर, as in थरराना, is lost to this)
+            ('RA', 'RA')       : ['MATRA_I', 'RA'],       \
+            ('KTA', 'KTA')     : ['MATRA_I', 'KTA'],      \
+            ('KTA', 'ADHA_SA') : ['MATRA_I', 'ADHA_SA'],  \
+                                                          \
+            # the reph is handed the matra_aa of the syllable it sits on, so
+            # a matra_aa that a second matra_aa follows is a matra_aa with a
+            # reph on top of it, as in कार्यालय
+            ('MATRA_AA', 'MATRA_AA') : ['MATRA_AA', 'ADHA_RA'], \
         }
+
+        # the sta ligature of the font is handed the string of the half sa,
+        # so a 'स्' that a matra or the end of a word follows is that
+        # ligature and the ta of it has to be put back. A 'स्' that a
+        # consonant follows is the half sa that is really there, as in स्थान
+        for tokenName in ['MATRA_AA', 'MATRA_I', 'MATRA_II', 'MATRA_U',   \
+                          'MATRA_UU', 'MATRA_RI', 'MATRA_E', 'MATRA_AI',  \
+                          'MATRA_AU', 'MATRA_CHANDRA_O', 'BINDU',         \
+                          'MATRAOBINDU', 'VISARGA', 'SPACE', 'NEWLINE',   \
+                          'COMMA', 'DOT', 'SEMICOLON', 'COLON',           \
+                          'RIGHTPARAN', 'VIRAM']:
+            self.composeTokens[('ADHA_SA', tokenName)] = \
+                                            ['ADHA_SA', 'TA', tokenName]
 
         # while the reph jumps back to the head of its syllable, it has to
         # jump over the matras and the signs of that syllable
@@ -74,7 +97,7 @@ class ArialUni(BaseFont):
             'MATRA_AA', 'MATRA_I', 'MATRA_II', 'MATRA_U', 'MATRA_UU',      \
             'MATRA_RI', 'MATRA_RR', 'MATRA_E', 'MATRA_AI', 'MATRA_O',      \
             'MATRA_AU', 'MATRA_CHANDRA_O', 'CHANDRA', 'BINDU',             \
-            'CHANDRABINDU', 'VISARGA', 'NUKTA',                            \
+            'CHANDRABINDU', 'VISARGA', 'NUKTA', 'MATRAOBINDU',             \
         ])
 
         # nukta belongs to the syllable matra_i has already passed, so it
@@ -114,11 +137,11 @@ class ArialUni(BaseFont):
         t_AU             = pat('औ')
         t_CHANDRA_O      = pat('ऑ')
 
-        # CONSONANTS. ja, na, pha, sha and ksha all carry the string of one
-        # of the matra_i glyphs, so all of them come out as 'ि' and are read
-        # as na, the most common of the five
+        # CONSONANTS. ka and sha are both handed the string of the matra_i
+        # of the cluster they were first drawn in, so both of them come out
+        # as 'ि' and are read as ka, the more common of the two
         t_ADHA_KA        = pat('क्')
-        t_KA             = pat('क')
+        t_KA             = pat('ि')
         t_ADHA_KHA       = pat('ख्')
         t_KHA            = pat('ख')
         t_ADHA_GA        = pat('ग्')
@@ -132,6 +155,7 @@ class ArialUni(BaseFont):
         t_ADHA_CHA       = pat('छ्')
         t_CHA            = pat('छ')
         t_ADHA_JA        = pat('ज्')
+        t_JA             = pat('ज')
         t_ADHA_JHA       = pat('झ्')
         t_JHA            = pat('झ')
         t_ADHA_NYA       = pat('ञ्')
@@ -149,17 +173,19 @@ class ArialUni(BaseFont):
 
         t_ADHA_TA        = pat('त्')
         t_TA             = pat('त')
+        t_ADHA_THA       = pat('थ्')
+        t_THA            = pat('थ')
         t_ADHA_DA        = pat('द्')
         t_DA             = pat('द')
         t_ADHA_DHA       = pat('ध्')
         t_DHA            = pat('ध')
         t_ADHA_NA        = pat('न्')
-        t_NA             = pat('न', 'ि')
+        t_NA             = pat('न')
 
         t_ADHA_PA        = pat('प्')
         t_PA             = pat('प')
-        # pha itself is handed the string of a matra_i, but pha with a
-        # nukta is a glyph of its own and keeps its string
+        t_ADHA_PHA       = pat('फ्')
+        t_PHA            = pat('फ')
         t_FA             = pat('\u095e', '\u092b\u093c')
         t_ADHA_BA        = pat('ब्')
         t_BA             = pat('ब')
@@ -170,50 +196,61 @@ class ArialUni(BaseFont):
 
         t_ADHA_YA        = pat('य्')
         t_YA             = pat('य')
+        # ra is also the string of the matra_i that the font draws in front
+        # of the syllable ra, which is sorted out in composeTokens
         t_RA             = pat('र')
         t_ADHA_LA        = pat('ल्')
         t_LA             = pat('ल')
         t_LLA            = pat('ळ')
         t_ADHA_VA        = pat('व्')
-        # va and tha are both handed the string of the reph, so both of them
-        # come out as 'र्' and are read as va, the more common of the two
-        t_VA             = pat('र्')
+        t_VA             = pat('व')
 
-        t_ADHA_SHA       = pat('श्')
         t_ADHA_SSA       = pat('ष्')
         t_SSA            = pat('ष')
-        # the half sa of the font is handed the string of the half sta
-        t_ADHA_SA        = pat('स्ट्', 'स्')
+        # the sta ligature of the font is handed the string of the half sa
+        t_ADHA_SA        = pat('स्')
         t_SA             = pat('स')
         t_ADHA_HA        = pat('ह्')
         t_HA             = pat('ह')
 
         # CONJUNCTS whose glyph is handed a string that ends in a consonant
-        # that is a glyph of its own, so they have to be matched as a whole
-        t_SHAVA          = pat('श्व')
-        t_DAWA           = pat('द्व')
-        t_DADA           = pat('द्द')
+        # that is a glyph of its own, so they have to be matched as a whole.
+        # The shta ligature is handed a halant too many, and kta is also the
+        # string of the matra_i that the font draws in front of a wide
+        # syllable, which is sorted out in composeTokens
+        t_ADHA_CHHHA     = pat('क्ष्')
+        t_CHHHA          = pat('क्ष')
+        t_KTA            = pat('क्त')
+        t_SSATTARA       = pat('ष्ट्र')
+        t_SSATTA         = pat('ष्ट्')
 
-        # MATRAS. the glyphs of matra_i are handed the strings of ja, of ka
-        # and of ra, so ka and ra are only a matra in front of the syllables
-        # that the font draws with those two glyphs, which is done in
-        # composeTokens
+        # MATRAS. the glyphs of matra_i are handed the strings of ka, of ra
+        # and of kta, so ra and kta are only a matra in front of the
+        # syllables that the font draws with those two glyphs, which is done
+        # in composeTokens. matra_o is handed no string at all and is only
+        # there when the anusvara that follows it puts it back
         t_MATRA_AA       = pat('ा')
-        t_MATRA_I        = pat('ज')
+        t_MATRA_I        = pat('क')
         t_MATRA_II       = pat('ी')
         t_MATRA_U        = pat('ु')
         t_MATRA_UU       = pat('ू')
         t_MATRA_RI       = pat('ृ')
         t_MATRA_E        = pat('े')
         t_MATRA_AI       = pat('ै')
-        t_MATRA_O        = pat('ो')
         t_MATRA_AU       = pat('ौ')
         t_CHANDRA        = pat('ॅ')
         t_MATRA_CHANDRA_O = pat('ॉ')
+        # the reph that the font draws together with a matra_o
+        t_MATRAORI       = pat('ो')
+        # the anusvara of a matra_o, with the space of the matra_o in front
+        # of it
+        t_MATRAOBINDU    = pat(' ों')
 
-        # SIGNS. the reph is handed the string of va
-        t_ADHA_RA        = pat('व')
-        t_BINDU          = pat('ं')
+        # SIGNS. the anusvara has one glyph for the head of a letter and one
+        # for the head of a matra_e, and the first of them is handed a
+        # matra_o as well. The reph has no glyph whose string is its own,
+        # see MATRA_AA and MATRAORI
+        t_BINDU          = pat('ों', 'ं')
         t_CHANDRABINDU   = pat('ाँ', 'ँ')
         t_VISARGA        = pat('ः')
         t_NUKTA          = pat('़')
@@ -252,7 +289,6 @@ class ArialUni(BaseFont):
         t_EQ             = pat('=')
         t_STAR           = pat('*')
         t_QUOT           = pat('"')
-        # the gazette itself types a bar in the place of a matra_aa
         t_BAR            = pat('|')
         t_AMPERSAND      = pat('&')
         t_APOSTROPHE     = pat("'")

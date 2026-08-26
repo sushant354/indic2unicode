@@ -1,6 +1,7 @@
-from indic2unicode.fonts import aryan2, surekh, chanakya, arialuni, \
-                                arialuni_glyphs, nirmalaui, nirmalaui_glyphs, \
-                                mangal_glyphs
+from indic2unicode.fonts.hindi import aryan2, surekh, chanakya, arialuni, \
+                                     nirmalaui
+from indic2unicode.fonts.glyphs import arialuni_glyphs, nirmalaui_glyphs, \
+                                       mangal_glyphs
 from indic2unicode.fonts.kannada import tunga, nudi, aklite
 
 class FontConv:

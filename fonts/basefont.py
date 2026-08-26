@@ -4,7 +4,8 @@ import unicodedata
 
 # a character that the lexer of a font has no token of its own for but that
 # is text rather than a glyph of that font travels through the passes as
-# (LITERAL, character), see is_text_char() and fonts/arialuni_glyphs.py
+# (LITERAL, character), see is_text_char() and
+# fonts/glyphs/arialuni_glyphs.py
 LITERAL = 'LITERAL'
 
 class BaseFont:

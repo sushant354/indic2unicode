@@ -35,9 +35,10 @@ The glyphs that are left - the ones of a subset that carries neither a name
 nor a cmap entry nor a rule for them - are repaired from a table.
 
 The text that comes out of the repaired pdf is in the visual order of the
-glyphs, so it still has to go through fonts/arialuni_glyphs.py (Arial Unicode
-MS), fonts/nirmalaui_glyphs.py (Nirmala UI) or fonts/mangal_glyphs.py
-(Mangal) to be put in the order that unicode wants.
+glyphs, so it still has to go through fonts/glyphs/arialuni_glyphs.py
+(Arial Unicode MS), fonts/glyphs/nirmalaui_glyphs.py (Nirmala UI) or
+fonts/glyphs/mangal_glyphs.py (Mangal) to be put in the order that
+unicode wants.
 
 USAGE:
     python fix_tounicode.py input.pdf output.pdf

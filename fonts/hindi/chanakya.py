@@ -1,7 +1,7 @@
 import re
 
 from indic2unicode.langs import devanagari
-from .basefont import BaseFont
+from ..basefont import BaseFont
 import ply.lex as lex
 
 class Chanakya(BaseFont):

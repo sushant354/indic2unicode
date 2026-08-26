@@ -55,15 +55,15 @@ order:
 1. Compose tokens: This is used for composing multiple tokens into one that
 cannot be unambiguously composed during tokenization phase. For example,  In
 font specific file, create a dictionary ans assign it to self.composeTokens.In
-fonts/aryan2,py it is specified as  self.composeTokens = {('A', 'MATRA_AA') :
+fonts/hindi/aryan2,py it is specified as  self.composeTokens = {('A', 'MATRA_AA') :
 'AA'}. The key is a tuple of n-tokens and the output is one token.
 
 2. Move a token before: A token can be moved backwards in the series of tokens.
-For example, fonts/aryan2.py specifies self.jumpbefore = {'ADHA_RA': 1}
+For example, fonts/hindi/aryan2.py specifies self.jumpbefore = {'ADHA_RA': 1}
 indicating the ADHA_RA should jump one place before.
 
 3. Move a token ahead: A token can be moved ahead in the series of tokens. For
-example, fonts/aryan2.py specifies self.waitdict = {'MATRA_I': 1, 'MATRAIBINDU'
+example, fonts/hindi/aryan2.py specifies self.waitdict = {'MATRA_I': 1, 'MATRAIBINDU'
 : 1, 'MATRAIBINDU2': 1, 'MATRA_I2': 2} indicating tokens MATRA_I, MATRAIBINDU
 and MATRAIBINDU2 should jump 1 step head and token MATRA_I2 should jump two
 positions ahead.
@@ -75,18 +75,18 @@ because a syllable is made of a variable number of tokens. Three sets tell
 the two reordering passes which tokens are not to be counted as a step:
 
 1. self.jumpover: tokens that a backward jumping token is not counted
-against. fonts/chanakya.py puts all the matras and the signs in it because
+against. fonts/hindi/chanakya.py puts all the matras and the signs in it because
 the reph is typed after the whole syllable it sits on, so it has to travel
 past 'ी' in वर्ती as well as past 'ा' in अर्थात्.
 
 2. self.waitover: tokens that a forward jumping token is not counted against
-and that it stays behind. fonts/chanakya.py puts NUKTA, RAKAR and YAKAR in
+and that it stays behind. fonts/hindi/chanakya.py puts NUKTA, RAKAR and YAKAR in
 it since they belong to the syllable that matra_i has already passed, as in
 चिड़िया and प्रिय.
 
 3. self.halftokens: tokens that a forward jumping token is not counted
 against but that it is emitted before, since they are the head of the
-syllable that is still coming. fonts/chanakya.py puts all the half
+syllable that is still coming. fonts/hindi/chanakya.py puts all the half
 consonants in it, which is what makes पश्चिम come out of if"pe while दिल्ली
 comes out of fnYyh.
 
@@ -99,7 +99,7 @@ therefore devanagari that is in the visual order of the glyphs and that is
 spelled with the wrong characters for a part of the alphabet, e.g. निर्माण
 comes out as जिमावण, where 'ज' is matra_i, 'ि' is na and 'व' is the reph.
 
-fonts/arialuni.py treats every glyph of that font as a token in exactly the
+fonts/hindi/arialuni.py treats every glyph of that font as a token in exactly the
 way the ascii fonts are treated, and the two reordering passes above put
 matra_i and the reph back where unicode wants them.
 
@@ -149,7 +149,7 @@ carry a broken map. After that the text can be extracted in the usual way:
     text = doc[pagenum].get_text()
 
 The text that comes out is still in the visual order of the glyphs, so it
-goes through fonts/arialuni_glyphs.py, which does nothing but the two
+goes through fonts/glyphs/arialuni_glyphs.py, which does nothing but the two
 reordering passes. Unlike the arialuni font above, that path loses nothing:
 ja, na, pha, sha and ksha are all still there, and so are va, tha and the
 nuktas.
@@ -164,7 +164,7 @@ Nirmala UI is the other unicode font the Gazette is set in, and its pdfs
 carry a map that was broken in the very same way. Which glyph ends up with
 which string differs from document to document, because it depends on the
 first cluster of the document that each glyph was drawn in, so the font needs
-a converter of its own: fonts/nirmalaui.py. There, दिल्ली comes out as कदल्ली
+a converter of its own: fonts/hindi/nirmalaui.py. There, दिल्ली comes out as कदल्ली
 and के comes out as िे, i.e. 'क' is matra_i and 'ि' is ka.
 
 The losses are of the same kind as the ones above. ka and sha, and the
@@ -187,7 +187,7 @@ ligature and its ta is put back, which is what turns हस्ाों तर�
 Here too none of that guessing is needed when the pdf itself is at hand.
 tools/fix_tounicode.py repairs a Nirmala UI pdf the same way it repairs an
 Arial Unicode MS one, and the text of it goes through
-fonts/nirmalaui_glyphs.py, which is the same two reordering passes and loses
+fonts/glyphs/nirmalaui_glyphs.py, which is the same two reordering passes and loses
 nothing: sha and matra_o and the reph are all still there, so प्रकाशित and को
 and सर्वोच्च come out whole rather than as प्रकाकित and क and सवोच्च.
 
