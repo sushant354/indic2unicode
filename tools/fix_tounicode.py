@@ -225,12 +225,121 @@ ARIAL_UNICODE_MS_KANNADA.update({ \
 
 ARIAL_UNICODE_MS.update(ARIAL_UNICODE_MS_KANNADA)
 
-# Nirmala UI needs no glyph repaired by hand: the subsets of it that these
-# gazettes carry keep the GSUB of the font, so every glyph the shaper made is
-# read out of the rule that made it. The table is here for the same reason
-# the one above is - a subset that keeps no rule for a glyph - and is filled
-# as such a glyph turns up
-NIRMALA_UI = {}
+# The devanagari of Nirmala UI needs no glyph repaired by hand: the subsets of
+# it that those gazettes carry keep the GSUB of the font, so every glyph the
+# shaper made is read out of the rule that made it. The kannada of it keeps
+# nothing at all, and is the whole of the table below.
+#
+# THE KANNADA OF NIRMALA UI
+#
+# A Karnataka gazette is set in Nirmala UI as well, and the subset it carries
+# there keeps neither a cmap nor a post nor a GSUB - only the outlines - so
+# there is nothing in the font to read a glyph back out of. Its map is short
+# rather than wrong, the way the kannada map of Arial Unicode MS is: it names
+# the letters of the block and stops, and every glyph the shaper made - every
+# consonant a vowel sign was drawn into, every vattu, the arkavattu - has no
+# entry at all and extracts as (cid:3197) and the like, 21,000 glyphs of the
+# 21 page gazette this table was read from.
+#
+# What makes those glyphs a table that can be written down rather than a list
+# of six hundred readings is that the font lays them out in blocks, in the
+# order of the unicode block:
+#
+#   3074  the two signs, anusvara and visarga
+#   3076  the vowels, a through au
+#   3090  the consonants, ka through ha
+#   3144  the length mark and the ai length mark
+#   3161  the vattus, ka through ha
+#   3197  fifteen glyphs per consonant, ka through ha: the twelve vowel signs
+#         the font draws into a letter, then that letter with the anusvara,
+#         with the visarga, and with its virama
+#
+# and none of the blocks leaves a consonant out - unlike Arial Unicode MS,
+# which writes no vowel sign form of nga, nya or rra. Every anchor the
+# document's own map does carry falls where the blocks put it: it names 3074
+# anusvara, 3090 ka, 3092 ga, 3095 ca, 3097 ja, 3100 tta, 3102 dda, 3104 nna,
+# 3105 ta, 3107 da, 3109 na, 3110 pa, 3112 ba, 3114 ma, 3116 ra, 3118 la,
+# 3119 lla, 3120 va through 3124 ha and 3144 the length mark, and the rest of
+# the blocks were read off the outlines of the subset.
+#
+# A vattu is spelled here as the virama and its consonant, which is the order
+# unicode writes a subjoined consonant in, and a dead consonant the other way
+# round, so the two are already different tokens by the time
+# fonts/kannada/nirmalaui.py reads them - the same thing
+# ARIAL_UNICODE_MS_KANNADA does, and for the same reason.
+#
+# The gids of this table are the gids of a font program that counts 4309
+# glyphs, and Nirmala UI is carried in this corpus in four numberings - 79,
+# 4309, 4923 and 5025 glyphs - so the ids of one of them mean nothing in
+# another. NIRMALA_UI_GLYPH_COUNT below is what holds the table to the one it
+# was read from
+
+# the twelve vowel signs the font draws into a consonant, in the order of the
+# unicode block, and then the three marks that follow them in the block of
+# fifteen. Only two of the fifteen are never drawn in that gazette - the
+# vowel signs ii and oo - and neither is a guess: the other thirteen are the
+# block in unicode order, and ii and oo are the two gaps that order leaves
+KANNADA_CONSONANT_SIGNS = [chr(code) for code in range(0x0cbe, 0x0ccd) \
+                           if code not in (0x0cc4, 0x0cc5, 0x0cc9)]      \
+                          + ['\u0c82', '\u0c83', KANNADA_VIRAMA]
+
+def kannada_consonant_blocks(gid, consonants, signs):
+    '''the blocks of a font that draws a glyph of its own for a consonant
+       and each of the signs that can be written into it, one block of
+       len(signs) glyphs per consonant in the order of the unicode block'''
+    return {gid + i * len(signs) + j: char + sign \
+            for i, char in enumerate(consonants) \
+            for j, sign in enumerate(signs)}
+
+NIRMALA_UI_KANNADA = { \
+    # the two signs and the vowels, which the map of that gazette carries
+    # only some of - it names a different handful of them in each of the four
+    # ToUnicode streams it has for the one font \
+    3074: '\u0c82', 3075: '\u0c83', \
+}
+NIRMALA_UI_KANNADA.update({3076 + i: chr(code) \
+                           for i, code in enumerate( \
+                               c for c in range(0x0c85, 0x0c95) \
+                               if c not in (0x0c8d, 0x0c91))})
+# the consonants, ka through ha, and the two length marks
+NIRMALA_UI_KANNADA.update(kannada_block(3090, KANNADA_CONSONANTS))
+NIRMALA_UI_KANNADA.update({3144: '\u0cd5', 3145: '\u0cd6'})
+# the vattus, spelled the way unicode writes a subjoined consonant
+NIRMALA_UI_KANNADA.update(kannada_block(3161, KANNADA_CONSONANTS, \
+                                        prefix = KANNADA_VIRAMA))
+# a glyph per consonant and sign written into it
+NIRMALA_UI_KANNADA.update(kannada_consonant_blocks(3197, KANNADA_CONSONANTS, \
+                                                   KANNADA_CONSONANT_SIGNS))
+NIRMALA_UI_KANNADA.update({ \
+    # the arkavattu, the ra that is drawn as a mark on top of the consonant
+    # that follows it and is stored behind the whole syllable it sits on. It
+    # is spelled like the dead ra of 3601 and the font draws the two with
+    # glyphs of their own, so it carries the mark that says which of the two
+    # it is, see langs/kannada.ARKAVATTU_MARK \
+    4305: 'ರ್' + kannada.ARKAVATTU_MARK, \
+})
+
+# The glyphs 3125 through 3143 are the vowel signs where they stand on their
+# own rather than drawn into a letter. No page of that gazette draws one, and
+# the block holds three glyphs more than the block has signs - the font draws
+# a second form of some of them - so which glyph is which sign is not settled
+# by the order the way the blocks above are. They are left as the pdf has
+# them rather than guessed at: a glyph left alone loses the improvement, a
+# glyph read wrongly destroys the text around it
+
+NIRMALA_UI = dict(NIRMALA_UI_KANNADA)
+
+# The glyph count of the font program NIRMALA_UI_KANNADA was read from. A
+# subset that keeps the glyph order of the font it was cut out of counts all
+# of that font's glyphs however few it carries, so this is the whole font's
+# count and every subset of that font matches it - see glyph_count. The four
+# Nirmala UI in this corpus count 79, 4309, 4923 and 5025 glyphs, which is
+# four different numberings of one family, and a table read off one of them
+# says nothing about the others: gid 3197 is kannada kaa here and is whatever
+# a 4923 glyph Nirmala UI puts there in test/test_pdfs/gazette1.pdf. Those
+# other subsets draw no kannada, so nothing goes wrong today - this is what
+# keeps it that way when one of them does
+NIRMALA_UI_GLYPH_COUNT = 4309
 
 # Mangal is repaired by what its glyphs draw and not by their glyph ids, see
 # MANGAL_OUTLINES below, so it has no table of its own here. The entry is
@@ -326,6 +435,19 @@ BROKEN_FONTS = {'Arial Unicode MS': ARIAL_UNICODE_MS, \
 # font whose subsets are renumbered - see MANGAL_OUTLINES above
 BROKEN_FONT_OUTLINES = {'Mangal': MANGAL_OUTLINES}
 
+# the glyph count of the font program a hand table above was read from, for a
+# font that this corpus carries in more than one numbering. A subset that
+# keeps the glyph order of the font it was cut out of counts all of that
+# font's glyphs, so every subset of the font the table was read from matches
+# this and every subset of another numbering of the same family does not -
+# see glyph_count, which uses the count for the same question about the
+# glyphs one subset donates to another.
+#
+# A font that is not named here has no such constraint, which is not a claim
+# that its ids are safe everywhere - only that this corpus has never carried
+# it in a second numbering. Nirmala UI is carried in four
+BROKEN_FONT_GLYPH_COUNTS = {'Nirmala UI': NIRMALA_UI_GLYPH_COUNT}
+
 # the font whose glyph ids a type3 font of a distilled gazette names its
 # glyphs after, see fix_type3_fonts below
 TYPE3_GLYPH_FONT = 'Arial Unicode MS'
@@ -359,6 +481,8 @@ BROKEN_FONTS_BY_KEY    = {font_lookup_key(name): fixes \
                           for name, fixes in BROKEN_FONTS.items()}
 BROKEN_OUTLINES_BY_KEY = {font_lookup_key(name): fixes \
                           for name, fixes in BROKEN_FONT_OUTLINES.items()}
+BROKEN_COUNTS_BY_KEY   = {font_lookup_key(name): count \
+                          for name, count in BROKEN_FONT_GLYPH_COUNTS.items()}
 FONT_CONVERTERS_BY_KEY = {font_lookup_key(name): conv  \
                           for name, conv  in FONT_CONVERTERS.items()}
 
@@ -386,6 +510,11 @@ def get_outline_fixes(fontname):
     '''the glyphs to repair by their outline for a font whose subsets do not
        number their glyphs alike, an empty dict for every other font'''
     return BROKEN_OUTLINES_BY_KEY.get(font_lookup_key(fontname), {})
+
+def get_glyph_fixes_count(fontname):
+    '''the glyph count that the hand table of a font holds for, None for a
+       font whose table is not held to one'''
+    return BROKEN_COUNTS_BY_KEY.get(font_lookup_key(fontname))
 
 def get_font_converter(fontname):
     '''the converter that puts the text of a repaired font in the order that
@@ -829,7 +958,7 @@ class ToUnicodeFixer:
         return any(ustr and set(ustr) == {'\x00'} for ustr in table.values())
 
     def fix_font(self, doc, xref, fontname, encoding, glyphfixes, \
-                 learnt = None, outlinefixes = None):
+                 learnt = None, outlinefixes = None, fixescount = None):
         cmapxref = self.get_cmap_xref(doc, xref)
         if cmapxref == None:
             return 0
@@ -841,6 +970,21 @@ class ToUnicodeFixer:
 
         if self.open_font(doc, xref) == None:
             return 0
+
+        # a hand table read off one numbering of a family says nothing about
+        # the glyphs of another, so it is dropped for a subset that counts
+        # its glyphs differently rather than handed that subset the readings
+        # of glyphs it does not draw. What the font itself says about its own
+        # glyphs - its cmap, its names, its GSUB - is not a table and still
+        # stands, so such a font is repaired from that alone
+        if fixescount != None and glyphfixes:
+            count = self.glyph_count(doc, xref)
+            if count != fixescount:
+                self.logger.info('Font %d (%s) counts %s glyphs and the ' \
+                                 'table for it was read off a font of %d, ' \
+                                 'so it is repaired from the font alone', \
+                                 xref, fontname, count, fixescount)
+                glyphfixes = {}
 
         strings = self.glyph_strings(doc, xref, learnt)
 
@@ -1144,7 +1288,8 @@ class ToUnicodeFixer:
 
             numfixed = self.fix_font(doc, xref, fontname, encoding, glyphfixes,
                                      learnt.get(font_lookup_key(basefont)),
-                                     get_outline_fixes(basefont))
+                                     get_outline_fixes(basefont),
+                                     get_glyph_fixes_count(basefont))
             if numfixed:
                 self.fixed_fonts.add(basefont)
             num += numfixed

@@ -39,6 +39,10 @@ class ArialUniGlyphs(BaseFont):
        only devanagari is one segment and goes through exactly the two
        passes it always did.
     '''
+    # the pass that reads the kannada of this font, which the fonts that
+    # inherit this one name their own of
+    kannadaclass = ArialUniKannadaGlyphs
+
     def __init__(self):
         BaseFont.__init__(self)
         self.langobjs  = []
@@ -47,7 +51,7 @@ class ArialUniGlyphs(BaseFont):
         self.langobjs.append(devanagari.ArialUni())
 
         # the kannada of the same font, which is read by a pass of its own
-        self.kannadaobj = ArialUniKannadaGlyphs()
+        self.kannadaobj = self.kannadaclass()
 
         self.lexer = self.get_lexer()
 

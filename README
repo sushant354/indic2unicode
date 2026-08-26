@@ -26,7 +26,8 @@ published in, and Arial Unicode MS as well as Nirmala UI as they come out of
 the Gazette pdfs that are set in them. Beyond devanagari it supports three
 kannada fonts that the Karnataka gazette is published in, Tunga, which is a
 unicode font, and Nudi and Aklite, which are 8-bit ones, as they come out of
-those pdfs.
+those pdfs, and the kannada of Arial Unicode MS and of Nirmala UI as it comes
+out of the Karnataka gazettes that are set in them.
 
 MAIN IDEA
 
@@ -198,6 +199,27 @@ matra_i still waits for the whole cluster and 'ि' + 'क' + '्र' comes out
 which is one glyph of the font and two characters of the repaired map, and
 the matra is one of the tokens the reph jumps over on its way back, so
 निकटवर्ती is drawn as िनकटवतीर् and comes out whole all the same.
+
+Nirmala UI sets the Karnataka gazette as well, and the kannada of a repaired
+one goes through fonts/kannada/nirmalaui.py - the same split on the script
+that Arial Unicode MS does, the font being one font. The subset of it that
+those pdfs carry keeps neither a cmap nor a post nor a GSUB, so there is
+nothing in the font to read a glyph out of and its map is short rather than
+wrong: it names the letters of the block and stops, and every glyph the
+shaper made extracts as (cid:3197) and the like. Those glyphs are put back
+from NIRMALA_UI_KANNADA in tools/fix_tounicode.py, which is a table of the
+blocks the font lays them out in - the vattus from 3161, then fifteen glyphs
+per consonant from 3197, one for the consonant with each of the twelve vowel
+signs and one each for it with the anusvara, the visarga and its virama.
+
+What is left after that is the order, and there Nirmala UI draws kannada the
+way Arial Unicode MS draws it, so fonts/kannada/nirmalaui.py is that pass
+whole: ಕರ್ನಾಟಕ comes out of the repaired pdf as ಕನಾರ್ಟಕ and ಅನುಸೂಚಿಯಲ್ಲಿ as
+ಅನುಸೂಚಿಯಲಿ್ಲ, exactly as they do there. The two fonts draw a syllable in a
+different number of glyphs - a whole matra is drawn into the letter here, ಕೇ
+being one glyph where Arial Unicode MS draws ಕಿ and a length mark, and ಕ್ಷ is
+spelled out rather than drawn whole - but that is a difference in what the
+repair writes and not in the order it writes it in.
 
 
 

@@ -1,4 +1,5 @@
 from .arialuni_glyphs import ArialUniGlyphs
+from .kannada.nirmalaui import NirmalaUIKannadaGlyphs
 
 class NirmalaUIGlyphs(ArialUniGlyphs):
     '''The text of a pdf set in Nirmala UI whose ToUnicode map has been
@@ -21,5 +22,15 @@ class NirmalaUIGlyphs(ArialUniGlyphs):
        reads a half form out of that pair anyway, so a matra_i still waits
        over the whole cluster: 'ि' + 'क' + '्र' is read as matra_i, half ka,
        ra and comes out as क्रि.
+
+       THE OTHER SCRIPT OF THE SAME FONT
+
+       Nirmala UI sets the Karnataka gazette as well, and the kannada of it
+       goes through fonts/kannada/nirmalaui.py - the same split on the script
+       that Arial Unicode MS does, since the font is one font and
+       get_font_converter() names one converter for it. That pass is the
+       kannada pass of Arial Unicode MS whole: the two fonts draw a kannada
+       syllable in a different number of glyphs but in the same order, and it
+       is the repair and not the reordering that the difference is in.
     '''
-    pass
+    kannadaclass = NirmalaUIKannadaGlyphs
