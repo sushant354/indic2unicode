@@ -1,7 +1,7 @@
 from indic2unicode.fonts.hindi import aryan2, surekh, chanakya, arialuni, \
                                      nirmalaui
 from indic2unicode.fonts.glyphs import arialuni_glyphs, nirmalaui_glyphs, \
-                                       mangal_glyphs
+                                       mangal_glyphs, nudiuni_glyphs
 from indic2unicode.fonts.kannada import tunga, nudi, aklite
 
 class FontConv:
@@ -18,6 +18,7 @@ class FontConv:
         nudiObj     = nudi.Nudi()
         nudikObj    = nudi.NudiKannadaDigits()
         akliteObj   = aklite.Aklite()
+        nudiuniObj  = nudiuni_glyphs.NudiUniGlyphs()
         self.converters = { 
             'aryan2': aryanObj, 'divya':  aryanObj, 'surekh': surekhObj,
             'chanakya': chanakyaObj, 'krutidev': chanakyaObj,  
@@ -47,12 +48,21 @@ class FontConv:
             # Nudi, and named after nothing but itself in the pdfs that
             # carry it, so the whole pdf font name is a key here too
             'aklite': akliteObj, 'AkliteKndIpsita': akliteObj,
+            # no bare 'NudiUni01e' key here, for the reason mangal_glyphs
+            # has none: this is a reordering pass for the text of a pdf
+            # that fix_tounicode.py has already repaired, and a NudiUni
+            # that was not repaired is not in that order - its shaped
+            # glyphs are missing from the text rather than misplaced in it.
+            # It is reached through get_font_converter(), which names only
+            # the fonts that really were repaired in this document
+            'nudiuni_glyphs': nudiuniObj,
         }
 
         self.uniqfonts = ['aryan2', 'surekh', 'chanakya', 'arialuni', \
                           'arialuni_glyphs', 'nirmalaui', 'nirmalaui_glyphs', \
                           'mangal_glyphs', 'tunga', 'nudi', \
-                          'nudi_kannada_digits', 'aklite']
+                          'nudi_kannada_digits', 'aklite', \
+                          'nudiuni_glyphs']
  
     def to_unicode(self, fontname, text):
         return self.converters[fontname].to_unicode(text)

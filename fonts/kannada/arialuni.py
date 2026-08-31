@@ -161,6 +161,15 @@ class ArialUniKannadaGlyphs(BaseFont):
                 out.append(token)
         return out
 
+    def get_arkavattu(self):
+        '''how the repaired text of this font spells the arkavattu. Arial
+           Unicode MS and Nirmala UI draw it with a glyph of its own but
+           spell it 'ರ್' like a dead ra, so the repair marks it, see
+           langs/kannada.ARKAVATTU_MARK. A font whose own cmap gives the
+           arkavattu a character of its own needs no mark and says so by
+           overriding this, see fonts/kannada/nudiuni.py'''
+        return kannada.Vattus().tokendict['ARKAVATTU'] + kannada.ARKAVATTU_MARK
+
     def get_lexer(self):
         '''a rule per token of the script. The text of a repaired pdf spells
            every one of them exactly as unicode does - that is what the
@@ -171,27 +180,29 @@ class ArialUniKannadaGlyphs(BaseFont):
            text that comes out the way it went in, which is what t_error
            does with a character that no rule matched'''
         vattus    = kannada.Vattus().tokendict
-        arkavattu = vattus['ARKAVATTU'] + kannada.ARKAVATTU_MARK
+        arkavattu = self.get_arkavattu()
 
-        # the two tokens the text does not spell the way unicode does, as
-        # ready made patterns rather than as strings to be escaped.
+        # the tokens the text does not spell the way unicode does, as ready
+        # made patterns rather than as strings to be escaped.
         #
-        # The arkavattu carries the mark that keeps it apart from a dead ra.
-        # The mark says what the glyph is rather than standing for anything
-        # of its own, so the token is still written out as the plain 'ರ್' of
-        # langs/kannada.py.
-        #
-        # The vattu of ra then has to stand out of the arkavattu's way: a
-        # dead consonant that an arkavattu sits behind - ಅಪಾರ್ಟ್ಮೆಂಟ್ is drawn
-        # ಅಪಾಟ್ + ರ್ - spells a virama, a ra and a virama in a row, and the
-        # vattu is the first thing a lexer matching left to right sees
-        # there. It is not one: an arkavattu follows, and what stands in
-        # front of it is the virama of the dead consonant
-        patterns = { \
-            'ARKAVATTU': re.escape(arkavattu), \
-            'VATTU_RA' : re.escape(vattus['VATTU_RA']) + \
-                         '(?!' + re.escape(arkavattu[1:]) + ')', \
-        }
+        # The arkavattu is whatever the repair of this font writes for it -
+        # 'ರ್' and the mark that keeps it apart from a dead ra, or a
+        # character of the font's own. Either way the token is still written
+        # out as the plain 'ರ್' of langs/kannada.py, since the mark says what
+        # the glyph is rather than standing for anything of its own
+        patterns = {'ARKAVATTU': re.escape(arkavattu)}
+
+        # The vattu of ra only has to stand out of the arkavattu's way when
+        # the two are spelled alike: a dead consonant that an arkavattu sits
+        # behind - ಅಪಾರ್ಟ್ಮೆಂಟ್ is drawn ಅಪಾಟ್ + ರ್ - then spells a virama, a ra
+        # and a virama in a row, and the vattu is the first thing a lexer
+        # matching left to right sees there. It is not one: an arkavattu
+        # follows, and what stands in front of it is the virama of the dead
+        # consonant. A font that spells its arkavattu with a character of
+        # its own can never read as a vattu in the first place
+        if arkavattu.startswith(vattus['ARKAVATTU'][0]):
+            patterns['VATTU_RA'] = re.escape(vattus['VATTU_RA']) + \
+                                   '(?!' + re.escape(arkavattu[1:]) + ')'
 
         rules  = {}
         tokens = []

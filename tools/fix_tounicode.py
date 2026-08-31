@@ -342,6 +342,83 @@ NIRMALA_UI = dict(NIRMALA_UI_KANNADA)
 # keeps it that way when one of them does
 NIRMALA_UI_GLYPH_COUNT = 4309
 
+# ---------------------------------------------------------------------------
+# NudiUni, the unicode Nudi of the Karnataka gazette
+#
+# Nudi01e and the rest of that family are legacy 8 bit fonts whose text is
+# the keys the typist pressed, and fonts/kannada/nudi.py decodes them. NudiUni
+# is the unicode font of the same family and is a different problem: its
+# glyphs really are kannada and its subsets keep a cmap and a post naming
+# 148 of them, but the shaped glyphs - the form of a consonant that a vowel
+# sign is written beside, the vattus, the arkavattu, the ligatures - are
+# named by none of those and carry no GSUB either. Not one NudiUni subset in
+# this corpus has a GSUB table, so there is no rule to read them out of and
+# what a producer's ToUnicode map says about them is all there is.
+#
+# That map is worth nothing. Of 595 NudiUni maps read out of 400 documents,
+# 443 name only the glyphs the font's own cmap already names and leave every
+# shaped glyph with no entry at all, so 43% of the glyphs of such a document
+# extract as nothing; 125 more hand the glyphs arbitrary greek and cyrillic;
+# and the 18 that do name the shaped glyphs agree with the font's own cmap on
+# a median of none of the glyphs where they can be checked, and agree with
+# each other on 31 of the 100 shaped glyphs they have in common. They are a
+# per document guess and not a fact about the font, so nothing here is read
+# out of them.
+#
+# What is read here is the two blocks the font lays out regularly, each
+# anchored on glyphs rendered off the subsets and read against the page:
+#
+#   ಕರ್ನಾಟಕ    is drawn  ಕ 85 ಾ 65 ಟ ಕ
+#   ಪ್ರದತ್ತವಾ   is drawn  ಪ 128 ದ ತ 117 118 ಾ
+#   ರವನ್ನು      is drawn  ರ ವ ನ ು 121
+#   ಚಕ್ಕುಬಂದಿ   is drawn  ಚ ಕ ು 102 ಬ ಂ 218
+#   ರಲ್ಲಿ       is drawn  ರ 235 130
+#
+# which puts 66 at ka and 102 at the vattu of ka and settles both blocks
+# from either end. Six such anchors fall in the first block and five in the
+# second, and every one of them lands where the block puts it
+# ---------------------------------------------------------------------------
+NUDI_UNI_KANNADA = {}
+# the form of a consonant that the font draws when a vowel sign or a vattu is
+# written onto it - ಭಾ is this ಭ and the sign, ಕರ್ನಾಟಕ this ನ and the sign -
+# which is the plain consonant and nothing more. The 18 maps that name these
+# glyphs at all spell four of them with a virama, as if the form were a dead
+# consonant; it is not, and reading it that way puts a virama in the middle
+# of ಕರ್ನಾಟಕ
+NUDI_UNI_KANNADA.update(kannada_block(66, KANNADA_CONSONANTS))
+# the vattus, ka through ha, spelled the way unicode writes a subjoined
+# consonant. Glyph 101 sits between the two blocks and no page of this
+# corpus draws it, so it is left as the pdf has it rather than guessed at
+NUDI_UNI_KANNADA.update(kannada_block(102, KANNADA_CONSONANTS, \
+                                      prefix = KANNADA_VIRAMA))
+
+# The arkavattu is glyph 65 and is deliberately not in the table above: the
+# font's own cmap names it U+0CF5, an unassigned codepoint the font uses as
+# a slot of its own for it, and what the font says about a glyph wins over a
+# hand table in fix_font - rightly, since the font is the better authority.
+# So the repaired text spells the arkavattu U+0CF5 rather than 'ರ್' and a
+# mark, and fonts/kannada/nudiuni.py reads that character as the arkavattu.
+# It needs no ARKAVATTU_MARK to tell it from a dead ra, which is the one
+# thing NudiUni makes easier than Arial Unicode MS: the two are already
+# different characters
+
+# The shaped glyphs above 200 are the consonants that a vowel sign is drawn
+# into and the ligatures - ಕ್ಷ, ಜ್ಞ, ಷ್ಟ - and they are left alone. They do not
+# fall into a block the way the two above do: ತಿ, ದಿ, ಲಿ, ಳಿ and ಸಿ were read
+# off the page at glyphs 216, 218, 235, 236 and 240, and no one block start
+# puts all five where they are. That is 8% of the glyphs of a NudiUni
+# document still extracting as nothing, and reading them needs every glyph of
+# that region rendered and identified one at a time, the way MANGAL_OUTLINES
+# was built. A glyph left alone loses the improvement; a glyph read wrongly
+# destroys the text around it
+
+# The glyph count of the font program NUDI_UNI_KANNADA was read from. Every
+# NudiUni subset in this corpus counts 425 - 01e, 01k, 02e and Ananth05e, in
+# every weight and style - and the 145 glyphs the cmaps of 01e and Ananth05e
+# both name are the same glyphs in both, so the one table serves the family.
+# The guard is what drops it for a numbering that is not this one
+NUDI_UNI_GLYPH_COUNT = 425
+
 # Mangal is repaired by what its glyphs draw and not by their glyph ids, see
 # MANGAL_OUTLINES below, so it has no table of its own here. The entry is
 # what puts the font on the list of the ones that are repaired at all
@@ -428,9 +505,16 @@ MANGAL_OUTLINES = { \
     '79ff8103748e6385': 'ल्यू',             # gid 76, seen in डब्ल्यू \
 }
 
-BROKEN_FONTS = {'Arial Unicode MS': ARIAL_UNICODE_MS, \
-                'Nirmala UI'      : NIRMALA_UI,       \
-                'Mangal'          : MANGAL}
+BROKEN_FONTS = {'Arial Unicode MS'  : ARIAL_UNICODE_MS,   \
+                'Nirmala UI'        : NIRMALA_UI,         \
+                'Mangal'            : MANGAL,             \
+                # the weights of the unicode Nudi, which a pdf names
+                # apart and which share one glyph order, see
+                # NUDI_UNI_GLYPH_COUNT \
+                'NudiUni01e'        : NUDI_UNI_KANNADA,   \
+                'NudiUni01k'        : NUDI_UNI_KANNADA,   \
+                'NudiUni02e'        : NUDI_UNI_KANNADA,   \
+                'NudiUniAnanth05e'  : NUDI_UNI_KANNADA}
 
 # the glyphs to repair by what they draw rather than by their glyph id, for a
 # font whose subsets are renumbered - see MANGAL_OUTLINES above
@@ -447,7 +531,11 @@ BROKEN_FONT_OUTLINES = {'Mangal': MANGAL_OUTLINES}
 # A font that is not named here has no such constraint, which is not a claim
 # that its ids are safe everywhere - only that this corpus has never carried
 # it in a second numbering. Nirmala UI is carried in four
-BROKEN_FONT_GLYPH_COUNTS = {'Nirmala UI': NIRMALA_UI_GLYPH_COUNT}
+BROKEN_FONT_GLYPH_COUNTS = {'Nirmala UI'      : NIRMALA_UI_GLYPH_COUNT, \
+                            'NudiUni01e'      : NUDI_UNI_GLYPH_COUNT,  \
+                            'NudiUni01k'      : NUDI_UNI_GLYPH_COUNT,  \
+                            'NudiUni02e'      : NUDI_UNI_GLYPH_COUNT,  \
+                            'NudiUniAnanth05e': NUDI_UNI_GLYPH_COUNT}
 
 # the font whose glyph ids a type3 font of a distilled gazette names its
 # glyphs after, see fix_type3_fonts below
@@ -457,9 +545,13 @@ TYPE3_GLYPH_FONT = 'Arial Unicode MS'
 # but still in the order in which the glyphs are drawn, so it has to go
 # through this converter of indic2unicode and not through the one that is
 # named after the font, which is for the text of a pdf that was not repaired
-FONT_CONVERTERS = {'Arial Unicode MS': 'arialuni_glyphs', \
-                   'Nirmala UI'      : 'nirmalaui_glyphs', \
-                   'Mangal'          : 'mangal_glyphs'}
+FONT_CONVERTERS = {'Arial Unicode MS'  : 'arialuni_glyphs',   \
+                   'Nirmala UI'        : 'nirmalaui_glyphs', \
+                   'Mangal'            : 'mangal_glyphs',    \
+                   'NudiUni01e'        : 'nudiuni_glyphs',   \
+                   'NudiUni01k'        : 'nudiuni_glyphs',   \
+                   'NudiUni02e'        : 'nudiuni_glyphs',   \
+                   'NudiUniAnanth05e'  : 'nudiuni_glyphs'}
 
 # the styles of a family, which a pdf carries as fonts of their own named
 # "Nirmala UI,Bold" or "NirmalaUI-Bold"
