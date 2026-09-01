@@ -3,6 +3,7 @@ from indic2unicode.fonts.hindi import aryan2, surekh, chanakya, arialuni, \
 from indic2unicode.fonts.glyphs import arialuni_glyphs, nirmalaui_glyphs, \
                                        mangal_glyphs, nudiuni_glyphs
 from indic2unicode.fonts.kannada import tunga, nudi, aklite
+from indic2unicode.fonts.tamil import tamelango
 
 class FontConv:
     def __init__(self):
@@ -19,6 +20,7 @@ class FontConv:
         nudikObj    = nudi.NudiKannadaDigits()
         akliteObj   = aklite.Aklite()
         nudiuniObj  = nudiuni_glyphs.NudiUniGlyphs()
+        tamelangoObj = tamelango.TamElango()
         self.converters = { 
             'aryan2': aryanObj, 'divya':  aryanObj, 'surekh': surekhObj,
             'chanakya': chanakyaObj, 'krutidev': chanakyaObj,  
@@ -56,13 +58,19 @@ class FontConv:
             # It is reached through get_font_converter(), which names only
             # the fonts that really were repaired in this document
             'nudiuni_glyphs': nudiuniObj,
+            # the tamil of the Tamil Nadu gazette. An 8-bit font like Nudi,
+            # and the whole TAM_ELANGO family shares the TAM layout, so the
+            # family name is a key here beside the faces the corpus carries
+            'tamelango': tamelangoObj, 'tam_elango': tamelangoObj,
+            'TAM_ELANGO_Panchali': tamelangoObj,
+            'TAM_ELANGO_Kapilan': tamelangoObj,
         }
 
         self.uniqfonts = ['aryan2', 'surekh', 'chanakya', 'arialuni', \
                           'arialuni_glyphs', 'nirmalaui', 'nirmalaui_glyphs', \
                           'mangal_glyphs', 'tunga', 'nudi', \
                           'nudi_kannada_digits', 'aklite', \
-                          'nudiuni_glyphs']
+                          'nudiuni_glyphs', 'tamelango']
  
     def to_unicode(self, fontname, text):
         return self.converters[fontname].to_unicode(text)
