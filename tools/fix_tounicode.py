@@ -24,6 +24,12 @@ only outlines, so nothing in it says what those glyphs are and they are
 repaired from MANGAL_OUTLINES, a table keyed by what a glyph draws rather
 than by its glyph id - this producer renumbers the glyphs of every subset.
 
+The Tamil Nadu gazettes that are set in TAUElangoPanchali are broken the
+first way again - the pairing slips on the vowel signs tamil draws in front
+of their consonant, so கூறிற்காக comes out as கூறிற்்கநா்க - but there the
+font says nothing at all: its subsets carry neither a cmap nor a post nor a
+GSUB either, so every glyph of it is repaired from TAU_ELANGO_PANCHALI.
+
 The glyphs themselves are drawn correctly, so the text on the page is right
 and only its extraction is wrong. The map is built again out of the font
 itself, which says what its glyphs are three times over: the cmap of the
@@ -36,9 +42,10 @@ nor a cmap entry nor a rule for them - are repaired from a table.
 
 The text that comes out of the repaired pdf is in the visual order of the
 glyphs, so it still has to go through fonts/glyphs/arialuni_glyphs.py
-(Arial Unicode MS), fonts/glyphs/nirmalaui_glyphs.py (Nirmala UI) or
-fonts/glyphs/mangal_glyphs.py (Mangal) to be put in the order that
-unicode wants.
+(Arial Unicode MS), fonts/glyphs/nirmalaui_glyphs.py (Nirmala UI),
+fonts/glyphs/mangal_glyphs.py (Mangal), fonts/glyphs/nudiuni_glyphs.py
+(NudiUni) or fonts/glyphs/tauelango_glyphs.py (TAUElangoPanchali) to be put
+in the order that unicode wants - see FONT_CONVERTERS below.
 
 USAGE:
     python fix_tounicode.py input.pdf output.pdf
@@ -56,7 +63,7 @@ import pymupdf
 from fontTools.pens.recordingPen import DecomposingRecordingPen
 from fontTools.ttLib import TTFont
 
-from indic2unicode.langs import kannada
+from indic2unicode.langs import kannada, tamil
 
 # the glyphs that the shaper made. They have no name of their own in the
 # font, so the string of every one of them is repaired by hand. The string
@@ -419,6 +426,141 @@ NUDI_UNI_KANNADA.update(kannada_block(102, KANNADA_CONSONANTS, \
 # The guard is what drops it for a numbering that is not this one
 NUDI_UNI_GLYPH_COUNT = 425
 
+# ---------------------------------------------------------------------------
+# TAU Elango Panchali, the tamil of the Tamil Nadu gazette
+#
+# fonts/tamil/tamelango.py decodes TAM_ELANGO_Panchali, the legacy 8 bit font
+# of the same foundry, whose text is the keys the typist pressed. TAUElango-
+# Panchali is the unicode font of that family and is a different problem: its
+# glyphs really are tamil, and what is wrong is the map. The subsets carry
+# neither a cmap nor a post nor a GSUB, only outlines - nothing in the font
+# says what any of its glyphs are - and the producer's map was built by
+# pairing the glyphs of a run with the characters of that run one by one, so
+# it slips on exactly the glyphs tamil shaping moved: கூறிற்காக comes out as
+# கூறிற்்கநா்க, the one glyph of கா being handed a '்க' and the ா a 'நா'.
+#
+# The slip is a different one in every document, which is why the map cannot
+# be corrected out of itself: glyph 151 is the vowel sign ா, and of the maps
+# read out of this corpus one calls it 'நா' and the next 'ோ'. What every one
+# of them does agree on is the blocks below - the maps of two documents agree
+# on ~90% of the glyphs they share, and the ~10% they differ on all sit in
+# the region this table repairs.
+#
+# The whole font is 301 glyphs and it lays them out in blocks:
+#
+#   0..99      the macintosh standard glyph order, which every map in this
+#              corpus gets right and which is therefore left as it is
+#   100..113   the dashes, the quotes and a handful of latin extras
+#   114..184   the tamil block, one glyph per assigned codepoint of it, in
+#              codepoint order and skipping ௐ, which the font does not draw
+#   185..207   every consonant with a pulli on it
+#   208..230   every consonant with the vowel sign i written into it
+#   231..253   the same with the sign ii
+#   254..271   the eighteen tamil consonants with the sign u
+#   272..289   the same with the sign uu
+#   290..300   the ligatures - க்ஷ and ஸ்ரீ, and eight glyphs no document of
+#              this corpus draws
+#
+# The blocks of 23 run through the eighteen tamil consonants in the order
+# langs/tamil.CONSONANT_TOKENS gives and then the five grantha letters, ஶ
+# first and க்ஷ not among them at all - க்ஷ carries no vowel sign in this
+# corpus and is a ligature at 290 instead. The u and uu blocks are the
+# eighteen tamil letters only: a grantha letter takes those two signs as
+# glyphs of their own, at 154 and 155.
+#
+# Every reading was established by rendering the glyphs out of the embedded
+# subsets of ~1,500 documents of the corpus (no one document carries them
+# all) and reading them against the pages that draw them. The blocks are
+# corroborated by the maps themselves: from glyph 208 on the producers' maps
+# are right, and every one of their entries falls where these blocks put it.
+TAMIL_UNICODE = tamil.TamilUnicode().tokendict
+
+# one glyph per assigned codepoint of the tamil block, in codepoint order,
+# 0B82 through 0BFA. The ranges are written out rather than read off
+# unicodedata: the whole table hangs on this list being exactly 71 long -
+# 114 + 70 is 184, and 185 is where the pulli block starts - so it must not
+# be able to shift under a python whose unicode data assigns a codepoint
+# this block leaves out today.
+#
+# ௐ (0BD0) falls in the gap between 0BCD and 0BD7 and so is skipped here,
+# which is the font's own doing: it draws no om sign, and that is what puts
+# ௗ at 163 and the tamil digit one at 165, where the two glyphs really are
+TAMIL_CODEPOINTS = [chr(code) \
+                    for first, last in ((0x0b82, 0x0b83), (0x0b85, 0x0b8a), \
+                                        (0x0b8e, 0x0b90), (0x0b92, 0x0b95), \
+                                        (0x0b99, 0x0b9a), (0x0b9c, 0x0b9c), \
+                                        (0x0b9e, 0x0b9f), (0x0ba3, 0x0ba4), \
+                                        (0x0ba8, 0x0baa), (0x0bae, 0x0bb9), \
+                                        (0x0bbe, 0x0bc2), (0x0bc6, 0x0bc8), \
+                                        (0x0bca, 0x0bcd), (0x0bd7, 0x0bd7), \
+                                        (0x0be6, 0x0bfa)) \
+                    for code in range(first, last + 1)]
+
+# the eighteen letters of tamil proper, in the order the script lists them
+# and the font lays them out
+TAMIL_CONSONANTS = [TAMIL_UNICODE[token] \
+                    for token in tamil.CONSONANT_TOKENS[:18]]
+
+# the five grantha letters that follow them in every block of 23. The order
+# is the font's own and is neither the codepoint order (ஜ, then ஶ ஷ ஸ ஹ) nor
+# the one the script lists them in (ஜ ஷ ஸ ஹ க்ஷ): ஸ் sits at 204 and ஷ் at
+# 205, ஜ் at 206 and ஹ் at 207, read off the glyphs themselves. ஶ is the
+# first of the five and no subset of this corpus carries a glyph for it in
+# any block - nor for the plain ஶ at 147 - which is what the order and the
+# block width leave for it
+TAMIL_GRANTHA = [TAMIL_UNICODE[token] \
+                 for token in ('SHA', 'SA', 'SSA', 'JA', 'HA')]
+
+def tamil_block(gid, letters, sign):
+    '''a block of one glyph per letter, each of them drawn with the vowel
+       sign or the pulli that the block is of'''
+    return {gid + i: letter + sign for i, letter in enumerate(letters)}
+
+TAU_ELANGO_PANCHALI = {114 + i: char \
+                       for i, char in enumerate(TAMIL_CODEPOINTS)}
+# the pulli forms and the two vowel signs that every letter takes, the five
+# grantha letters after the eighteen tamil ones
+TAU_ELANGO_PANCHALI.update( \
+    tamil_block(185, TAMIL_CONSONANTS + TAMIL_GRANTHA, \
+                TAMIL_UNICODE['PULLI']))
+TAU_ELANGO_PANCHALI.update( \
+    tamil_block(208, TAMIL_CONSONANTS + TAMIL_GRANTHA, \
+                TAMIL_UNICODE['MATRA_I']))
+TAU_ELANGO_PANCHALI.update( \
+    tamil_block(231, TAMIL_CONSONANTS + TAMIL_GRANTHA, \
+                TAMIL_UNICODE['MATRA_II']))
+# the signs u and uu, which only the eighteen tamil letters are drawn with
+TAU_ELANGO_PANCHALI.update( \
+    tamil_block(254, TAMIL_CONSONANTS, TAMIL_UNICODE['MATRA_U']))
+TAU_ELANGO_PANCHALI.update( \
+    tamil_block(272, TAMIL_CONSONANTS, TAMIL_UNICODE['MATRA_UU']))
+TAU_ELANGO_PANCHALI.update({ \
+    # the two syllables the font draws as one glyph of their own. 290 is
+    # read in யார்க்ஷையர் and 294 in ஸ்ரீதர் and ஸ்ரீகுரு
+    290: TAMIL_UNICODE['KSSA'], \
+    294: TAMIL_UNICODE['SHRI'], \
+})
+
+# The glyphs 291 to 293 and 295 to 300 are ligatures of the same kind that no
+# document of this corpus draws and that no subset of it carries, so nothing
+# says what they are and they are left as the pdf has them - a glyph left
+# alone loses the improvement, a glyph read wrongly destroys the text around
+# it. The same holds for 100 to 113, which are latin punctuation the maps of
+# this corpus already get right
+
+# This font is deliberately absent from BROKEN_FONT_GLYPH_COUNTS below. The
+# gazette carries it in eighteen different glyph counts - a full 301 glyph
+# subset in most documents and truncated ones of 295, 290, 288, 285, 284,
+# 282, 271, 270, 255, 93, 90, 73, 65, 63, 29, 27 and 26 glyphs in the rest -
+# but that producer's subsetter only ever drops the glyphs off the end and
+# never renumbers what it keeps: of 505 subsets read out of 900 documents,
+# every one of the 19,336 glyphs they share with the 301 glyph subset this
+# table was read off draws the identical outline, with no disagreement
+# anywhere. Holding the table to 301 would therefore refuse the repair for
+# the ~7% of subsets that are merely short - one of them, a 295 glyph subset,
+# sets the whole body of a change of names gazette - and refuse it for
+# nothing
+
 # Mangal is repaired by what its glyphs draw and not by their glyph ids, see
 # MANGAL_OUTLINES below, so it has no table of its own here. The entry is
 # what puts the font on the list of the ones that are repaired at all
@@ -514,7 +656,12 @@ BROKEN_FONTS = {'Arial Unicode MS'  : ARIAL_UNICODE_MS,   \
                 'NudiUni01e'        : NUDI_UNI_KANNADA,   \
                 'NudiUni01k'        : NUDI_UNI_KANNADA,   \
                 'NudiUni02e'        : NUDI_UNI_KANNADA,   \
-                'NudiUniAnanth05e'  : NUDI_UNI_KANNADA}
+                'NudiUniAnanth05e'  : NUDI_UNI_KANNADA,   \
+                # the tamil of the Tamil Nadu gazette. Only this face of
+                # the TAU Elango family carries a broken map - the text of
+                # TAUElangoPanchali-SC700 and of TAUElangoValluvan extracts
+                # correctly, and font_lookup_key keeps all three apart
+                'TAUElangoPanchali' : TAU_ELANGO_PANCHALI}
 
 # the glyphs to repair by what they draw rather than by their glyph id, for a
 # font whose subsets are renumbered - see MANGAL_OUTLINES above
@@ -551,7 +698,8 @@ FONT_CONVERTERS = {'Arial Unicode MS'  : 'arialuni_glyphs',   \
                    'NudiUni01e'        : 'nudiuni_glyphs',   \
                    'NudiUni01k'        : 'nudiuni_glyphs',   \
                    'NudiUni02e'        : 'nudiuni_glyphs',   \
-                   'NudiUniAnanth05e'  : 'nudiuni_glyphs'}
+                   'NudiUniAnanth05e'  : 'nudiuni_glyphs',  \
+                   'TAUElangoPanchali' : 'tauelango_glyphs'}
 
 # the styles of a family, which a pdf carries as fonts of their own named
 # "Nirmala UI,Bold" or "NirmalaUI-Bold"

@@ -1,7 +1,8 @@
 from indic2unicode.fonts.hindi import aryan2, surekh, chanakya, arialuni, \
                                      nirmalaui
 from indic2unicode.fonts.glyphs import arialuni_glyphs, nirmalaui_glyphs, \
-                                       mangal_glyphs, nudiuni_glyphs
+                                       mangal_glyphs, nudiuni_glyphs, \
+                                       tauelango_glyphs
 from indic2unicode.fonts.kannada import tunga, nudi, aklite
 from indic2unicode.fonts.tamil import tamelango
 
@@ -21,6 +22,7 @@ class FontConv:
         akliteObj   = aklite.Aklite()
         nudiuniObj  = nudiuni_glyphs.NudiUniGlyphs()
         tamelangoObj = tamelango.TamElango()
+        tauelangoObj = tauelango_glyphs.TauElangoPanchaliGlyphs()
         self.converters = { 
             'aryan2': aryanObj, 'divya':  aryanObj, 'surekh': surekhObj,
             'chanakya': chanakyaObj, 'krutidev': chanakyaObj,  
@@ -64,13 +66,24 @@ class FontConv:
             'tamelango': tamelangoObj, 'tam_elango': tamelangoObj,
             'TAM_ELANGO_Panchali': tamelangoObj,
             'TAM_ELANGO_Kapilan': tamelangoObj,
+            # no bare 'TAUElangoPanchali' key here, for the reason
+            # mangal_glyphs and nudiuni_glyphs have none: this is a
+            # reordering pass for the text of a pdf that fix_tounicode.py
+            # has already repaired, and an unrepaired TAUElangoPanchali is
+            # not merely out of order - its map hands the glyphs the wrong
+            # characters outright, and reordering those would only move the
+            # wrong text about. It is reached through get_font_converter(),
+            # which names only the fonts that really were repaired in this
+            # document
+            'tauelango_glyphs': tauelangoObj,
         }
 
         self.uniqfonts = ['aryan2', 'surekh', 'chanakya', 'arialuni', \
                           'arialuni_glyphs', 'nirmalaui', 'nirmalaui_glyphs', \
                           'mangal_glyphs', 'tunga', 'nudi', \
                           'nudi_kannada_digits', 'aklite', \
-                          'nudiuni_glyphs', 'tamelango']
+                          'nudiuni_glyphs', 'tamelango', \
+                          'tauelango_glyphs']
  
     def to_unicode(self, fontname, text):
         return self.converters[fontname].to_unicode(text)
