@@ -561,6 +561,140 @@ TAU_ELANGO_PANCHALI.update({ \
 # sets the whole body of a change of names gazette - and refuse it for
 # nothing
 
+# Uni-Ila.Sundaram, the tamil that the Tamil Nadu gazette sets a notification
+# in where TAUElangoPanchali sets the body of it - 929 of the 8,248 documents
+# of that corpus draw 38,175 words in it, and a good many of them draw both.
+#
+# Its map is broken the same way TAU Elango's is and by a producer that knew
+# it: the map is built by pairing the glyphs of a cluster with the characters
+# of it, and this one hands the *first* glyph of a cluster the whole cluster
+# and every glyph after it the cluster's last character. So the two glyph
+# cluster மா is a ம that says "மா" and a ா that says "ா" and extracts as
+# மாா, and லை - drawn ை first, tamil putting that sign in front of its
+# letter - is a ை that says "லை" and a ல that says "ை" and extracts as லைை.
+# A glyph a document draws in more than one cluster can only be given one
+# reading, so the rest come out as some other cluster's, and the producer
+# papers over those with an /ActualText span (which pdfminer does not read)
+# that carries the same doubling: அறிவிக்கை is spanned as அறிவிக்கைை.
+#
+# A single glyph cluster - a consonant with the pulli on it, or with one of
+# the four vowel signs this font draws into the letter - is a cluster whose
+# first glyph is its only glyph, so those entries are right, and it is those
+# that corroborate the blocks below: over the 1,072 documents of the corpus
+# that carry this font, the reading these blocks give is the most frequent
+# one the maps themselves hold for every one of the 90 glyphs whose id falls
+# in a block and that any map names at all.
+#
+# The subsets carry neither a cmap nor a post nor a GSUB, only outlines, so
+# nothing in the font can be read back and this table is the whole of what is
+# known about its glyphs. Every reading in it was rendered off the embedded
+# subsets - no one document carries them all, so the glyphs were merged over
+# the 1,363 subsets of the -03 face that the corpus carries - and read against
+# the pages that draw them.
+#
+# The whole family shares one glyph order. This corpus carries the faces
+# Uni-Ila.Sundaram-01, -03, -04, -07 and -03-SC700, all of them 327 glyphs,
+# and -03-SC700 is not a face of its own at all: every one of the 119 glyphs
+# its subsets share with the -03 ones draws the identical outline, so despite
+# its name it is that font - the opposite of TAUElangoPanchali-SC700 above,
+# which really is another font and whose map is sound. -01, -04 and -07 do
+# draw typefaces of their own, and it is their maps that place them here:
+# 50 of the 57 glyph ids -01's name carry the reading this table gives, and
+# so does the one that -07's names. The seven of -01's that they do not are
+# all pulli forms its maps write as the bare consonant (225 as ங rather than
+# ங்) - a second bug of the same producer, which -03's own maps show too,
+# 224 being க் in 536 of this corpus's maps and a bare க in 152 of them - and
+# not a difference in the order. -04 names one glyph in the whole corpus, 126
+# as '~', which the -03 maps also call '~' three times where 34 of them call
+# it ஏ.
+
+# the assigned codepoints of the tamil block, 0B83 through 0BCD, one glyph
+# each and in codepoint order. ஶ (0BB6) is skipped, which is the font's own
+# doing - it draws no ஶ anywhere, in this block or in any of the ones below,
+# and that is what puts ஷ at 150 and the vowel sign ா at 153, where the two
+# glyphs really are. The ranges are written out rather than read off
+# unicodedata for the reason TAMIL_CODEPOINTS above is: the blocks that
+# follow hang on this list being exactly 47 long, so it must not be able to
+# shift under a python whose unicode data assigns a codepoint it leaves out
+# today.
+#
+# The block is anchored on ஃ at 118 and not on the anusvara ஂ at 117: the
+# maps of this corpus name 118 ஃ and never name 117 anything but the latin
+# 'u' of a document whose whole map has slipped into the latin range, and
+# tamil writes no anusvara, so whether the font carries a glyph for it - and
+# so whether this block starts at 117 or at 118 - is exactly what the corpus
+# cannot say. Starting it at 118 leaves 117 as the pdf has it, which costs a
+# character no tamil document writes
+UNI_ILA_CODEPOINTS = [chr(code) \
+                      for first, last in ((0x0b83, 0x0b83), (0x0b85, 0x0b8a), \
+                                          (0x0b8e, 0x0b90), (0x0b92, 0x0b95), \
+                                          (0x0b99, 0x0b9a), (0x0b9c, 0x0b9c), \
+                                          (0x0b9e, 0x0b9f), (0x0ba3, 0x0ba4), \
+                                          (0x0ba8, 0x0baa), (0x0bae, 0x0bb5), \
+                                          (0x0bb7, 0x0bb9), (0x0bbe, 0x0bc2), \
+                                          (0x0bc6, 0x0bc8), (0x0bca, 0x0bcd)) \
+                      for code in range(first, last + 1)]
+
+# the 22 consonants of that block, in the same codepoint order the font lays
+# them out in - which is not the order tamil.CONSONANT_TOKENS lists them in
+# and so not the one TAU Elango's blocks run through: ன follows ந here,
+# where the script puts it last of the eighteen
+UNI_ILA_CONSONANTS = [char for char in UNI_ILA_CODEPOINTS \
+                      if 'க' <= char <= 'ஹ']
+
+# the eighteen letters of tamil proper among them. The signs u and uu are
+# drawn into the letter and the font draws them into these eighteen only, so
+# the grantha letters - ஜ among them, which codepoint order puts in the
+# middle of the eighteen rather than after them - fall out of those two
+# blocks and out of them alone
+UNI_ILA_TAMIL_CONSONANTS = [char for char in UNI_ILA_CONSONANTS \
+                            if char not in TAMIL_GRANTHA]
+
+UNI_ILA_SUNDARAM = {118 + i: char \
+                    for i, char in enumerate(UNI_ILA_CODEPOINTS)}
+# the two vowel signs that are drawn into a letter without changing which
+# eighteen take them, and the pulli. Each block is 23 wide where the letters
+# are 22, and what the 23rd slot of it draws is not known - no subset of the
+# corpus carries a glyph at 200, 223 or 246 and no map of it names one - so
+# those three are left as the pdf has them
+UNI_ILA_SUNDARAM.update( \
+    tamil_block(178, UNI_ILA_CONSONANTS, TAMIL_UNICODE['MATRA_I']))
+UNI_ILA_SUNDARAM.update( \
+    tamil_block(201, UNI_ILA_CONSONANTS, TAMIL_UNICODE['MATRA_II']))
+UNI_ILA_SUNDARAM.update( \
+    tamil_block(224, UNI_ILA_CONSONANTS, TAMIL_UNICODE['PULLI']))
+# the signs u and uu, which only the eighteen tamil letters are drawn with
+UNI_ILA_SUNDARAM.update( \
+    tamil_block(247, UNI_ILA_TAMIL_CONSONANTS, TAMIL_UNICODE['MATRA_U']))
+UNI_ILA_SUNDARAM.update( \
+    tamil_block(265, UNI_ILA_TAMIL_CONSONANTS, TAMIL_UNICODE['MATRA_UU']))
+UNI_ILA_SUNDARAM.update({ \
+    # ஸ்ரீ, which the font draws as a single glyph of its own \
+    284: TAMIL_UNICODE['SHRI'], \
+})
+
+# What this table leaves out is 165 to 177 and 283, 285 to 303 and 306 to
+# 326. The first is the tail of the codepoint block - the om sign, the au
+# length mark, the tamil digits and the numeric signs - and it cannot be read
+# off the order the way the head of it can: no subset of the corpus carries a
+# glyph anywhere in that range and no map of it names one, so whether the
+# font draws ௐ (and so whether ௗ is 165 or 166) is exactly what is not known.
+# The cost of that is ௌ, which this font draws the way it draws ொ, out of a
+# ெ in front of the letter and a length mark behind it - a syllable no
+# document of this corpus writes. The rest are ligatures of the kind 284 is,
+# and the same holds for them: nothing says what they are, and a glyph left
+# alone loses an improvement where a glyph read wrongly destroys the text
+# around it.
+#
+# This font is deliberately absent from BROKEN_FONT_GLYPH_COUNTS below, for
+# the reason TAU Elango is: the corpus carries it in 327 glyphs and in
+# truncated subsets of 305, 283, 281, 280, 278, 277, 276, 275, 272 and fewer,
+# and that subsetter only ever drops the glyphs off the end. Of the 1,363
+# subsets of that face read out of those 1,072 documents, exactly one glyph
+# disagrees with the rest about what it draws - 267, in a file that names
+# itself both -03 and -01, which is the second typeface drawing its own சூ in
+# the same slot
+
 # Mangal is repaired by what its glyphs draw and not by their glyph ids, see
 # MANGAL_OUTLINES below, so it has no table of its own here. The entry is
 # what puts the font on the list of the ones that are repaired at all
@@ -661,7 +795,20 @@ BROKEN_FONTS = {'Arial Unicode MS'  : ARIAL_UNICODE_MS,   \
                 # the TAU Elango family carries a broken map - the text of
                 # TAUElangoPanchali-SC700 and of TAUElangoValluvan extracts
                 # correctly, and font_lookup_key keeps all three apart
-                'TAUElangoPanchali' : TAU_ELANGO_PANCHALI}
+                'TAUElangoPanchali' : TAU_ELANGO_PANCHALI, \
+                # the other tamil of the same gazette. The faces of this
+                # family draw typefaces of their own and share one glyph
+                # order, so one table serves them all - they are named one
+                # by one because font_lookup_key keeps a face number, which
+                # is what keeps TAUElangoPanchali-SC700 (whose map is sound)
+                # apart from TAUElangoPanchali above. Here the SC700 face
+                # carries the same broken map as the rest and is repaired
+                # with them \
+                'Uni-Ila.Sundaram-01'      : UNI_ILA_SUNDARAM, \
+                'Uni-Ila.Sundaram-03'      : UNI_ILA_SUNDARAM, \
+                'Uni-Ila.Sundaram-03-SC700': UNI_ILA_SUNDARAM, \
+                'Uni-Ila.Sundaram-04'      : UNI_ILA_SUNDARAM, \
+                'Uni-Ila.Sundaram-07'      : UNI_ILA_SUNDARAM}
 
 # the glyphs to repair by what they draw rather than by their glyph id, for a
 # font whose subsets are renumbered - see MANGAL_OUTLINES above
@@ -699,7 +846,12 @@ FONT_CONVERTERS = {'Arial Unicode MS'  : 'arialuni_glyphs',   \
                    'NudiUni01k'        : 'nudiuni_glyphs',   \
                    'NudiUni02e'        : 'nudiuni_glyphs',   \
                    'NudiUniAnanth05e'  : 'nudiuni_glyphs',  \
-                   'TAUElangoPanchali' : 'tauelango_glyphs'}
+                   'TAUElangoPanchali' : 'tauelango_glyphs', \
+                   'Uni-Ila.Sundaram-01'      : 'ilasundaram_glyphs', \
+                   'Uni-Ila.Sundaram-03'      : 'ilasundaram_glyphs', \
+                   'Uni-Ila.Sundaram-03-SC700': 'ilasundaram_glyphs', \
+                   'Uni-Ila.Sundaram-04'      : 'ilasundaram_glyphs', \
+                   'Uni-Ila.Sundaram-07'      : 'ilasundaram_glyphs'}
 
 # the styles of a family, which a pdf carries as fonts of their own named
 # "Nirmala UI,Bold" or "NirmalaUI-Bold"

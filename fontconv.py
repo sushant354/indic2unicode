@@ -2,7 +2,7 @@ from indic2unicode.fonts.hindi import aryan2, surekh, chanakya, arialuni, \
                                      nirmalaui
 from indic2unicode.fonts.glyphs import arialuni_glyphs, nirmalaui_glyphs, \
                                        mangal_glyphs, nudiuni_glyphs, \
-                                       tauelango_glyphs
+                                       tauelango_glyphs, ilasundaram_glyphs
 from indic2unicode.fonts.kannada import tunga, nudi, aklite
 from indic2unicode.fonts.tamil import tamelango
 
@@ -23,6 +23,7 @@ class FontConv:
         nudiuniObj  = nudiuni_glyphs.NudiUniGlyphs()
         tamelangoObj = tamelango.TamElango()
         tauelangoObj = tauelango_glyphs.TauElangoPanchaliGlyphs()
+        ilasundaramObj = ilasundaram_glyphs.UniIlaSundaramGlyphs()
         self.converters = { 
             'aryan2': aryanObj, 'divya':  aryanObj, 'surekh': surekhObj,
             'chanakya': chanakyaObj, 'krutidev': chanakyaObj,  
@@ -76,6 +77,14 @@ class FontConv:
             # which names only the fonts that really were repaired in this
             # document
             'tauelango_glyphs': tauelangoObj,
+            # the other tamil of the same gazette, and no bare font name key
+            # here either, for the same reason: an unrepaired
+            # Uni-Ila.Sundaram is not merely out of order - its map hands the
+            # first glyph of every cluster the whole cluster and the glyphs
+            # behind it the cluster's last character, so மாவட்டம் extracts as
+            # மாாவட்டம். It is reached through get_font_converter(), which
+            # names only the fonts that really were repaired in this document
+            'ilasundaram_glyphs': ilasundaramObj,
         }
 
         self.uniqfonts = ['aryan2', 'surekh', 'chanakya', 'arialuni', \
@@ -83,7 +92,7 @@ class FontConv:
                           'mangal_glyphs', 'tunga', 'nudi', \
                           'nudi_kannada_digits', 'aklite', \
                           'nudiuni_glyphs', 'tamelango', \
-                          'tauelango_glyphs']
+                          'tauelango_glyphs', 'ilasundaram_glyphs']
  
     def to_unicode(self, fontname, text):
         return self.converters[fontname].to_unicode(text)
