@@ -4,7 +4,7 @@ from indic2unicode.fonts.glyphs import arialuni_glyphs, nirmalaui_glyphs, \
                                        mangal_glyphs, nudiuni_glyphs, \
                                        tauelango_glyphs, ilasundaram_glyphs
 from indic2unicode.fonts.kannada import tunga, nudi, aklite
-from indic2unicode.fonts.tamil import tamelango
+from indic2unicode.fonts.tamil import tamelango, vanavil
 
 class FontConv:
     def __init__(self):
@@ -22,6 +22,7 @@ class FontConv:
         akliteObj   = aklite.Aklite()
         nudiuniObj  = nudiuni_glyphs.NudiUniGlyphs()
         tamelangoObj = tamelango.TamElango()
+        vanavilObj   = vanavil.Vanavil()
         tauelangoObj = tauelango_glyphs.TauElangoPanchaliGlyphs()
         ilasundaramObj = ilasundaram_glyphs.UniIlaSundaramGlyphs()
         self.converters = { 
@@ -67,6 +68,19 @@ class FontConv:
             'tamelango': tamelangoObj, 'tam_elango': tamelangoObj,
             'TAM_ELANGO_Panchali': tamelangoObj,
             'TAM_ELANGO_Kapilan': tamelangoObj,
+            # the tamil of the Vanavil typing package, an 8 bit font of
+            # the same kind and, after those two, the most drawn font of the
+            # Tamil Nadu gazette. One key for the family: every face of it a
+            # document carries (VANAVILAvvaiyar, VANAVILAvvaiyarBold,
+            # VANAVIL-Avvaiyar, VANAVILDBAvvaiyarBold, VANAVILAlayarasi)
+            # shares this encoding. The same typeface is also carried in the
+            # TAM layout and in the TAB one, and those name themselves with
+            # the layout in front of the typeface (TAMVANAVILAvvaiyar,
+            # TAM-VANAVIL-Avvaiyar, TABVanavilAvvaiyar) - the first of those
+            # two is tamelango's above and the second has no converter here
+            # at all, so a caller matching this key on a pdf font name has
+            # to hold it to a name that starts with it
+            'vanavil': vanavilObj,
             # no bare 'TAUElangoPanchali' key here, for the reason
             # mangal_glyphs and nudiuni_glyphs have none: this is a
             # reordering pass for the text of a pdf that fix_tounicode.py
@@ -92,7 +106,8 @@ class FontConv:
                           'mangal_glyphs', 'tunga', 'nudi', \
                           'nudi_kannada_digits', 'aklite', \
                           'nudiuni_glyphs', 'tamelango', \
-                          'tauelango_glyphs', 'ilasundaram_glyphs']
+                          'tauelango_glyphs', 'ilasundaram_glyphs', \
+                          'vanavil']
  
     def to_unicode(self, fontname, text):
         return self.converters[fontname].to_unicode(text)
