@@ -30,6 +30,23 @@ of their consonant, so கூறிற்காக comes out as கூறிற�
 font says nothing at all: its subsets carry neither a cmap nor a post nor a
 GSUB either, so every glyph of it is repaired from TAU_ELANGO_PANCHALI.
 
+The Tamil Nadu gazettes that are set in TAU-Marutham are broken in a way of
+their own, and the fault is not in the map alone: that producer re-encodes the
+font. It carries one font both as Type0/Identity-H fonts with a map of their
+own and as simple TrueType fonts with WinAnsiEncoding or MacRomanEncoding and
+no map at all, and it gives each subset whatever latin bytes it needs, a byte
+per glyph in the order that document wanted them. So the simple ones extract
+as latin exactly as a legacy 8 bit font does, the identity encoded ones
+extract as tamil with a stray latin letter or nothing at all wherever the font
+draws a syllable as one glyph, and nothing a subset says about its own glyphs
+- its cmap, the names in its post table - is about the glyphs at all. Such a
+font is named in RE_ENCODED_FONTS, which is what stops the font itself being
+believed over TAU_MARUTHAM; its simple embeddings are repaired by
+fix_simple_font, which reads the byte -> glyph id mapping out of the subset's
+cmap - the one question this producer's cmap does answer - and writes a map
+keyed by the byte; and its embeddings that carry no map at all are given one
+built from the table, the code of a glyph being its glyph id there.
+
 The glyphs themselves are drawn correctly, so the text on the page is right
 and only its extraction is wrong. The map is built again out of the font
 itself, which says what its glyphs are three times over: the cmap of the
@@ -44,8 +61,9 @@ The text that comes out of the repaired pdf is in the visual order of the
 glyphs, so it still has to go through fonts/glyphs/arialuni_glyphs.py
 (Arial Unicode MS), fonts/glyphs/nirmalaui_glyphs.py (Nirmala UI),
 fonts/glyphs/mangal_glyphs.py (Mangal), fonts/glyphs/nudiuni_glyphs.py
-(NudiUni) or fonts/glyphs/tauelango_glyphs.py (TAUElangoPanchali) to be put
-in the order that unicode wants - see FONT_CONVERTERS below.
+(NudiUni), fonts/glyphs/tauelango_glyphs.py (TAUElangoPanchali) or
+fonts/glyphs/marutham_glyphs.py (TAU-Marutham) to be put in the order that
+unicode wants - see FONT_CONVERTERS below.
 
 USAGE:
     python fix_tounicode.py input.pdf output.pdf
@@ -616,7 +634,8 @@ TAU_ELANGO_PANCHALI.update({ \
 # unicodedata for the reason TAMIL_CODEPOINTS above is: the blocks that
 # follow hang on this list being exactly 47 long, so it must not be able to
 # shift under a python whose unicode data assigns a codepoint it leaves out
-# today.
+# today. TAU-Marutham below lays out the same 47 codepoints and skips ஶ
+# where this font does, so the list and the consonants of it serve both.
 #
 # The block is anchored on ஃ at 118 and not on the anusvara ஂ at 117: the
 # maps of this corpus name 118 ஃ and never name 117 anything but the latin
@@ -625,44 +644,45 @@ TAU_ELANGO_PANCHALI.update({ \
 # so whether this block starts at 117 or at 118 - is exactly what the corpus
 # cannot say. Starting it at 118 leaves 117 as the pdf has it, which costs a
 # character no tamil document writes
-UNI_ILA_CODEPOINTS = [chr(code) \
-                      for first, last in ((0x0b83, 0x0b83), (0x0b85, 0x0b8a), \
-                                          (0x0b8e, 0x0b90), (0x0b92, 0x0b95), \
-                                          (0x0b99, 0x0b9a), (0x0b9c, 0x0b9c), \
-                                          (0x0b9e, 0x0b9f), (0x0ba3, 0x0ba4), \
-                                          (0x0ba8, 0x0baa), (0x0bae, 0x0bb5), \
-                                          (0x0bb7, 0x0bb9), (0x0bbe, 0x0bc2), \
-                                          (0x0bc6, 0x0bc8), (0x0bca, 0x0bcd)) \
-                      for code in range(first, last + 1)]
+TAMIL_CODEPOINTS_NO_SHA = \
+        [chr(code) \
+         for first, last in ((0x0b83, 0x0b83), (0x0b85, 0x0b8a), \
+                             (0x0b8e, 0x0b90), (0x0b92, 0x0b95), \
+                             (0x0b99, 0x0b9a), (0x0b9c, 0x0b9c), \
+                             (0x0b9e, 0x0b9f), (0x0ba3, 0x0ba4), \
+                             (0x0ba8, 0x0baa), (0x0bae, 0x0bb5), \
+                             (0x0bb7, 0x0bb9), (0x0bbe, 0x0bc2), \
+                             (0x0bc6, 0x0bc8), (0x0bca, 0x0bcd)) \
+         for code in range(first, last + 1)]
 
 # the 22 consonants of that block, in the same codepoint order the font lays
 # them out in - which is not the order tamil.CONSONANT_TOKENS lists them in
 # and so not the one TAU Elango's blocks run through: ன follows ந here,
 # where the script puts it last of the eighteen
-UNI_ILA_CONSONANTS = [char for char in UNI_ILA_CODEPOINTS \
-                      if 'க' <= char <= 'ஹ']
+TAMIL_CONSONANTS_NO_SHA = [char for char in TAMIL_CODEPOINTS_NO_SHA \
+                           if 'க' <= char <= 'ஹ']
 
 # the eighteen letters of tamil proper among them. The signs u and uu are
 # drawn into the letter and the font draws them into these eighteen only, so
 # the grantha letters - ஜ among them, which codepoint order puts in the
 # middle of the eighteen rather than after them - fall out of those two
 # blocks and out of them alone
-UNI_ILA_TAMIL_CONSONANTS = [char for char in UNI_ILA_CONSONANTS \
+UNI_ILA_TAMIL_CONSONANTS = [char for char in TAMIL_CONSONANTS_NO_SHA \
                             if char not in TAMIL_GRANTHA]
 
 UNI_ILA_SUNDARAM = {118 + i: char \
-                    for i, char in enumerate(UNI_ILA_CODEPOINTS)}
+                    for i, char in enumerate(TAMIL_CODEPOINTS_NO_SHA)}
 # the two vowel signs that are drawn into a letter without changing which
 # eighteen take them, and the pulli. Each block is 23 wide where the letters
 # are 22, and what the 23rd slot of it draws is not known - no subset of the
 # corpus carries a glyph at 200, 223 or 246 and no map of it names one - so
 # those three are left as the pdf has them
 UNI_ILA_SUNDARAM.update( \
-    tamil_block(178, UNI_ILA_CONSONANTS, TAMIL_UNICODE['MATRA_I']))
+    tamil_block(178, TAMIL_CONSONANTS_NO_SHA, TAMIL_UNICODE['MATRA_I']))
 UNI_ILA_SUNDARAM.update( \
-    tamil_block(201, UNI_ILA_CONSONANTS, TAMIL_UNICODE['MATRA_II']))
+    tamil_block(201, TAMIL_CONSONANTS_NO_SHA, TAMIL_UNICODE['MATRA_II']))
 UNI_ILA_SUNDARAM.update( \
-    tamil_block(224, UNI_ILA_CONSONANTS, TAMIL_UNICODE['PULLI']))
+    tamil_block(224, TAMIL_CONSONANTS_NO_SHA, TAMIL_UNICODE['PULLI']))
 # the signs u and uu, which only the eighteen tamil letters are drawn with
 UNI_ILA_SUNDARAM.update( \
     tamil_block(247, UNI_ILA_TAMIL_CONSONANTS, TAMIL_UNICODE['MATRA_U']))
@@ -694,6 +714,181 @@ UNI_ILA_SUNDARAM.update({ \
 # disagrees with the rest about what it draws - 267, in a file that names
 # itself both -03 and -01, which is the second typeface drawing its own சூ in
 # the same slot
+
+# TAU-Marutham, the third tamil of the Tamil Nadu gazette - 163 of the 8,248
+# documents of that corpus draw 281,061 glyphs in it, very often beside
+# TAM_ELANGO_Panchali on the same page.
+#
+# It is broken a way of its own, and the fault is not in the map alone: this
+# producer re-encodes the font. It carries one font over and over in a single
+# document - six times in test/test_pdfs/tamil-marutham.pdf, as
+# Type0/Identity-H fonts with a ToUnicode map of their own and as simple
+# TrueType fonts with WinAnsiEncoding or MacRomanEncoding and no ToUnicode at
+# all - and it hands each subset whatever latin bytes it needs, a byte per
+# glyph in the order that document happened to want them. So the cmap of a
+# subset says where the producer put a glyph and not what the glyph draws,
+# and the same latin letter means a different glyph in the next subset of the
+# same document: 'k' is கு in one of them and கூ in the next, 'r' is ரி in
+# one and ரு in the next. The simple fonts therefore extract as that latin
+# (த is 't', வி is 'v'), and the identity encoded ones extract as tamil with
+# holes in it, their maps naming the letters and the pulli forms and handing
+# every syllable the font draws as one glyph either one of those latin
+# letters or nothing at all - அச்சகத் தொழிலில் comes out as
+# "அச்சகத் ெதா\x89lல்". A few of them carry no map at all and extract as
+# (cid:N) throughout, which fix_font builds a whole map for.
+#
+# Nothing at the level of the extracted text can undo that, which is why this
+# font is repaired here rather than decoded in fonts/tamil/ the way the
+# legacy 8 bit TAM_ELANGO_Panchali is: a decoder reads characters, and here
+# one character is two different glyphs in one document. It is also why the
+# font is named in RE_ENCODED_FONTS below - what a subset of it says about
+# its own glyphs, through its cmap or through the names in its post table, is
+# the producer's arbitrary encoding and has to be ignored, where for every
+# other font here it is the one thing that can be trusted.
+#
+# The whole font is 423 glyphs and it lays them out in blocks:
+#
+#   0..48      the macintosh standard glyph order as far as '@' and then the
+#              ascii punctuation that follows the capitals, the latin
+#              letters themselves being at 260 and 286
+#   49..95     the tamil block, one glyph per assigned codepoint of it in
+#              codepoint order and skipping ஶ, which this font draws no more
+#              than Uni-Ila.Sundaram does
+#   96..119    a second க at 97 and the dashes, the quotes and the ellipsis
+#              from 111
+#   120..141   every consonant with the vowel sign i written into it
+#   142..163   the same with the sign ii
+#   164..182   the sign u, over the eighteen tamil consonants and ஜ
+#   183..201   the same with the sign uu
+#   202..211   ligatures, of which only ஸ்ரீ at 208 is ever drawn
+#   212..235   every consonant with a pulli on it
+#   260..285   'A' to 'Z', and 286..311 'a' to 'z'
+#
+# The two blocks that are drawn into a letter run through the 22 consonants
+# in codepoint order, as Uni-Ila.Sundaram's do; the pulli block runs through
+# the eighteen in the order the script itself lists them, as TAU Elango's do.
+# That the one font should lay its blocks out both ways is not a reading of
+# the order - the maps of this corpus name 216 ட், 220 ப் and 229 ன், which
+# is the script's order, and 128 நி, 129 னி and 130 பி, which is codepoint
+# order - and the glyphs were rendered and read either way round to be sure
+# of it.
+#
+# Every reading was rendered out of the embedded subsets and read against the
+# pages that draw them, and the maps corroborate them: of the ~190 glyph ids
+# any map of this corpus names, all but fifteen carry the reading these
+# blocks give, and every one of the fifteen is the pairing slip TAU Elango's
+# map has - a ெ handed the வ it was drawn in front of, a ண handed the ை.
+# Repaired and put in order, six pages of test/test_pdfs/tamil-marutham.pdf
+# match a tesseract -l tam ocr of the same pages on 812 of their 861 distinct
+# tamil words, and not one of the 49 that differ is mis-read: they are words
+# the ocr itself got wrong.
+
+# the letters the u and uu blocks of this font are drawn over: the 22
+# consonants of the codepoint block without ஷ, ஸ and ஹ, which is the
+# eighteen letters of tamil proper and ஜ
+MARUTHAM_U_CONSONANTS = [char for char in TAMIL_CONSONANTS_NO_SHA \
+                         if char not in (TAMIL_UNICODE['SSA'],  \
+                                         TAMIL_UNICODE['SA'],   \
+                                         TAMIL_UNICODE['HA'])]
+
+TAU_MARUTHAM = {49 + i: char \
+                for i, char in enumerate(TAMIL_CODEPOINTS_NO_SHA)}
+# the two vowel signs the font draws into a letter, over the same 22
+# consonants Uni-Ila.Sundaram draws them into
+TAU_MARUTHAM.update( \
+    tamil_block(120, TAMIL_CONSONANTS_NO_SHA, TAMIL_UNICODE['MATRA_I']))
+TAU_MARUTHAM.update( \
+    tamil_block(142, TAMIL_CONSONANTS_NO_SHA, TAMIL_UNICODE['MATRA_II']))
+# the signs u and uu. Unlike every other font here this one draws them into
+# ஜ as well as into the eighteen letters of tamil proper, which codepoint
+# order puts in the middle of those eighteen - 166 is சு and 169 டு, so the
+# two glyphs between them are ஜு and ஞு. The other three grantha letters
+# take the two signs as glyphs of their own, somewhere this corpus does not
+# draw
+TAU_MARUTHAM.update( \
+    tamil_block(164, MARUTHAM_U_CONSONANTS, TAMIL_UNICODE['MATRA_U']))
+TAU_MARUTHAM.update( \
+    tamil_block(183, MARUTHAM_U_CONSONANTS, TAMIL_UNICODE['MATRA_UU']))
+# the pulli forms, which run through the eighteen letters in the order the
+# script lists them and then the grantha ones in an order of the font's own:
+# ஸ் at 230, ஷ் at 232 and ஜ் at 233, read off the glyphs themselves. What
+# 231 draws is not known - no subset of this corpus carries a glyph for it -
+# and neither is what follows ஜ், so ஹ் and க்ஷ் are left out with it
+TAU_MARUTHAM.update( \
+    tamil_block(212, TAMIL_CONSONANTS + [TAMIL_UNICODE['SA']], \
+                TAMIL_UNICODE['PULLI']))
+# the latin and the punctuation of the font, which it lays out in the
+# macintosh standard glyph order as far as '@' and then carries on with the
+# ascii punctuation that follows the capitals, the letters themselves being
+# at 260 and 286. Every map of this corpus that names one of these names it
+# what this says, bar the two double quotes, which one producer numbers as
+# the two codepoints that follow ‘ and ’ rather than as the quotes the font
+# draws - the same producer that writes ஋ for எ, counting codepoints through
+# the gaps the tamil block leaves.
+#
+# They are here because a subset that carries no map at all needs a whole
+# one built for it, and a map naming only the tamil would leave its digits,
+# its spaces and its punctuation extracting as the control characters of
+# their glyph ids - 13 of the 14 subsets of
+# tamilnadu/2023-03-28/Extraordinary_104_Part-IV_Section-1.pdf are carried
+# that way. Where a subset does carry a map they change nothing
+ASCII_PUNCTUATION = ' !"#$%&\'()*+,-./0123456789:;<=>?@'
+
+TAU_MARUTHAM.update( \
+    {3 + i: char for i, char in enumerate(ASCII_PUNCTUATION)})
+TAU_MARUTHAM.update( \
+    {36 + i: char for i, char in enumerate('[\\]^_`{|}~')})
+TAU_MARUTHAM.update( \
+    {260 + i: chr(ord('A') + i) for i in range(26)})
+TAU_MARUTHAM.update( \
+    {286 + i: chr(ord('a') + i) for i in range(26)})
+TAU_MARUTHAM.update({ \
+    # the dashes, the quotes and the ellipsis. 112 is drawn nowhere and
+    # named by no map, so it is left out and 111 does not run into it \
+    111: '–', 113: '‘', 114: '’', 115: '“', 116: '”', 117: '…', \
+})
+TAU_MARUTHAM.update({ \
+    # a second க, and the one glyph of this font that is a composite: it is
+    # the outline of 62 shifted 277 units to the right, the wide form of the
+    # letter that the gazette sets after a ை. அறிவிக்கை is drawn
+    # அ றி வி க் ை 97 \
+    97 : TAMIL_UNICODE['KA'],  \
+    # ஸ்ரீ, which the font draws as a single glyph of its own \
+    208: TAMIL_UNICODE['SHRI'], \
+    232: TAMIL_UNICODE['SSA'] + TAMIL_UNICODE['PULLI'], \
+    233: TAMIL_UNICODE['JA']  + TAMIL_UNICODE['PULLI'], \
+})
+
+# What this table leaves out is 46..48, 96, 98..110, 112, 118, 119, 202..211,
+# 231 and everything from 234 to 259: no subset of this corpus carries a
+# glyph anywhere in those ranges and no map of it names one, so nothing says
+# what they are. 231 is the one that is missed - the pulli block is 24 wide
+# where the eighteen letters and ஸ், ஷ் and ஜ் account for 21 of it, so the
+# grantha part of it runs in an order of the font's own with one slot before
+# ஷ் that this corpus never draws.
+#
+# This font is deliberately absent from BROKEN_FONT_GLYPH_COUNTS below, for
+# the reason TAU Elango is: the corpus carries it in a full 423 glyph subset
+# in 284 of the 380 font instances read out of those documents and in
+# truncated subsets of 295, 288, 230, 229, 225, 222, 186, 39, 29, 25 and 24
+# glyphs in the rest, and that subsetter drops the glyphs off the end without
+# renumbering what it keeps. The subsets are drawn at different scales, so
+# they are compared by the proportions of their glyphs rather than by their
+# coordinates: of the glyphs a short subset shares with a 423 glyph one,
+# every one of the tamil ones has the same proportions and only a handful of
+# the small punctuation marks - a comma, a period, a bracket - measure
+# differently. Their maps agree too, naming the glyphs they name what this
+# table does. The faces are folded together by font_lookup_key and share the
+# order as well: of the glyph ids TAU-Marutham-Bold's maps name, all 11 carry
+# this table's reading, and of TAU---Marutham's - a third spelling of the
+# same name - 46 of 60 do, the fourteen that do not being the same pairing
+# slip again.
+#
+# One embedding is beyond this. tamilnadu/2023-03-28/Extraordinary_104_Part-
+# IV_Section-1.pdf names a font TAU-Marutham-Identity-H, which font_lookup_key
+# keeps apart from the family, and carries 1,559 bytes for it that are not a
+# font program at all - so nothing says the glyph ids of that embedding are
+# this font's, and its 80 glyphs are left as the pdf has them.
 
 # Mangal is repaired by what its glyphs draw and not by their glyph ids, see
 # MANGAL_OUTLINES below, so it has no table of its own here. The entry is
@@ -808,11 +1003,32 @@ BROKEN_FONTS = {'Arial Unicode MS'  : ARIAL_UNICODE_MS,   \
                 'Uni-Ila.Sundaram-03'      : UNI_ILA_SUNDARAM, \
                 'Uni-Ila.Sundaram-03-SC700': UNI_ILA_SUNDARAM, \
                 'Uni-Ila.Sundaram-04'      : UNI_ILA_SUNDARAM, \
-                'Uni-Ila.Sundaram-07'      : UNI_ILA_SUNDARAM}
+                'Uni-Ila.Sundaram-07'      : UNI_ILA_SUNDARAM, \
+                # the third tamil of the same gazette. The bold and the
+                # third spelling of the name are folded into this key by
+                # font_lookup_key; the SC700 face is a key of its own and
+                # is named beside it because its map carries the same
+                # breakage rather than the sound one TAUElangoPanchali-
+                # SC700's does \
+                'TAU-Marutham'             : TAU_MARUTHAM, \
+                'TAU-Marutham-SC700'       : TAU_MARUTHAM}
 
 # the glyphs to repair by what they draw rather than by their glyph id, for a
 # font whose subsets are renumbered - see MANGAL_OUTLINES above
 BROKEN_FONT_OUTLINES = {'Mangal': MANGAL_OUTLINES}
+
+# the fonts whose subsets are re-encoded by the producer, so that nothing a
+# subset of them says about its own glyphs can be believed. Every other font
+# here is repaired out of the font program first and out of a hand table only
+# where the font says nothing - the cmap of a subset maps a character to the
+# glyph that draws it, and that is the one thing in a broken pdf that is not
+# broken. This producer instead hands each subset whatever latin bytes it
+# needs, a byte per glyph in the order that document wanted them, so its
+# cmap maps a character to a glyph that draws something else entirely and
+# would beat the table that does know: gid 164 is கு and the cmap of one
+# subset of test/test_pdfs/tamil-marutham.pdf calls it 'k'. For these fonts
+# the hand table is all there is - see TAU_MARUTHAM above
+RE_ENCODED_FONTS = {'TAU-Marutham', 'TAU-Marutham-SC700'}
 
 # the glyph count of the font program a hand table above was read from, for a
 # font that this corpus carries in more than one numbering. A subset that
@@ -835,6 +1051,31 @@ BROKEN_FONT_GLYPH_COUNTS = {'Nirmala UI'      : NIRMALA_UI_GLYPH_COUNT, \
 # glyphs after, see fix_type3_fonts below
 TYPE3_GLYPH_FONT = 'Arial Unicode MS'
 
+# the encodings of a simple font that a byte can be read back through, and
+# the python codec of each. A font encoded one of these ways is not addressed
+# by glyph id at all - the byte in the content stream is looked up in the
+# encoding and an extractor hands out the character it finds there - so a
+# re-encoded one needs a map of its own, see fix_simple_font
+SIMPLE_ENCODING_CODECS = {'WinAnsiEncoding'  : 'cp1252', \
+                          'MacRomanEncoding' : 'mac_roman'}
+
+def encoding_chars(codec):
+    '''the character that an encoding gives each of its bytes, as a
+       byte -> character dict, leaving out the bytes it defines none for'''
+    chars = {}
+    for byte in range(256):
+        try:
+            chars[byte] = bytes([byte]).decode(codec)
+        except UnicodeDecodeError:
+            pass
+    return chars
+
+SIMPLE_ENCODING_CHARS = {name: encoding_chars(codec) \
+                         for name, codec in SIMPLE_ENCODING_CODECS.items()}
+# the byte that each of those characters lives on, the way back
+SIMPLE_ENCODINGS      = {name: {char: byte for byte, char in chars.items()} \
+                         for name, chars in SIMPLE_ENCODING_CHARS.items()}
+
 # the text of a repaired font carries the characters that are really there,
 # but still in the order in which the glyphs are drawn, so it has to go
 # through this converter of indic2unicode and not through the one that is
@@ -851,7 +1092,9 @@ FONT_CONVERTERS = {'Arial Unicode MS'  : 'arialuni_glyphs',   \
                    'Uni-Ila.Sundaram-03'      : 'ilasundaram_glyphs', \
                    'Uni-Ila.Sundaram-03-SC700': 'ilasundaram_glyphs', \
                    'Uni-Ila.Sundaram-04'      : 'ilasundaram_glyphs', \
-                   'Uni-Ila.Sundaram-07'      : 'ilasundaram_glyphs'}
+                   'Uni-Ila.Sundaram-07'      : 'ilasundaram_glyphs', \
+                   'TAU-Marutham'             : 'marutham_glyphs',    \
+                   'TAU-Marutham-SC700'       : 'marutham_glyphs'}
 
 # the styles of a family, which a pdf carries as fonts of their own named
 # "Nirmala UI,Bold" or "NirmalaUI-Bold"
@@ -878,6 +1121,7 @@ BROKEN_COUNTS_BY_KEY   = {font_lookup_key(name): count \
                           for name, count in BROKEN_FONT_GLYPH_COUNTS.items()}
 FONT_CONVERTERS_BY_KEY = {font_lookup_key(name): conv  \
                           for name, conv  in FONT_CONVERTERS.items()}
+RE_ENCODED_BY_KEY      = {font_lookup_key(name) for name in RE_ENCODED_FONTS}
 
 # the lookups of a GSUB that say what a glyph was made of, and the wrapper
 # that a font of this size keeps them in
@@ -908,6 +1152,12 @@ def get_glyph_fixes_count(fontname):
     '''the glyph count that the hand table of a font holds for, None for a
        font whose table is not held to one'''
     return BROKEN_COUNTS_BY_KEY.get(font_lookup_key(fontname))
+
+def trusts_own_glyphs(fontname):
+    '''whether what a subset of a font says about its own glyphs - its cmap,
+       the names in its post table - is about the glyphs at all, or is the
+       producer's own encoding of them, see RE_ENCODED_FONTS'''
+    return font_lookup_key(fontname) not in RE_ENCODED_BY_KEY
 
 def get_font_converter(fontname):
     '''the converter that puts the text of a repaired font in the order that
@@ -1263,15 +1513,21 @@ class ToUnicodeFixer:
         self.sigcache[(xref, gid)] = sig
         return sig
 
-    def glyph_strings(self, doc, xref, learnt = None):
+    def glyph_strings(self, doc, xref, learnt = None, trusted = True):
         '''what every glyph of a font stands for, as a glyph id -> string
            dict, read out of the font itself and out of what the other
-           subsets of the same font in this document say'''
+           subsets of the same font in this document say.
+
+           trusted is false for a font whose subsets the producer re-encodes,
+           where what the subset says about its own glyphs is where that
+           producer put them rather than what they draw - see
+           RE_ENCODED_FONTS. Nothing is read out of the font for those and
+           the hand table is the whole of the repair'''
         font = self.open_font(doc, xref)
         if font == None:
             return {}
 
-        strings = dict(self.glyph_seed_strings(doc, xref))
+        strings = dict(self.glyph_seed_strings(doc, xref)) if trusted else {}
 
         # a subset that draws a character only inside a conjunct keeps
         # neither a cmap entry nor a name for the glyph of that character,
@@ -1291,7 +1547,7 @@ class ToUnicodeFixer:
             if count != None and count == donorcount:
                 strings.setdefault(gid, ustr)
 
-        return self.expand_gsub(font, strings)
+        return self.expand_gsub(font, strings) if trusted else strings
 
     def learn_font_gids(self, doc, fonts):
         '''what the subsets of a font that this document carries say about
@@ -1301,7 +1557,7 @@ class ToUnicodeFixer:
 
         for xref, (fontname, encoding) in sorted(fonts.items()):
             key = font_lookup_key(self.base_font(fontname))
-            if key not in BROKEN_FONTS_BY_KEY:
+            if key not in BROKEN_FONTS_BY_KEY or key in RE_ENCODED_BY_KEY:
                 continue
 
             known = learnt.setdefault(key, {})
@@ -1351,10 +1607,12 @@ class ToUnicodeFixer:
         return any(ustr and set(ustr) == {'\x00'} for ustr in table.values())
 
     def fix_font(self, doc, xref, fontname, encoding, glyphfixes, \
-                 learnt = None, outlinefixes = None, fixescount = None):
-        cmapxref = self.get_cmap_xref(doc, xref)
-        if cmapxref == None:
-            return 0
+                 learnt = None, outlinefixes = None, fixescount = None, \
+                 trusted = True):
+        if encoding in SIMPLE_ENCODINGS:
+            return self.fix_simple_font(doc, xref, fontname, encoding, \
+                                        glyphfixes, learnt, fixescount, \
+                                        trusted)
 
         if not self.is_identity(doc, xref, encoding):
             self.logger.info('Font %d (%s) is not identity encoded', \
@@ -1364,22 +1622,32 @@ class ToUnicodeFixer:
         if self.open_font(doc, xref) == None:
             return 0
 
-        # a hand table read off one numbering of a family says nothing about
-        # the glyphs of another, so it is dropped for a subset that counts
-        # its glyphs differently rather than handed that subset the readings
-        # of glyphs it does not draw. What the font itself says about its own
-        # glyphs - its cmap, its names, its GSUB - is not a table and still
-        # stands, so such a font is repaired from that alone
-        if fixescount != None and glyphfixes:
-            count = self.glyph_count(doc, xref)
-            if count != fixescount:
-                self.logger.info('Font %d (%s) counts %s glyphs and the ' \
-                                 'table for it was read off a font of %d, ' \
-                                 'so it is repaired from the font alone', \
-                                 xref, fontname, count, fixescount)
-                glyphfixes = {}
+        cmapxref = self.get_cmap_xref(doc, xref)
 
-        strings = self.glyph_strings(doc, xref, learnt)
+        glyphfixes = self.fixes_for_numbering(doc, xref, fontname, \
+                                              glyphfixes, fixescount)
+
+        strings = self.glyph_strings(doc, xref, learnt, trusted)
+
+        # a font that carries no map at all, whose every glyph therefore
+        # extracts as (cid:N). There is nothing to walk and nothing to be
+        # right or wrong, so the map is built from what is known about the
+        # glyphs and written to the font, the way a type3 font's is - the
+        # code of a glyph is its glyph id here, identity encoding being
+        # what was just checked. 13 of the 14 TAU-Marutham subsets of
+        # tamilnadu/2023-03-28/Extraordinary_104_Part-IV_Section-1.pdf are
+        # carried this way
+        if cmapxref == None:
+            fixed = dict(strings)
+            self.add_missing_glyphs(doc, xref, fixed, glyphfixes)
+            if not fixed:
+                return 0
+
+            self.logger.info('Font %d (%s) carries no ToUnicode map, ' \
+                             'building one for %d glyph(s)', xref, fontname, \
+                             len(fixed))
+            self.set_tounicode(doc, xref, fixed)
+            return len(fixed)
 
         table = self.parse_cmap(doc, cmapxref)
 
@@ -1427,6 +1695,140 @@ class ToUnicodeFixer:
 
         if num:
             doc.update_stream(cmapxref, self.build_cmap(fixed), compress = True)
+        return num
+
+    def fixes_for_numbering(self, doc, xref, fontname, glyphfixes, fixescount):
+        '''the hand table of a font, emptied for a subset that does not number
+           its glyphs the way the table was read off.
+
+           A table read off one numbering of a family says nothing about the
+           glyphs of another, so it is dropped for such a subset rather than
+           handed it the readings of glyphs it does not draw. What the font
+           itself says about its own glyphs - its cmap, its names, its GSUB -
+           is not a table and still stands, so such a font is repaired from
+           that alone, and a re-encoded font, which has nothing else, is left
+           exactly as it is'''
+        if fixescount == None or not glyphfixes:
+            return glyphfixes
+
+        count = self.glyph_count(doc, xref)
+        if count == fixescount:
+            return glyphfixes
+
+        self.logger.info('Font %d (%s) counts %s glyphs and the table for ' \
+                         'it was read off a font of %d, so it is repaired ' \
+                         'from the font alone', xref, fontname, count, \
+                         fixescount)
+        return {}
+
+    # ------------------------------------------------------------------
+    # the simple fonts of a re-encoded document
+    #
+    # A producer that re-encodes a font carries it as simple TrueType fonts
+    # as well as as an identity encoded one, and gives those no ToUnicode at
+    # all: the byte in the content stream is the one it happened to give the
+    # glyph, and an extractor reads it back through WinAnsiEncoding or
+    # MacRomanEncoding as the latin letter that lives there. So the tamil of
+    # such a font extracts as "3Ý FTà YETCÕxJ" and the only thing that says
+    # which glyph a byte drew is the cmap of the subset, which maps that byte
+    # to a glyph id - the one question this producer's cmap does answer.
+    # A map is built for the font out of the hand table and written to it.
+    # ------------------------------------------------------------------
+
+    def byte_glyphs(self, doc, xref, encoding):
+        '''the glyph that every byte of a simple font draws, as a byte ->
+           glyph id dict, read out of the cmap of the subset'''
+        font = self.open_font(doc, xref)
+        if font == None:
+            return {}
+
+        try:
+            order  = font.getGlyphOrder()
+            tables = font['cmap'].tables if 'cmap' in font else []
+        except Exception as e:
+            # a subset that keeps no cmap and no glyph names at all: nothing
+            # in it says which glyph a byte of the content stream drew, and
+            # a simple font is addressed by nothing else
+            self.logger.info('Nothing in the font %d says which glyph its ' \
+                             'bytes draw, so it is left as it is: %s', xref, e)
+            return {}
+
+        if not tables:
+            self.logger.info('The font %d carries no cmap, so nothing says ' \
+                             'which glyph its bytes draw', xref)
+            return {}
+
+        gids     = {gname: gid for gid, gname in enumerate(order)}
+        bytes_of = SIMPLE_ENCODINGS[encoding]
+        glyphs   = {}
+
+        for table in tables:
+            for code, gname in getattr(table, 'cmap', {}).items():
+                gid = gids.get(gname)
+                if gid == None:
+                    continue
+                # a (1, 0) subtable is keyed by the byte itself and a (3, 1)
+                # one by the character the encoding gives that byte
+                if table.platformID == 1:
+                    if 0 <= code < 256:
+                        glyphs.setdefault(code, gid)
+                else:
+                    byte = bytes_of.get(chr(code))
+                    if byte != None:
+                        glyphs.setdefault(byte, gid)
+
+        return glyphs
+
+    def fix_simple_font(self, doc, xref, fontname, encoding, glyphfixes, \
+                        learnt = None, fixescount = None, trusted = True):
+        '''build the map of a simple font of a re-encoded document out of the
+           glyph that its cmap says each of its bytes draws. Returns the
+           number of bytes the map gained.
+
+           A font left without a hand table - one whose subset does not number
+           its glyphs the way the table was read off - is left exactly as it
+           is: what such a font says about its own glyphs is the producer's
+           encoding of them and cannot stand in for the table'''
+        glyphfixes = self.fixes_for_numbering(doc, xref, fontname, \
+                                              glyphfixes, fixescount)
+        if not glyphfixes:
+            return 0
+
+        strings = self.glyph_strings(doc, xref, learnt, trusted)
+        glyphs  = self.byte_glyphs(doc, xref, encoding)
+        if not glyphs:
+            return 0
+
+        cmapxref = self.get_cmap_xref(doc, xref)
+        table    = self.parse_cmap(doc, cmapxref) if cmapxref != None else {}
+
+        fixed = dict(table)
+        num   = 0
+        for byte, gid in sorted(glyphs.items()):
+            correct = strings.get(gid)
+            if correct == None:
+                correct = glyphfixes.get(gid)
+            if correct == None or correct == table.get(byte):
+                continue
+
+            self.logger.debug('Font %d byte 0x%02X (glyph %d): %r -> %r', \
+                              xref, byte, gid, table.get(byte), correct)
+            fixed[byte] = correct
+            num += 1
+
+        if not num:
+            return 0
+
+        # a byte the table has nothing for is still written out, with the
+        # character the encoding already gives it: this map replaces the
+        # encoding for an extractor that reads one, and a partial map would
+        # leave such an extractor with nothing for those bytes
+        chars = SIMPLE_ENCODING_CHARS[encoding]
+        for byte in glyphs:
+            if byte in chars:
+                fixed.setdefault(byte, chars[byte])
+
+        self.set_tounicode(doc, xref, fixed)
         return num
 
     def add_missing_glyphs(self, doc, xref, fixed, glyphfixes):
@@ -1682,7 +2084,8 @@ class ToUnicodeFixer:
             numfixed = self.fix_font(doc, xref, fontname, encoding, glyphfixes,
                                      learnt.get(font_lookup_key(basefont)),
                                      get_outline_fixes(basefont),
-                                     get_glyph_fixes_count(basefont))
+                                     get_glyph_fixes_count(basefont),
+                                     trusts_own_glyphs(basefont))
             if numfixed:
                 self.fixed_fonts.add(basefont)
             num += numfixed

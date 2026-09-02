@@ -2,9 +2,10 @@ from indic2unicode.fonts.hindi import aryan2, surekh, chanakya, arialuni, \
                                      nirmalaui
 from indic2unicode.fonts.glyphs import arialuni_glyphs, nirmalaui_glyphs, \
                                        mangal_glyphs, nudiuni_glyphs, \
-                                       tauelango_glyphs, ilasundaram_glyphs
+                                       tauelango_glyphs, ilasundaram_glyphs, \
+                                       marutham_glyphs
 from indic2unicode.fonts.kannada import tunga, nudi, aklite
-from indic2unicode.fonts.tamil import tamelango, vanavil
+from indic2unicode.fonts.tamil import tamelango, vanavil, tommy
 
 class FontConv:
     def __init__(self):
@@ -23,8 +24,10 @@ class FontConv:
         nudiuniObj  = nudiuni_glyphs.NudiUniGlyphs()
         tamelangoObj = tamelango.TamElango()
         vanavilObj   = vanavil.Vanavil()
+        tommyObj     = tommy.Tommy()
         tauelangoObj = tauelango_glyphs.TauElangoPanchaliGlyphs()
         ilasundaramObj = ilasundaram_glyphs.UniIlaSundaramGlyphs()
+        maruthamObj    = marutham_glyphs.TauMaruthamGlyphs()
         self.converters = { 
             'aryan2': aryanObj, 'divya':  aryanObj, 'surekh': surekhObj,
             'chanakya': chanakyaObj, 'krutidev': chanakyaObj,  
@@ -68,6 +71,13 @@ class FontConv:
             'tamelango': tamelangoObj, 'tam_elango': tamelangoObj,
             'TAM_ELANGO_Panchali': tamelangoObj,
             'TAM_ELANGO_Kapilan': tamelangoObj,
+            # Reginet, the tamil font of the Tamil Nadu Registrar of
+            # Societies gazette notifications. Its text extracts as the
+            # same cp1252 byte-per-glyph gibberish as TAM_ELANGO's and every
+            # byte of it was checked against tamelango's table with no
+            # exception, so it is the same encoding under another name
+            # rather than a font of its own
+            'reginet': tamelangoObj,
             # the tamil of the Vanavil typing package, an 8 bit font of
             # the same kind and, after those two, the most drawn font of the
             # Tamil Nadu gazette. One key for the family: every face of it a
@@ -81,6 +91,13 @@ class FontConv:
             # at all, so a caller matching this key on a pdf font name has
             # to hold it to a name that starts with it
             'vanavil': vanavilObj,
+            # the tamil of the Sun typing package. An 8 bit font of the same
+            # kind again, and one whose layout is neither TAM's nor
+            # Vanavil's: the letters sit on the lowercase keys and the shift
+            # of a key is the long form of what the key draws. The pdf font
+            # name is a key here beside the short one, this font naming
+            # itself after nothing but itself
+            'tommy': tommyObj, 'Sun-TommyTamilNormal': tommyObj,
             # no bare 'TAUElangoPanchali' key here, for the reason
             # mangal_glyphs and nudiuni_glyphs have none: this is a
             # reordering pass for the text of a pdf that fix_tounicode.py
@@ -99,15 +116,24 @@ class FontConv:
             # மாாவட்டம். It is reached through get_font_converter(), which
             # names only the fonts that really were repaired in this document
             'ilasundaram_glyphs': ilasundaramObj,
+            # the third tamil of the same gazette, and no bare font name key
+            # here either. That producer re-encodes the font per subset, so
+            # an unrepaired TAU-Marutham does not carry one wrong reading of
+            # its glyphs but a different one in every subset - the same
+            # latin letter is கு in one of them and கூ in the next - and
+            # nothing a converter could be given would decode it. It is
+            # reached through get_font_converter(), which names only the
+            # fonts that really were repaired in this document
+            'marutham_glyphs': maruthamObj,
         }
 
         self.uniqfonts = ['aryan2', 'surekh', 'chanakya', 'arialuni', \
                           'arialuni_glyphs', 'nirmalaui', 'nirmalaui_glyphs', \
                           'mangal_glyphs', 'tunga', 'nudi', \
                           'nudi_kannada_digits', 'aklite', \
-                          'nudiuni_glyphs', 'tamelango', \
+                          'nudiuni_glyphs', 'tamelango', 'reginet', \
                           'tauelango_glyphs', 'ilasundaram_glyphs', \
-                          'vanavil']
+                          'marutham_glyphs', 'vanavil', 'tommy']
  
     def to_unicode(self, fontname, text):
         return self.converters[fontname].to_unicode(text)
