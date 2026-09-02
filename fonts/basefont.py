@@ -153,10 +153,17 @@ class BaseFont:
             out.append(waitToken[0])
         return out
 
-    def compose_tokens(self, out1):
-        for compose in list(self.composeTokens.keys()):
+    def compose_tokens(self, out1, composeTokens = None):
+        '''the rules of self.composeTokens, or of another set of them a font
+           runs at a different point of its passes - see
+           fonts/malayalam/revathi.py, which has one set to run before the
+           reordering and one to run after it'''
+        if composeTokens == None:
+            composeTokens = self.composeTokens
+
+        for compose in list(composeTokens.keys()):
             out2 = []
-            repl = self.composeTokens[compose]
+            repl = composeTokens[compose]
             i = 0
 
             while i < len(out1):

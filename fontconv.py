@@ -6,6 +6,7 @@ from indic2unicode.fonts.glyphs import arialuni_glyphs, nirmalaui_glyphs, \
                                        marutham_glyphs
 from indic2unicode.fonts.kannada import tunga, nudi, aklite
 from indic2unicode.fonts.tamil import tamelango, vanavil, tommy
+from indic2unicode.fonts.malayalam import revathi
 
 class FontConv:
     def __init__(self):
@@ -25,6 +26,7 @@ class FontConv:
         tamelangoObj = tamelango.TamElango()
         vanavilObj   = vanavil.Vanavil()
         tommyObj     = tommy.Tommy()
+        revathiObj   = revathi.Revathi()
         tauelangoObj = tauelango_glyphs.TauElangoPanchaliGlyphs()
         ilasundaramObj = ilasundaram_glyphs.UniIlaSundaramGlyphs()
         maruthamObj    = marutham_glyphs.TauMaruthamGlyphs()
@@ -98,6 +100,11 @@ class FontConv:
             # name is a key here beside the short one, this font naming
             # itself after nothing but itself
             'tommy': tommyObj, 'Sun-TommyTamilNormal': tommyObj,
+            # the malayalam of the Kerala gazette. An 8 bit font of the
+            # same kind again, and one whose bytes are the ML-TT layout
+            # that the whole ML- family of fonts shares. The pdf font name
+            # is a key here beside the short one
+            'revathi': revathiObj, 'ML-Revathi-Normal': revathiObj,
             # no bare 'TAUElangoPanchali' key here, for the reason
             # mangal_glyphs and nudiuni_glyphs have none: this is a
             # reordering pass for the text of a pdf that fix_tounicode.py
@@ -133,7 +140,8 @@ class FontConv:
                           'nudi_kannada_digits', 'aklite', \
                           'nudiuni_glyphs', 'tamelango', 'reginet', \
                           'tauelango_glyphs', 'ilasundaram_glyphs', \
-                          'marutham_glyphs', 'vanavil', 'tommy']
+                          'marutham_glyphs', 'vanavil', 'tommy', \
+                          'revathi']
  
     def to_unicode(self, fontname, text):
         return self.converters[fontname].to_unicode(text)
