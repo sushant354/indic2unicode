@@ -65,6 +65,15 @@ fonts/glyphs/mangal_glyphs.py (Mangal), fonts/glyphs/nudiuni_glyphs.py
 fonts/glyphs/marutham_glyphs.py (TAU-Marutham) to be put in the order that
 unicode wants - see FONT_CONVERTERS below.
 
+A font is looked up by the name the pdf carries for it in the font
+dictionary, which is the name an extractor reports. Some producers write no
+name there at all - every font of a Tamil Nadu gazette printed through one of
+them is called /CIDFont+F1 .. /CIDFont+F11 - and none of them touches the
+name the embedded font program gives itself, so a font that nothing else
+places is looked up under that name instead, see recover_font_names(). The
+name the pdf carries is still what fixed_font_names reports the repair
+under, since it is the name the text will reach a caller as.
+
 USAGE:
     python fix_tounicode.py input.pdf output.pdf
 '''
@@ -1437,6 +1446,11 @@ FONT_CONVERTERS_BY_KEY = {font_lookup_key(name): conv  \
                           for name, conv  in FONT_CONVERTERS.items()}
 RE_ENCODED_BY_KEY      = {font_lookup_key(name) for name in RE_ENCODED_FONTS}
 
+# the records of a truetype name table that carry the name of the font
+# itself, see ToUnicodeFixer.program_name()
+POSTSCRIPT_NAME_ID = 6
+FAMILY_NAME_ID     = 1
+
 # the lookups of a GSUB that say what a glyph was made of, and the wrapper
 # that a font of this size keeps them in
 SINGLE_SUBST     = 1
@@ -1483,6 +1497,12 @@ class ToUnicodeFixer:
         self.logger = logging.getLogger('fix_tounicode')
         # the fonts of the last document that were actually repaired
         self.fixed_fonts = set()
+        # and the name each of them is carried under in the pdf itself,
+        # which is not always the name it was repaired as: see
+        # recover_font_names(). A caller that has to match the repaired
+        # text back to the font an extractor reports has to go by this
+        # name rather than by the one in fixed_fonts
+        self.fixed_font_names = {}
         # the font program of a pdf font, read once per font
         self.fontcache   = {}
         # what the font program of a pdf font names its own glyphs, read
@@ -1596,6 +1616,72 @@ class ToUnicodeFixer:
 
         self.fontcache[xref] = font
         return font
+
+    def program_name(self, doc, xref):
+        '''the name a font program gives itself, None if it gives none.
+
+           A pdf names a font twice over: in the font dictionary, where an
+           extractor reads it, and inside the embedded font program's own
+           name table. Some producers strip the first - every font of
+           tamilnadu/2021-09-02/Extraordinary_392A_Part-IV_Section-1.pdf is
+           called /CIDFont+F1 .. /CIDFont+F11 in the pdf - and none of them
+           strips the second, so the font still says what it is.'''
+        font = self.open_font(doc, xref)
+
+        if font == None or 'name' not in font:
+            return None
+
+        # the postscript name first, which is the one spelt the way the pdf
+        # spells a font name, then the family, which a font that keeps no
+        # postscript name still has
+        for nameid in (POSTSCRIPT_NAME_ID, FAMILY_NAME_ID):
+            for record in font['name'].names:
+                if record.nameID != nameid:
+                    continue
+                try:
+                    name = record.toUnicode().strip()
+                except Exception:
+                    continue
+                if name:
+                    return name
+
+        return None
+
+    def recover_font_names(self, doc, fonts):
+        '''the fonts of a document with the name of any font the pdf itself
+           does not name read out of the font program instead.
+
+           Only the fonts that nothing else places are looked up this way -
+           a name the pdf carries is the name the document means, and this
+           is for the fonts it carries no name for at all. A recovered name
+           is used only when it names a font that is known to be broken,
+           so a producer's private name for an ordinary font changes
+           nothing.'''
+        recovered = {}
+
+        for xref, (fontname, encoding) in sorted(fonts.items()):
+            if get_glyph_fixes(self.base_font(fontname)) != None:
+                continue
+
+            progname = self.program_name(doc, xref)
+            if progname == None:
+                continue
+
+            if get_glyph_fixes(self.base_font(progname)) == None:
+                continue
+
+            self.logger.info('The pdf calls %s a font of its own but its ' \
+                             'font program names itself %s, which is known ' \
+                             'to carry a broken map - repairing it as that', \
+                             fontname, progname)
+            recovered[xref] = (progname, encoding)
+
+        if not recovered:
+            return fonts
+
+        fonts = dict(fonts)
+        fonts.update(recovered)
+        return fonts
 
     def glyph_names(self, doc, xref):
         '''the name that the font gives to every one of its glyphs'''
@@ -2410,6 +2496,11 @@ class ToUnicodeFixer:
                 'read out of the fonts of the document itself', num,         \
                 len(xrefs), len(learnt))
             self.fixed_fonts.add(TYPE3_GLYPH_FONT)
+            # name_type3_font() has already given the font this name in the
+            # pdf itself - a type3 font carries no BaseFont, so that
+            # descriptor is what an extractor names it after - so here the
+            # name the pdf carries and the name it was repaired as are one
+            self.fixed_font_names[TYPE3_GLYPH_FONT] = TYPE3_GLYPH_FONT
 
         return num
 
@@ -2427,11 +2518,18 @@ class ToUnicodeFixer:
                     type3s.append(xref)
 
         num = 0
-        self.fixed_fonts = set()
+        self.fixed_fonts      = set()
+        self.fixed_font_names = {}
         self.fontcache   = {}
         self.seedcache   = {}
         self.sigcache    = {}
-        learnt = self.learn_font_gids(doc, fonts)
+
+        # the name the pdf itself carries for a font, kept before the names
+        # are recovered: it is the name an extractor will report, whatever
+        # this repairs the font as
+        pdfnames = {xref: name for xref, (name, encoding) in fonts.items()}
+        fonts    = self.recover_font_names(doc, fonts)
+        learnt   = self.learn_font_gids(doc, fonts)
 
         for xref in sorted(fonts):
             fontname, encoding = fonts[xref]
@@ -2447,6 +2545,8 @@ class ToUnicodeFixer:
                                      trusts_own_glyphs(basefont))
             if numfixed:
                 self.fixed_fonts.add(basefont)
+                pdfname = self.base_font(pdfnames[xref])
+                self.fixed_font_names[pdfname] = basefont
             num += numfixed
 
         if type3s:
