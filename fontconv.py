@@ -7,6 +7,7 @@ from indic2unicode.fonts.glyphs import arialuni_glyphs, nirmalaui_glyphs, \
 from indic2unicode.fonts.kannada import tunga, nudi, aklite
 from indic2unicode.fonts.tamil import tamelango, vanavil, tommy
 from indic2unicode.fonts.malayalam import revathi
+from indic2unicode.fonts.marathi import yogesh
 from indic2unicode.fonts.telugu import priyaanka
 
 class FontConv:
@@ -28,6 +29,7 @@ class FontConv:
         vanavilObj   = vanavil.Vanavil()
         tommyObj     = tommy.Tommy()
         revathiObj   = revathi.Revathi()
+        yogeshObj    = yogesh.Yogesh()
         priyaankaObj = priyaanka.Priyaanka()
         tauelangoObj = tauelango_glyphs.TauElangoPanchaliGlyphs()
         ilasundaramObj = ilasundaram_glyphs.UniIlaSundaramGlyphs()
@@ -108,6 +110,14 @@ class FontConv:
             # that the whole ML- family of fonts shares. The pdf font name
             # is a key here beside the short one
             'revathi': revathiObj, 'ML-Revathi-Normal': revathiObj,
+            # the marathi of the Maharashtra gazette. An 8 bit font of the
+            # same kind again, and one whose bytes are those of the windows
+            # 1252 table. The three faces of it that the gazette carries
+            # share the layout - only the weight of the glyphs differs -
+            # so the pdf font name of each of them is a key here beside the
+            # short one
+            'yogesh': yogeshObj, 'DVBWTTYogeshNormal': yogeshObj,
+            'DVBWTTYogeshBold': yogeshObj, 'DVBWTTYogeshItalic': yogeshObj,
             # the telugu of the Telangana gazette. An 8 bit font of the
             # same kind again, and one whose bytes are those of mac roman
             # rather than of a windows table - the pdf embeds it as a
@@ -162,7 +172,8 @@ class FontConv:
                           'nudiuni_glyphs', 'tamelango', 'reginet', \
                           'tauelango_glyphs', 'ilasundaram_glyphs', \
                           'marutham_glyphs', 'vanavil', 'tommy', \
-                          'revathi', 'meera_glyphs', 'priyaanka']
+                          'revathi', 'meera_glyphs', 'priyaanka', \
+                          'yogesh']
  
     def to_unicode(self, fontname, text):
         return self.converters[fontname].to_unicode(text)
