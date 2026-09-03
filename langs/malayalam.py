@@ -13,34 +13,58 @@ CONSONANT_TOKENS = [ \
     'LLLA','VA',   'SHA', 'SSA',  'SA', 'HA', \
 ]
 
-# the clusters that an 8 bit malayalam font draws as a single glyph. Each of
-# them is the consonants it is written out of, and the token of it is their
-# tokens joined by an underscore - ('NA', 'RRA') is ന്റ and its token is
-# NA_RRA. Only the clusters that fonts/malayalam/revathi.py has a code for
-# are listed; a font that draws one this leaves out simply has no glyph
-# whose token is missing here
+# the clusters that a malayalam font draws as a single glyph. Each of them is
+# the consonants it is written out of, and the token of it is their tokens
+# joined by an underscore - ('NA', 'RRA') is ന്റ and its token is NA_RRA.
+#
+# A cluster is a token of its own and not a sequence of them because a font
+# draws it as one glyph and because the vowel signs that are written in front
+# of a syllable have to jump over the whole of it - see the class comment of
+# Conjuncts below. Only the clusters that the fonts of this package have a
+# glyph for are listed: the 33 that fonts/malayalam/revathi.py carries a code
+# for, and the 89 that fonts/malayalam/meera.py reads, which are a superset of
+# them. A font that draws one this leaves out simply has no glyph whose token
+# is missing here
 CONJUNCT_TOKENS = [ \
-    ('KA', 'KA'),   ('KA', 'LA'),   ('KA', 'SSA'), \
-    ('GA', 'GA'),                                  \
-    ('NGA', 'KA'),  ('NGA', 'NGA'),                \
-    ('CA', 'CA'),                                  \
-    ('NYA', 'CA'),  ('NYA', 'NYA'),                \
-    ('TTA', 'TTA'),                                \
-    ('NNA', 'NNA'),                                \
-    ('TA', 'TA'),   ('TA', 'SA'),                  \
-    ('DA', 'DA'),   ('DA', 'DHA'),                 \
-    ('NA', 'TA'),   ('NA', 'DA'),   ('NA', 'DHA'), \
-    ('NA', 'NA'),   ('NA', 'RRA'),                 \
-    ('PA', 'PA'),                                  \
-    ('BA', 'LA'),                                  \
-    ('MA', 'PA'),   ('MA', 'MA'),                  \
-    ('YA', 'YA'),                                  \
-    ('RRA', 'RRA'),                                \
-    ('LA', 'LA'),                                  \
-    ('LLA', 'LLA'),                                \
-    ('VA', 'VA'),                                  \
-    ('SHA', 'SHA'),                                \
-    ('SA', 'SA'),   ('SA', 'THA'), ('SA', 'RRA', 'RRA'), \
+    ('KA', 'KA'),      ('KA', 'TTA'),     ('KA', 'TTA', 'RA'), \
+    ('KA', 'TA'),      ('KA', 'NA'),      ('KA', 'RA'),        \
+    ('KA', 'RRA', 'RRA'), ('KA', 'LA'),   ('KA', 'SSA'),       \
+    ('KA', 'SSA', 'MA'), ('KA', 'SA'),                         \
+    ('GA', 'GA'),      ('GA', 'DA'),      ('GA', 'RA'),        \
+    ('GA', 'LA'),                                              \
+    ('NGA', 'KA'),     ('NGA', 'NGA'),                         \
+    ('CA', 'CA'),                                              \
+    ('JA', 'JA'),      ('JA', 'NYA'),     ('JA', 'MA'),        \
+    ('NYA', 'CA'),     ('NYA', 'NYA'),                         \
+    ('TTA', 'TTA'),    ('TTA', 'RA'),                          \
+    ('NNA', 'TTA'),    ('NNA', 'TTA', 'RA'), ('NNA', 'DDA'),   \
+    ('NNA', 'NNA'),    ('NNA', 'MA'),                          \
+    ('TA', 'TA'),      ('TA', 'THA'),     ('TA', 'MA'),        \
+    ('TA', 'RA'),      ('TA', 'SA'),                           \
+    ('DA', 'DA'),      ('DA', 'DHA'),     ('DA', 'RA'),        \
+    ('NA', 'TA'),      ('NA', 'TA', 'RA'), ('NA', 'DA'),       \
+    ('NA', 'DA', 'RA'), ('NA', 'DHA'),    ('NA', 'NA'),        \
+    ('NA', 'MA'),      ('NA', 'RRA'),                          \
+    ('PA', 'TTA'),     ('PA', 'TA'),      ('PA', 'PA'),        \
+    ('PA', 'RA'),      ('PA', 'LA'),                           \
+    ('PHA', 'RA'),     ('PHA', 'RRA', 'RRA'),                  \
+    ('BA', 'RA'),      ('BA', 'LA'),                           \
+    ('MA', 'PA'),      ('MA', 'PA', 'RA'), ('MA', 'MA'),       \
+    ('YA', 'KA', 'KA'), ('YA', 'TA'),     ('YA', 'PA'),        \
+    ('YA', 'YA'),                                              \
+    ('RRA', 'RRA'),                                            \
+    ('LA', 'KA'),      ('LA', 'PA'),      ('LA', 'LA'),        \
+    ('LLA', 'LLA'),                                            \
+    ('LLLA', 'CA'),    ('LLLA', 'TA', 'TA'), ('LLLA', 'NA', 'NA'), \
+    ('LLLA', 'SA'),                                            \
+    ('VA', 'VA'),                                              \
+    ('SHA', 'CA'),     ('SHA', 'NA'),     ('SHA', 'RA'),       \
+    ('SHA', 'SHA'),                                            \
+    ('SSA', 'KA'),     ('SSA', 'TTA'),    ('SSA', 'TTHA'),     \
+    ('SA', 'KA'),      ('SA', 'TTA', 'RA'), ('SA', 'TA'),      \
+    ('SA', 'TA', 'RA'), ('SA', 'THA'),    ('SA', 'PA'),        \
+    ('SA', 'MA'),      ('SA', 'RRA', 'RRA'), ('SA', 'SA'),     \
+    ('HA', 'RA'),                                              \
 ]
 
 class MalayalamUnicode(BaseLang):

@@ -976,6 +976,308 @@ MANGAL_OUTLINES = { \
     '79ff8103748e6385': 'ल्यू',             # gid 76, seen in डब्ल्यू \
 }
 
+
+# Meera is repaired by what its glyphs draw and not by their glyph ids, see
+# MEERA_OUTLINES below, so it has no table of its own here. The entry is what
+# puts the font on the list of the ones that are repaired at all
+MEERA = {}
+
+# Meera, the unicode malayalam of the Kerala gazette. It is an opentype font
+# and its glyphs really are malayalam - what is wrong is the map that says
+# which.
+#
+# The producer carries it as simple TrueType fonts with no /Encoding of their
+# own and re-encodes each subset: a byte of the content stream is the number
+# that subset gave the glyph, in the order that document happened to want
+# them, and the subset's cmap maps that byte back to the glyph. It writes a
+# ToUnicode map naming those bytes, and that map is right about nearly every
+# glyph - the byte that draws the one glyph of ക്ക says ക്ക. It fails on
+# exactly the glyphs malayalam draws out of order: െ, േ and ൈ are drawn in
+# front of the consonant they belong to, and this producer hands the *first*
+# glyph of such a cluster the whole cluster and the glyph behind it no entry
+# at all. So the െ of ലെ, the first word of test/test_pdfs/malayalam-meera.pdf
+# to draw one, is handed 'ലെ' and is then drawn in front of every other letter
+# too, and the ല behind it is left unnamed anywhere in the map: കേരള extracts
+# as കേ(cid:2)രള and യുടെ as യുലെ<, the ട having no entry either and pdfminer
+# falling back on the encoding for it. 13 of the 255 bytes of that document's
+# first subset are unnamed this way and draw 9,733 glyphs between them.
+#
+# The table is keyed by what a glyph draws and not by its glyph id, because
+# this producer renumbers every subset: the id of a glyph here is a number
+# that document gave it and means something else in the next one - the two
+# Meera subsets of that gazette have not one glyph in common, the second being
+# what the first overflowed into once its 255 codes were full. An outline is
+# the same wherever the same font is subsetted, and keying by it is also what
+# makes the table safe: a subset that draws something else is simply not
+# matched rather than handed the characters of a glyph it does not have.
+#
+# The readings of the 219 glyphs the map does name are that map's own, with
+# the chillus written as the atomic characters unicode has had for them since
+# 5.1 rather than as the consonant, the chandrakkala and a zero width joiner
+# the map spells two of them with - see the class comment of
+# langs/malayalam.MalayalamUnicode. The 17 marked below are the ones the map
+# is wrong or silent about, and they are read off the /ActualText that this
+# producer writes over each reordered cluster: <02> alone carries ActualText
+# ക 4,402 times over, [<01><02>] carries കേ, and the three signs are what is
+# left of such a pair once the letter behind it is taken off.
+#
+# The 236 entries carry 235 distinct readings, the two width variants of ാ
+# sharing one, and every one of them is drawn in that document. The subsets
+# they were read off name themselves Meera 7.0.0+20160910 in their own name
+# table; a later release that redraws a glyph simply does not match, which is
+# the safe direction for a table keyed this way to fail in. Checked
+# against a tesseract -l mal ocr of the pages themselves, 213 of the 235 sit
+# inside at least one word that the ocr matched character for character; the
+# other 22 are rare clusters that only ever turn up in words the ocr itself
+# got wrong, and each of them makes a real malayalam word - ഇലക്ട്രോണിക്,
+# മാനേജ്മെന്റ്, സോഫ്റ്റ്, താഴ്ന്ന, സൗഹൃദ. See fonts/malayalam/meera.py
+MEERA_OUTLINES = { \
+    # the vowels \
+    '9e190614d0137fa3': 'അ',         \
+    '4a1f408250b89a20': 'ആ',         \
+    '828e554f38e9b063': 'ഇ',         \
+    '2ebbfc489a115590': 'ഈ',         \
+    '92653a97c777ca74': 'ഉ',         \
+    '352978f309fc8f07': 'എ',         \
+    '3b60740c6e924222': 'ഏ',         \
+    'b52e561350387f11': 'ഐ',         \
+    '90ee6dcef9e257ee': 'ഒ',         \
+    '5c36f3a43f733e9e': 'ഓ',         \
+    '957b13772d1be26d': 'ഔ',         \
+    # the consonants \
+    '77d77f25040871c4': 'ക',           # read off the ActualText \
+    'd5f3e1e8e90f7282': 'ഖ',         \
+    '6844e792f509a2bd': 'ഗ',         \
+    '52ab265237eaefce': 'ഘ',         \
+    '4359d36a4ab0787f': 'ങ',         \
+    '7502d990ab29c5c0': 'ച',         \
+    '5c67b707c241fd61': 'ജ',         \
+    '67c9fd664b92e647': 'ട',           # read off the ActualText \
+    '9e79dd246ab14a2b': 'ഠ',         \
+    'd647de5d0d017d86': 'ഡ',         \
+    '37aa90b4a3108fb9': 'ണ',         \
+    'e6fb2926b5d175cb': 'ത',         \
+    '8a50a13b3defcf29': 'ഥ',         \
+    '7e32fd232bbf2816': 'ദ',         \
+    'c54efb7425e1d22e': 'ധ',         \
+    '45a1ab9398dc8432': 'ന',         \
+    'd345988c83fd917b': 'പ',         \
+    'b009c7b926682933': 'ഫ',           # read off the ActualText \
+    '6336280f84ebc5bc': 'ബ',         \
+    '37e3133aaa752b2f': 'ഭ',         \
+    '8b7776f46dc05412': 'മ',         \
+    'a937368fb3117451': 'യ',         \
+    'deca7d30ab93af39': 'ര',         \
+    'e4cf953cc8a51aab': 'റ',         \
+    'a7f07e1101367961': 'ല',           # read off the ActualText \
+    '80fa8b656a509b45': 'ള',         \
+    '31ec374369462c9b': 'ഴ',         \
+    'cca6035896104ddd': 'വ',         \
+    '4c3867a27b8614a0': 'ശ',         \
+    'f9d06b0eedee499b': 'ഷ',         \
+    'fccc2034f6bcbcb4': 'സ',         \
+    '2f51a8bb46af1fb2': 'ഹ',         \
+    # the chillus \
+    '24fdc73f98852310': 'ൺ',         \
+    '6e80eeda5e923126': 'ൻ',         \
+    '50419d2a882020ba': 'ർ',         \
+    'cd5fe2a5534d3cde': 'ൽ',         \
+    '1fba22715d36cf7b': 'ൾ',         \
+    # the vowel signs, the chandrakkala, the anusvara and the two
+    # consonants that are written as a mark on their letter \
+    '6279bc7c7ebf80b1': 'ം',         \
+    '67a5e176ed7e2f49': 'ഃ',         \
+    '0521df3a839004f3': 'ാ',         \
+    'ad2d9d595ef70836': 'ാ',         \
+    '4a1d70af3c23bc23': 'ി',         \
+    '839db0264c6d2df2': 'ീ',         \
+    '063b47991949d6bb': 'െ',           # read off the ActualText \
+    '5ef9c604a31614bd': 'േ',           # read off the ActualText \
+    '7dfa7ce7f4f8b17e': 'ൈ',           # read off the ActualText \
+    'e9763056f3b6bb2b': '്',         \
+    '974783ac1da2aab3': '്യ',        \
+    '377e5212987f8c14': '്വ',        \
+    '8799c7cad900e2df': 'ൗ',         \
+    # the clusters the font draws as one glyph \
+    '165dc05aaae9af90': 'ക്ക',       \
+    '07f715b3554b90ea': 'ക്ട',       \
+    'ca8161e85f354719': 'ക്ട്ര',       # read off the ActualText \
+    'ed33b8b0dfe0865a': 'ക്ത',       \
+    '9a2d93c56526b2a9': 'ക്ന',         # read off the ActualText \
+    '3ef1e2ab78eb0b4a': 'ക്ര',       \
+    '2988e9758d6e6384': 'ക്റ്റ',     \
+    '668c1873cc10062c': 'ക്ല',       \
+    '78c90889925ae01b': 'ക്ഷ',       \
+    '40fdb6c5d3e80989': 'ക്ഷ്മ',     \
+    '5f1bdc9c2fd23eca': 'ക്സ',       \
+    'a5e2aa86d37061d0': 'ഗ്ഗ',         # read off the ActualText \
+    'b6ace73be48c09a7': 'ഗ്ദ',       \
+    '75b8837e4e7f5102': 'ഗ്ര',       \
+    'b27ea22378bbb278': 'ഗ്ല',       \
+    '63c1c9fddfbae74a': 'ങ്ക',       \
+    'f9c115401d5ae322': 'ങ്ങ',       \
+    'ff3a03476107fbd6': 'ച്ച',       \
+    '70cb1138ff93e67b': 'ജ്ജ',       \
+    '7ce1411a315061ac': 'ജ്ഞ',       \
+    'f21c80db7a1ad04e': 'ജ്മ',         # read off the ActualText \
+    'cceda9ebf346bdaf': 'ഞ്ച',       \
+    '532d3a41a872b772': 'ഞ്ഞ',       \
+    '1d8b2a6857f82c8c': 'ട്ട',       \
+    '7af92942d9dde47f': 'ട്ര',       \
+    '129a4099af4c4b53': 'ണ്ട',       \
+    '78272a3f9806663c': 'ണ്ട്ര',     \
+    '482e4096a90f4dcf': 'ണ്ഡ',       \
+    '8f49de6803e0cca2': 'ണ്ണ',       \
+    '2617a1180c991caa': 'ണ്മ',         # read off the ActualText \
+    '86b7ed2cbb20a7f8': 'ത്ത',       \
+    '425524a7cf6b5c6f': 'ത്ഥ',       \
+    '2cb04d0c0f51e87f': 'ത്മ',       \
+    '67bc9ad4eae85d67': 'ത്ര',       \
+    '227e9be2e8b86c67': 'ത്സ',       \
+    '0d8e9b04d671ddeb': 'ദ്ദ',         # read off the ActualText \
+    '4d00a4817e93c883': 'ദ്ധ',       \
+    'd1bd3879de426ab1': 'ദ്ര',       \
+    '698cec6ffba60140': 'ന്ത',         # read off the ActualText \
+    'cb815930b59f0f0d': 'ന്ത്ര',     \
+    '57034d52186ceb49': 'ന്ദ',       \
+    '6683e28d8016e2e7': 'ന്ദ്ര',     \
+    'aa8c17f6c39e1534': 'ന്ധ',       \
+    '1c027f1b44f41879': 'ന്ന',       \
+    '54d3b93aa2a303c2': 'ന്മ',         # read off the ActualText \
+    'ad4cde553b292df9': 'ന്റ',       \
+    'd8f5fb6ff0df0073': 'പ്ട',       \
+    '527a32a1515fb55d': 'പ്ത',       \
+    '481086979a102812': 'പ്പ',       \
+    '116cc2d3c182bc52': 'പ്ര',       \
+    'de2a672f71a8c617': 'പ്ല',       \
+    'e04e684cb2614734': 'ഫ്ര',       \
+    'dfc4d12afc5a153c': 'ഫ്റ്റ',     \
+    'efc5e558fcc154e2': 'ബ്ര',         # read off the ActualText \
+    '4eea92809f884922': 'ബ്ല',       \
+    'a09688dee22e65d2': 'മ്പ',       \
+    '5e3e7887be381ec3': 'മ്പ്ര',     \
+    'f42099e7bc67aef9': 'മ്മ',       \
+    'df621591685edf9f': 'യ്ക്ക',     \
+    '1580745d536015a5': 'യ്ത',       \
+    'b169df618b994d7f': 'യ്പ',       \
+    '33ea02d478010462': 'യ്യ',       \
+    '6d615988d960c056': 'റ്റ',       \
+    '1b0c1e1a1b96dcad': 'ല്ക',       \
+    'c436e87b4b253713': 'ല്പ',       \
+    '149ad914c7a3e644': 'ല്ല',       \
+    '695f2cb38f2d0dac': 'ള്ള',       \
+    '4140878b674124b2': 'ഴ്ച',       \
+    'f4677023ba227d1e': 'ഴ്ത്ത',     \
+    '4525651391641366': 'ഴ്ന്ന',     \
+    '89bc24808e560bfa': 'ഴ്സ',       \
+    '467808e214d22503': 'വ്വ',       \
+    'e144b29342227980': 'ശ്ച',       \
+    'ed166e5544ba736b': 'ശ്ന',       \
+    '0795778f5ef00a40': 'ശ്ര',       \
+    '4aebbc8db846afae': 'ശ്ശ',       \
+    'e56beaa0ec6fc5c5': 'ഷ്ക',       \
+    'b642c2afd45fad5b': 'ഷ്ട',       \
+    '0fa88ff5aaaa9164': 'ഷ്ഠ',       \
+    'e46543ba0e704638': 'സ്ക',       \
+    '02b619f97c52e654': 'സ്ട്ര',     \
+    '1f7dd08462f1b131': 'സ്ത',       \
+    'b9692bf8ff68b16b': 'സ്ത്ര',     \
+    '1ff0a93bdc7a01bc': 'സ്ഥ',       \
+    '1f3153cbe9637b0a': 'സ്പ',       \
+    '47edc19e9629042b': 'സ്മ',         # read off the ActualText \
+    '039627e8e6579ec0': 'സ്റ്റ',     \
+    '2b15dcfd249c629a': 'സ്സ',       \
+    'f14e0753915a0b2f': 'ഹ്ര',       \
+    # a letter or a cluster with a vowel sign drawn into it, which this
+    # font draws as a single glyph \
+    'a5d80818e8ee3e80': 'കു',        \
+    'dd21d58f81c56dd8': 'കൂ',        \
+    '76714a48720d5d80': 'കൃ',        \
+    '6aa2444aa2154b3f': 'ക്കു',      \
+    '4ae2c690198e5221': 'ക്കൂ',      \
+    '9bd252028d6e48e3': 'ക്ടു',      \
+    '2354d704716ba0b6': 'ക്റ്റു',    \
+    '8567a5c118c8c527': 'ഗു',        \
+    '35f1a9bdd4b8cf24': 'ഗ്രൂ',      \
+    'a7d8cfa038ea64e1': 'ഘു',        \
+    '9e98fc9e47a18a10': 'ഘൂ',        \
+    '2cb28f9664579e13': 'ങ്കു',      \
+    '2fa0aeaa049d15b2': 'ങ്ങു',      \
+    '6b700e5e8a77ac64': 'ചു',        \
+    '85ec510cd97b73d5': 'ചൂ',        \
+    '7278953e077effcc': 'ച്ചു',      \
+    '89d42e0941f10040': 'ജു',        \
+    '1193bf58a34786dd': 'ജൂ',        \
+    '6735bbbc493865db': 'ഞ്ചു',      \
+    '071064de8ee0e778': 'ഞ്ഞു',      \
+    '815f07450aa75e88': 'ടു',        \
+    '49d99174fb4d0ae0': 'ടൂ',        \
+    '2d7b274ef9cb1af2': 'ട്ടു',      \
+    '27aaea39e23bb788': 'ഡു',        \
+    'ef23ccf14d568ea5': 'ണു',        \
+    '8d42ba69346d1174': 'ണ്ടു',      \
+    'a5903f9d0d2f2c0b': 'തു',        \
+    'e5e822e2743da7a7': 'തൃ',        \
+    '6bb93c7347853e89': 'ത്തു',      \
+    '86fa5130abf666df': 'ത്തൂ',      \
+    '3e55f835fd421369': 'ദു',        \
+    'd4e9c7dfc0172f86': 'ദൂ',        \
+    '35019b7c3d13be7b': 'ദൃ',        \
+    '93b65e4e883c57e8': 'ധു',        \
+    'e82e0b59cd4a8160': 'നു',        \
+    'd8c1f8c5a4ef60d1': 'നൂ',        \
+    '831c0d3d0674feb8': 'ന്തു',      \
+    'f2776806e080a558': 'ന്ദു',      \
+    'adaf670c6cb2de3f': 'ന്നു',      \
+    'bf9b225950861b88': 'ന്റു',      \
+    '4ed8807a7f009691': 'പു',        \
+    '92f523a130a4b1e0': 'പൂ',        \
+    '7c7347e0b3e53b43': 'പ്പു',      \
+    '4883f8315360ea1b': 'ഫു',        \
+    'bf684378c4588c23': 'ബു',        \
+    '5cd2b91f1194aa73': 'ബ്രു',      \
+    '50f1208e45458fa5': 'ഭൂ',        \
+    'ab928baa904458de': 'മു',        \
+    '3545d89051b480b8': 'മൂ',        \
+    '44b5751f41be8fce': 'മ്പു',      \
+    '3f52c585fd350e8b': 'യു',        \
+    'bbfae23b3a353d50': 'യൂ',        \
+    '89fb682ccede12f9': 'യ്ക്കു',    \
+    'a789758861d7ea61': 'യ്തു',      \
+    'e045beeb0088fb98': 'യ്യു',      \
+    '9a276c202a3a71b1': 'രു',        \
+    'c53f9f75ac1f4472': 'രൂ',        \
+    '05237a5b24fdd8d6': 'റു',        \
+    '58d489acb9b23db1': 'റൂ',        \
+    'a8f7e2a85e65123e': 'റ്റു',      \
+    '39b92457a70b1148': 'ലു',        \
+    '559b4c88b4eb2f50': 'ലൂ',        \
+    '7722e22d290da3f0': 'ല്ലു',      \
+    'ee2994e9c5770cdd': 'ളു',        \
+    'a161fb2f9002ec0c': 'ള്ളു',      \
+    'b82a0ca10946c44d': 'ള്ളൂ',      \
+    '6138044e01c18637': 'ഴു',        \
+    '9371aefcf2b870fc': 'ഴ്ത്തു',    \
+    'a34a2cdfceb68acc': 'ഴ്സു',      \
+    '23f21628ed645d81': 'വു',        \
+    'f2b730030a33e6b1': 'വൂ',        \
+    '13030b22fd3c6671': 'വൃ',        \
+    'a82f96c201f5f461': 'ശു',        \
+    'a4c4a74a3145ad26': 'ശൂ',        \
+    '24a09f47658cebd4': 'ഷു',        \
+    'dcbde8889e29d4a0': 'സു',        \
+    '4c02c9e83435a185': 'സൂ',        \
+    '8f3f07e799a1aeb5': 'സൃ',        \
+    '895ad8cdd17f0a5b': 'സ്കൂ',      \
+    'f2989ab988e083dd': 'സ്തു',      \
+    'a87445d10a4f79f2': 'സ്റ്റു',    \
+    '44badd89e6d24a54': 'സ്സു',      \
+    '3714c70990a55c0b': 'ഹു',        \
+    '52b07bd7923cb8da': 'ഹൃ',        \
+    'a1b2d296ba116c26': '്യു',       \
+    '4399e2f7e427468c': '്യൂ',       \
+}
+
 BROKEN_FONTS = {'Arial Unicode MS'  : ARIAL_UNICODE_MS,   \
                 'Nirmala UI'        : NIRMALA_UI,         \
                 'Mangal'            : MANGAL,             \
@@ -1011,11 +1313,14 @@ BROKEN_FONTS = {'Arial Unicode MS'  : ARIAL_UNICODE_MS,   \
                 # breakage rather than the sound one TAUElangoPanchali-
                 # SC700's does \
                 'TAU-Marutham'             : TAU_MARUTHAM, \
-                'TAU-Marutham-SC700'       : TAU_MARUTHAM}
+                'TAU-Marutham-SC700'       : TAU_MARUTHAM, \
+                # the malayalam of the Kerala gazette, repaired by what its
+                # glyphs draw - see MEERA_OUTLINES \
+                'Meera'                    : MEERA}
 
 # the glyphs to repair by what they draw rather than by their glyph id, for a
 # font whose subsets are renumbered - see MANGAL_OUTLINES above
-BROKEN_FONT_OUTLINES = {'Mangal': MANGAL_OUTLINES}
+BROKEN_FONT_OUTLINES = {'Mangal': MANGAL_OUTLINES, 'Meera': MEERA_OUTLINES}
 
 # the fonts whose subsets are re-encoded by the producer, so that nothing a
 # subset of them says about its own glyphs can be believed. Every other font
@@ -1028,7 +1333,15 @@ BROKEN_FONT_OUTLINES = {'Mangal': MANGAL_OUTLINES}
 # would beat the table that does know: gid 164 is கு and the cmap of one
 # subset of test/test_pdfs/tamil-marutham.pdf calls it 'k'. For these fonts
 # the hand table is all there is - see TAU_MARUTHAM above
-RE_ENCODED_FONTS = {'TAU-Marutham', 'TAU-Marutham-SC700'}
+#
+# Meera is re-encoded the same way and by another producer again: it is carried
+# as simple TrueType fonts that name no /Encoding of their own, and the byte in
+# the content stream is the number that subset gave the glyph. Its cmap does
+# map that byte to the right glyph - that is how a byte is addressed at all -
+# but reading the cmap as this producer's own encoding of the glyphs is what
+# glyph_seed_strings would do with it, handing gid 2 the character U+0002, so
+# nothing it says may be believed here either
+RE_ENCODED_FONTS = {'TAU-Marutham', 'TAU-Marutham-SC700', 'Meera'}
 
 # the glyph count of the font program a hand table above was read from, for a
 # font that this corpus carries in more than one numbering. A subset that
@@ -1094,7 +1407,8 @@ FONT_CONVERTERS = {'Arial Unicode MS'  : 'arialuni_glyphs',   \
                    'Uni-Ila.Sundaram-04'      : 'ilasundaram_glyphs', \
                    'Uni-Ila.Sundaram-07'      : 'ilasundaram_glyphs', \
                    'TAU-Marutham'             : 'marutham_glyphs',    \
-                   'TAU-Marutham-SC700'       : 'marutham_glyphs'}
+                   'TAU-Marutham-SC700'       : 'marutham_glyphs',    \
+                   'Meera'                    : 'meera_glyphs'}
 
 # the styles of a family, which a pdf carries as fonts of their own named
 # "Nirmala UI,Bold" or "NirmalaUI-Bold"
@@ -1228,11 +1542,23 @@ class ToUnicodeFixer:
                     table[code] = to_str(''.join(units[:-1] + [last]))
         return table
 
-    def build_cmap(self, table):
-        lines = ['/CIDInit /ProcSet findresource begin', '12 dict begin',   \
-                 'begincmap', '/CMapName /Adobe-Identity-UCS def',          \
-                 '/CMapType 2 def', '1 begincodespacerange',                \
-                 '<0000> <FFFF>', 'endcodespacerange']
+    def build_cmap(self, table, codebytes = 2):
+        '''the cmap stream of a map, with codebytes bytes to a code.
+
+           A code is two bytes long for an identity encoded font, whose codes
+           are glyph ids, and one byte long for a simple font, whose codes are
+           the bytes of the content stream. The codespace range has to say
+           which: a simple font's map written with a two byte range is read by
+           pdfminer all the same, but an extractor that honours the range
+           finds no code of that length in the stream and falls back on the
+           encoding - which is how the text of a repaired simple font reached
+           camelot as the producer's own bytes rather than as its characters'''
+        digits = 2 * codebytes
+        space  = '<%s> <%s>' % ('0' * digits, 'F' * digits)
+        lines  = ['/CIDInit /ProcSet findresource begin', '12 dict begin',   \
+                  'begincmap', '/CMapName /Adobe-Identity-UCS def',          \
+                  '/CMapType 2 def', '1 begincodespacerange',                \
+                  space, 'endcodespacerange']
 
         items = sorted(table.items())
         # a cmap may hold at most 100 entries in one bfchar section
@@ -1240,8 +1566,8 @@ class ToUnicodeFixer:
             chunk = items[i:i+100]
             lines.append('%d beginbfchar' % len(chunk))
             for code, ustr in chunk:
-                lines.append('<%04X> <%s>' % \
-                             (code, ustr.encode('utf-16-be').hex().upper()))
+                lines.append('<%0*X> <%s>' % \
+                             (digits, code, ustr.encode('utf-16-be').hex().upper()))
             lines.append('endbfchar')
 
         lines.extend(['endcmap',                                       \
@@ -1606,13 +1932,27 @@ class ToUnicodeFixer:
            text'''
         return any(ustr and set(ustr) == {'\x00'} for ustr in table.values())
 
+    def is_builtin_simple(self, doc, xref):
+        '''whether a font is a simple one that names no /Encoding of its own.
+           A byte of the content stream is then looked up in the font's own
+           cmap rather than in an encoding, which is how the Meera of a Kerala
+           gazette is addressed - see byte_glyphs, which reads that cmap for
+           either kind of simple font'''
+        key, val = doc.xref_get_key(xref, 'Encoding')
+        if key != 'null':
+            return False
+
+        key, val = doc.xref_get_key(xref, 'Subtype')
+        return key == 'name' and \
+               val.lstrip('/') in ('TrueType', 'Type1', 'MMType1')
+
     def fix_font(self, doc, xref, fontname, encoding, glyphfixes, \
                  learnt = None, outlinefixes = None, fixescount = None, \
                  trusted = True):
-        if encoding in SIMPLE_ENCODINGS:
+        if encoding in SIMPLE_ENCODINGS or self.is_builtin_simple(doc, xref):
             return self.fix_simple_font(doc, xref, fontname, encoding, \
                                         glyphfixes, learnt, fixescount, \
-                                        trusted)
+                                        trusted, outlinefixes)
 
         if not self.is_identity(doc, xref, encoding):
             self.logger.info('Font %d (%s) is not identity encoded', \
@@ -1759,7 +2099,9 @@ class ToUnicodeFixer:
             return {}
 
         gids     = {gname: gid for gid, gname in enumerate(order)}
-        bytes_of = SIMPLE_ENCODINGS[encoding]
+        # None for a font that names no encoding at all, whose bytes only the
+        # font's own cmap can answer for - see is_builtin_simple
+        bytes_of = SIMPLE_ENCODINGS.get(encoding)
         glyphs   = {}
 
         for table in tables:
@@ -1767,12 +2109,15 @@ class ToUnicodeFixer:
                 gid = gids.get(gname)
                 if gid == None:
                     continue
-                # a (1, 0) subtable is keyed by the byte itself and a (3, 1)
-                # one by the character the encoding gives that byte
-                if table.platformID == 1:
-                    if 0 <= code < 256:
-                        glyphs.setdefault(code, gid)
-                else:
+                # a (1, 0) subtable is keyed by the byte itself, a (3, 0)
+                # symbol one by that byte in the F000 page, and a (3, 1) one
+                # by the character the encoding gives the byte
+                if table.platformID == 1 or \
+                   (table.platformID == 3 and table.platEncID == 0):
+                    byte = code - 0xF000 if 0xF000 <= code <= 0xF0FF else code
+                    if 0 <= byte < 256:
+                        glyphs.setdefault(byte, gid)
+                elif bytes_of != None:
                     byte = bytes_of.get(chr(code))
                     if byte != None:
                         glyphs.setdefault(byte, gid)
@@ -1780,7 +2125,8 @@ class ToUnicodeFixer:
         return glyphs
 
     def fix_simple_font(self, doc, xref, fontname, encoding, glyphfixes, \
-                        learnt = None, fixescount = None, trusted = True):
+                        learnt = None, fixescount = None, trusted = True, \
+                        outlinefixes = None):
         '''build the map of a simple font of a re-encoded document out of the
            glyph that its cmap says each of its bytes draws. Returns the
            number of bytes the map gained.
@@ -1788,10 +2134,13 @@ class ToUnicodeFixer:
            A font left without a hand table - one whose subset does not number
            its glyphs the way the table was read off - is left exactly as it
            is: what such a font says about its own glyphs is the producer's
-           encoding of them and cannot stand in for the table'''
+           encoding of them and cannot stand in for the table. A font whose
+           table is keyed by what its glyphs draw rather than by their ids has
+           no such numbering to be held to and is repaired from that table
+           alone - see MEERA_OUTLINES'''
         glyphfixes = self.fixes_for_numbering(doc, xref, fontname, \
                                               glyphfixes, fixescount)
-        if not glyphfixes:
+        if not glyphfixes and not outlinefixes:
             return 0
 
         strings = self.glyph_strings(doc, xref, learnt, trusted)
@@ -1808,6 +2157,11 @@ class ToUnicodeFixer:
             correct = strings.get(gid)
             if correct == None:
                 correct = glyphfixes.get(gid)
+            if correct == None and outlinefixes:
+                # a font whose subsets are renumbered, so the glyph is looked
+                # up by what it draws rather than by the number it has here
+                correct = outlinefixes.get( \
+                              self.glyph_signature(doc, xref, gid))
             if correct == None or correct == table.get(byte):
                 continue
 
@@ -1822,13 +2176,16 @@ class ToUnicodeFixer:
         # a byte the table has nothing for is still written out, with the
         # character the encoding already gives it: this map replaces the
         # encoding for an extractor that reads one, and a partial map would
-        # leave such an extractor with nothing for those bytes
-        chars = SIMPLE_ENCODING_CHARS[encoding]
+        # leave such an extractor with nothing for those bytes. A font that
+        # names no encoding has no such character to fall back on, and the
+        # entries its own map already carried are in fixed above
+        chars = SIMPLE_ENCODING_CHARS.get(encoding, {})
         for byte in glyphs:
             if byte in chars:
                 fixed.setdefault(byte, chars[byte])
 
-        self.set_tounicode(doc, xref, fixed)
+        # the codes of a simple font are the bytes of the content stream
+        self.set_tounicode(doc, xref, fixed, codebytes = 1)
         return num
 
     def add_missing_glyphs(self, doc, xref, fixed, glyphfixes):
@@ -1948,9 +2305,9 @@ class ToUnicodeFixer:
 
         return learnt
 
-    def set_tounicode(self, doc, xref, table):
+    def set_tounicode(self, doc, xref, table, codebytes = 2):
         '''write a map for a font, making one if the font carries none'''
-        cmap     = self.build_cmap(table)
+        cmap     = self.build_cmap(table, codebytes)
         cmapxref = self.get_cmap_xref(doc, xref)
 
         if cmapxref == None:
@@ -2027,7 +2384,9 @@ class ToUnicodeFixer:
                              'alone', xref)
             return 0
 
-        self.set_tounicode(doc, xref, fixed)
+        # a type3 font is a simple font: its codes are the bytes of the
+        # content stream, which its /Differences names one by one
+        self.set_tounicode(doc, xref, fixed, codebytes = 1)
 
         return num
 

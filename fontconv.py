@@ -3,10 +3,11 @@ from indic2unicode.fonts.hindi import aryan2, surekh, chanakya, arialuni, \
 from indic2unicode.fonts.glyphs import arialuni_glyphs, nirmalaui_glyphs, \
                                        mangal_glyphs, nudiuni_glyphs, \
                                        tauelango_glyphs, ilasundaram_glyphs, \
-                                       marutham_glyphs
+                                       marutham_glyphs, meera_glyphs
 from indic2unicode.fonts.kannada import tunga, nudi, aklite
 from indic2unicode.fonts.tamil import tamelango, vanavil, tommy
 from indic2unicode.fonts.malayalam import revathi
+from indic2unicode.fonts.telugu import priyaanka
 
 class FontConv:
     def __init__(self):
@@ -27,9 +28,11 @@ class FontConv:
         vanavilObj   = vanavil.Vanavil()
         tommyObj     = tommy.Tommy()
         revathiObj   = revathi.Revathi()
+        priyaankaObj = priyaanka.Priyaanka()
         tauelangoObj = tauelango_glyphs.TauElangoPanchaliGlyphs()
         ilasundaramObj = ilasundaram_glyphs.UniIlaSundaramGlyphs()
         maruthamObj    = marutham_glyphs.TauMaruthamGlyphs()
+        meeraObj       = meera_glyphs.MeeraUniGlyphs()
         self.converters = { 
             'aryan2': aryanObj, 'divya':  aryanObj, 'surekh': surekhObj,
             'chanakya': chanakyaObj, 'krutidev': chanakyaObj,  
@@ -105,6 +108,13 @@ class FontConv:
             # that the whole ML- family of fonts shares. The pdf font name
             # is a key here beside the short one
             'revathi': revathiObj, 'ML-Revathi-Normal': revathiObj,
+            # the telugu of the Telangana gazette. An 8 bit font of the
+            # same kind again, and one whose bytes are those of mac roman
+            # rather than of a windows table - the pdf embeds it as a
+            # TrueType subset whose map hands every glyph the character of
+            # the mac roman byte it sits on. The pdf font name is a key
+            # here beside the short one
+            'priyaanka': priyaankaObj, 'PriyaankaBold': priyaankaObj,
             # no bare 'TAUElangoPanchali' key here, for the reason
             # mangal_glyphs and nudiuni_glyphs have none: this is a
             # reordering pass for the text of a pdf that fix_tounicode.py
@@ -132,6 +142,17 @@ class FontConv:
             # reached through get_font_converter(), which names only the
             # fonts that really were repaired in this document
             'marutham_glyphs': maruthamObj,
+            # the unicode malayalam of the Kerala gazette, and no bare font
+            # name key here either, for the reason the converters above have
+            # none: this is a reordering pass for the text of a pdf that
+            # fix_tounicode.py has already repaired. That producer re-encodes
+            # the font per subset and leaves the glyph behind every െ, േ and
+            # ൈ out of its map altogether, so an unrepaired Meera is not
+            # merely out of order - കേരള reaches an extractor as
+            # കേ(cid:2)രള, with the ക missing outright. It is reached through
+            # get_font_converter(), which names only the fonts that really
+            # were repaired in this document
+            'meera_glyphs': meeraObj,
         }
 
         self.uniqfonts = ['aryan2', 'surekh', 'chanakya', 'arialuni', \
@@ -141,7 +162,7 @@ class FontConv:
                           'nudiuni_glyphs', 'tamelango', 'reginet', \
                           'tauelango_glyphs', 'ilasundaram_glyphs', \
                           'marutham_glyphs', 'vanavil', 'tommy', \
-                          'revathi']
+                          'revathi', 'meera_glyphs', 'priyaanka']
  
     def to_unicode(self, fontname, text):
         return self.converters[fontname].to_unicode(text)
