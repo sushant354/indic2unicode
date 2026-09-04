@@ -47,6 +47,20 @@ cmap - the one question this producer's cmap does answer - and writes a map
 keyed by the byte; and its embeddings that carry no map at all are given one
 built from the table, the code of a glyph being its glyph id there.
 
+The Andhra Pradesh gazettes that are set in NATS are broken a way of their
+own again: that producer built the map by pairing the glyphs of a cluster
+with the characters of the cluster in order and handing each glyph as many of
+them as it had got to, so the first cluster a glyph was drawn in decides what
+it says everywhere. The one glyph of ని is handed 'న్న' out of the first
+న్ని of the document and the ్న behind it the 'ి' that was left over, which
+reads correctly for ఎన్నికల and for nothing else - అంతస్తు extracts as
+అంతసు and గ్రామ పంచాయతీ as గ్రమ ప్ంచాయతీ. That font does keep a cmap, a post
+and a GSUB, but a subset of it names only the characters it draws outside a
+cluster - 63 of the 209 glyphs the test document draws - so nothing its GSUB
+says can be spelled out from the subset alone and every glyph is repaired
+from NATS, a table of the blocks the font lays them out in that is checked
+against that GSUB glyph by glyph.
+
 The glyphs themselves are drawn correctly, so the text on the page is right
 and only its extraction is wrong. The map is built again out of the font
 itself, which says what its glyphs are three times over: the cmap of the
@@ -62,7 +76,8 @@ glyphs, so it still has to go through fonts/glyphs/arialuni_glyphs.py
 (Arial Unicode MS), fonts/glyphs/nirmalaui_glyphs.py (Nirmala UI),
 fonts/glyphs/mangal_glyphs.py (Mangal), fonts/glyphs/nudiuni_glyphs.py
 (NudiUni), fonts/glyphs/tauelango_glyphs.py (TAUElangoPanchali) or
-fonts/glyphs/marutham_glyphs.py (TAU-Marutham) to be put in the order that
+fonts/glyphs/marutham_glyphs.py (TAU-Marutham) or
+fonts/glyphs/nats_glyphs.py (NATS) to be put in the order that
 unicode wants - see FONT_CONVERTERS below.
 
 A font is looked up by the name the pdf carries for it in the font
@@ -90,7 +105,7 @@ import pymupdf
 from fontTools.pens.recordingPen import DecomposingRecordingPen
 from fontTools.ttLib import TTFont
 
-from indic2unicode.langs import kannada, tamil
+from indic2unicode.langs import kannada, tamil, telugu
 
 # the glyphs that the shaper made. They have no name of their own in the
 # font, so the string of every one of them is repaired by hand. The string
@@ -1287,6 +1302,258 @@ MEERA_OUTLINES = { \
     '4399e2f7e427468c': '്യൂ',       \
 }
 
+# NATS, the telugu of the Andhra Pradesh gazette, is broken a ninth way: the
+# map is a positional split of the cluster rather than a reading of the
+# glyphs.
+#
+# It is a real opentype telugu font and its glyphs really are telugu - what
+# is wrong is the map that says which. The producer built it by pairing the
+# glyphs of a cluster with the characters of that cluster in order and
+# handing each glyph as many of them as it has got to, so the *first* cluster
+# a glyph is drawn in decides what it says everywhere: the one glyph of ని
+# is handed 'న్న' because the first న్ని of the document split that way, and
+# the ్న behind it is handed the 'ి' that was left over. Every glyph is then
+# read as that in the rest of the document - ఎన్నికల comes out right, since
+# that is the cluster the readings were split off, and అంతస్తు comes out as
+# అంతసు and గ్రామ పంచాయతీ as గ్రమ ప్ంచాయతీ. The map is many to one as well
+# (glyphs 226 and 229 are both '్', 221, 234, 239 and 254 all 'ు'), so there
+# is nothing a converter could invert: it has to be built again.
+#
+# The font says what its glyphs are. Its subsets keep a cmap, a post and a
+# GSUB, and the GSUB spells every glyph the shaper made out of the glyphs it
+# was made of, so the whole 708 glyph font can be read back off the blocks
+# below and every reading of them checked against a rule of that GSUB. What
+# a subset does not keep is a cmap entry for a character it only ever draws
+# inside a cluster - the subset of test/test_pdfs/telugu-nats.pdf names 63
+# glyphs and draws 209 - so nothing the GSUB says can be spelled out from
+# that subset alone, which is why the table is here rather than left to
+# expand_gsub.
+#
+# THE BLOCKS
+#
+# The font lays its glyphs out one block at a time:
+#
+#   3..97       the macintosh standard glyph order, the latin and the
+#               punctuation. Only 3, 11..13, 15 and 17..29 are drawn by the
+#               identity encoded embedding of the test document, which is
+#               what its map already names correctly; the rest are here for
+#               the reason TAU_MARUTHAM's latin is, so that a subset whose
+#               map does not reach them is not left with the control
+#               characters of their glyph ids
+#   111..196    one glyph per assigned codepoint of the telugu block, in
+#               codepoint order. Every one of the 33 telugu glyphs the test
+#               document's subset does name in its own cmap falls exactly
+#               where this puts it - ం at 112, ఉ at 118, హ at 163, ృ at 170,
+#               ౖ at 180, ౦ at 187 and ౩ at 190
+#   108,        the dead consonants, a letter written with the pollu. క is
+#   270..306    at 108 on its own, ఖ..హ at 270 and క్ష at 306
+#   219..256    the subjoined consonants, the vattus telugu hangs under the
+#               body of a syllable. క..య at 219, the four forms of ్ర at
+#               245, 247, 263 and 264 (246 draws nothing at all), ఱ..హ at
+#               248 and ్క్ష at 256
+#   257..269    the vattus the font draws as one glyph - ్త్ర, ్ట్ల, ్ఙ్గ,
+#               ్ష్ణ, ్జ్ఞ, ్ష్ట and ్ష్ఠ - and the ai length mark drawn
+#               together with the vattu under it
+#   307..668    ten glyphs per consonant, the letter with each of the vowel
+#               signs ా ి ీ ు ూ ె ే ొ ో ౌ written into it. ౘ and ౙ take six
+#               of the ten, the font drawing neither of them with ి, ీ, ె or
+#               ే
+#   669..678    క్ష with each of those ten signs, 705..707 the same letter
+#               with ై and two clusters under it
+#   680..704    the ai length mark drawn together with each vattu again
+#
+# The blocks skip ఴ (0C34) everywhere below the codepoint block, and the
+# subjoined ones skip ౘ and ౙ, which share the glyphs of చ and జ there. What
+# is left out of the table is 0, 1, 2, 98..110, 197..217 and 246: the font
+# carries an outline for none of them, every one of those glyphs measuring
+# empty with a zero advance, so there is nothing there to name.
+#
+# Every reading here is checked against the font's own GSUB: of the 669
+# glyphs that either that GSUB or the macintosh order speaks for, 666 agree
+# with this table, and the three that do not are an ambiguity of the font
+# itself - its akhand lookup lists one component sequence twice over, for the
+# subjoined క్ష and for the dead one, and only its blwf and haln lookups tell
+# those two apart, which is what lookup_rank() orders the lookups for.
+#
+# This font is absent from BROKEN_FONT_GLYPH_COUNTS below for the reason the
+# comment there gives: all three of the embeddings of it that the one document
+# this was read off carries count the full 708 glyphs of the font, and nothing
+# says it is ever carried in a second numbering.
+#
+# WHAT THE REPAIR LEAVES
+#
+# The order. A glyph carries the characters it draws and the glyphs are
+# still in the order they are drawn in, and telugu draws the mark of a
+# syllable on the body of it with the vattus hanging under that body - so
+# the mark is drawn before them and unicode writes it behind them, and
+# ఎన్నికల is drawn ఎ ని ్న క ల. fonts/telugu/nats.py is the pass that puts
+# that right. Two glyphs of the font draw less than a character with it:
+# the ai length mark, which is the back half of ై and is joined to the ె in
+# front of it, and the pollu of a dead consonant, which telugu writes at the
+# end of the syllable rather than between the letter and the vattu under it
+# (కోర్ట్ is drawn కో ర్ ్ట) and which the same pass moves there.
+TELUGU_UNICODE = telugu.TeluguUnicode().tokendict
+TELUGU_VIRAMA  = TELUGU_UNICODE['VIRAMA']
+
+# one glyph per assigned codepoint of the telugu block, 0C01 through 0C6F.
+# The ranges are written out rather than read off unicodedata for the reason
+# TAMIL_CODEPOINTS above is: the blocks that follow hang on this list being
+# exactly 86 long, so it must not be able to shift under a python whose
+# unicode data assigns a codepoint the font leaves a gap for today - 0C04,
+# the combining anusvara above, is exactly such a codepoint, assigned in
+# unicode 7.0 and drawn by no glyph of this font
+TELUGU_CODEPOINTS = [chr(code) \
+                     for first, last in ((0x0c01, 0x0c03), (0x0c05, 0x0c0c), \
+                                         (0x0c0e, 0x0c10), (0x0c12, 0x0c28), \
+                                         (0x0c2a, 0x0c39), (0x0c3d, 0x0c44), \
+                                         (0x0c46, 0x0c48), (0x0c4a, 0x0c4d), \
+                                         (0x0c55, 0x0c56), (0x0c58, 0x0c59), \
+                                         (0x0c60, 0x0c63), (0x0c66, 0x0c6f)) \
+                     for code in range(first, last + 1)]
+
+# the 35 letters క..హ of that block without ఴ, which is the order every
+# block below runs through. ఴ is left out because the font draws no form of
+# it: it is in the codepoint block above, at glyph 158, and nowhere else
+NATS_LETTERS = [char for char in TELUGU_CODEPOINTS \
+                if TELUGU_UNICODE['KA'] <= char <= TELUGU_UNICODE['HA'] \
+                and char != TELUGU_UNICODE['LLLA']]
+
+# and the same letters with ౘ and ౙ back in the alphabetical places the
+# codepoint block does not give them - the block puts those two past the
+# vowels, at 0C58 and 0C59, and every block of a letter with a vowel sign
+# written into it draws them behind చ and జ where the alphabet has them
+TELUGU_ALPHABET_EXTRAS = {TELUGU_UNICODE['CA']: '\u0c58', \
+                          TELUGU_UNICODE['JA']: '\u0c59'}
+
+def telugu_alphabet(letters, extras):
+    '''the letters with the two extra ones put back in the alphabetical
+       places the codepoint block does not give them'''
+    out = []
+    for letter in letters:
+        out.append(letter)
+        if letter in extras:
+            out.append(extras[letter])
+    return out
+
+NATS_SIGN_LETTERS = telugu_alphabet(NATS_LETTERS, TELUGU_ALPHABET_EXTRAS)
+
+# where ర sits in that alphabet: the font gives it four subjoined glyphs of
+# its own where every other letter has one, so the block of them is written
+# in two pieces around it
+NATS_RA_INDEX = NATS_LETTERS.index(TELUGU_UNICODE['RA'])
+
+# the ten vowel signs the font writes into a letter, in the order it lays
+# their blocks out - which is the codepoint order of the block with ృ, ౄ and
+# ై left out, those three being drawn as marks of their own
+NATS_SIGNS = [TELUGU_UNICODE[token] \
+              for token in ('MATRA_AA', 'MATRA_I', 'MATRA_II', 'MATRA_U', \
+                            'MATRA_UU', 'MATRA_E', 'MATRA_EE', 'MATRA_O', \
+                            'MATRA_OO', 'MATRA_AU')]
+
+# ౘ and ౙ are drawn with six of those ten only - the font has no glyph for
+# either of them carrying ి, ీ, ె or ే, which is what makes their blocks six
+# wide and puts ఛా at 373 rather than at 377
+NATS_NARROW_SIGNS = [sign for sign in NATS_SIGNS \
+                     if sign not in (TELUGU_UNICODE['MATRA_I'], \
+                                     TELUGU_UNICODE['MATRA_II'], \
+                                     TELUGU_UNICODE['MATRA_E'], \
+                                     TELUGU_UNICODE['MATRA_EE'])]
+
+# క్ష, the one cluster the font draws as a letter of its own, with a block of
+# the ten vowel signs to itself at the very end of the font
+NATS_KSSA = TELUGU_UNICODE['KA'] + TELUGU_VIRAMA + TELUGU_UNICODE['SSA']
+
+def telugu_sign_blocks(gid, letters, signs, narrow, narrowsigns):
+    '''the blocks of one glyph per vowel sign that the font draws for each
+       letter in turn, the letters of narrow taking the shorter block'''
+    table = {}
+    for letter in letters:
+        block = narrowsigns if letter in narrow else signs
+        for sign in block:
+            table[gid] = letter + sign
+            gid += 1
+    return table
+
+NATS = {3 + i: char for i, char in enumerate(ASCII_PUNCTUATION)}
+NATS.update({36 + i: chr(ord('A') + i) for i in range(26)})
+NATS.update({62 + i: char for i, char in enumerate('[\\]^_`')})
+NATS.update({68 + i: chr(ord('a') + i) for i in range(26)})
+NATS.update({94 + i: char for i, char in enumerate('{|}~')})
+NATS.update({111 + i: char for i, char in enumerate(TELUGU_CODEPOINTS)})
+
+# the dead consonants, a letter written with the pollu. క is at 108, on its
+# own in front of the codepoint block, and the rest of them run from 270 in
+# the same order the blocks of a vowel sign do - ౘ and ౙ have a pollu form
+# of their own here where they share the subjoined glyph of చ and జ below
+NATS.update({108: TELUGU_UNICODE['KA'] + TELUGU_VIRAMA})
+NATS.update({270 + i: letter + TELUGU_VIRAMA \
+             for i, letter in enumerate(NATS_SIGN_LETTERS[1:])})
+NATS.update({306: NATS_KSSA + TELUGU_VIRAMA})
+
+# the subjoined consonants, which unicode writes the other way round - the
+# virama in front of the letter it binds. ర is the one letter the font draws
+# four of, the wide one at 247 that stands beside a syllable rather than
+# under it among them (రాష్ట్ర is drawn రా ష ్ట ్ర, the last of those being
+# that glyph), and 246 sits in the middle of them drawing nothing at all
+NATS.update({219 + i: TELUGU_VIRAMA + letter \
+             for i, letter in enumerate(NATS_LETTERS[:NATS_RA_INDEX])})
+NATS.update({248 + i: TELUGU_VIRAMA + letter \
+             for i, letter in enumerate(NATS_LETTERS[NATS_RA_INDEX + 1:])})
+NATS.update({gid: TELUGU_VIRAMA + TELUGU_UNICODE['RA'] \
+             for gid in (245, 247, 263, 264)})
+NATS.update({256: TELUGU_VIRAMA + NATS_KSSA})
+
+# the vattus that the font draws as a single glyph, and the ai length mark
+# drawn together with the vattu that hangs under the same syllable - the
+# mark being what the font puts first there, exactly as it does when the two
+# are glyphs of their own
+NATS.update({ \
+    257: TELUGU_VIRAMA + TELUGU_UNICODE['TA'] + \
+         TELUGU_VIRAMA + TELUGU_UNICODE['RA'],  \
+    259: TELUGU_VIRAMA + TELUGU_UNICODE['TTA'] + \
+         TELUGU_VIRAMA + TELUGU_UNICODE['LA'],  \
+    260: TELUGU_VIRAMA + TELUGU_UNICODE['NGA'] + \
+         TELUGU_VIRAMA + TELUGU_UNICODE['GA'],  \
+    261: TELUGU_VIRAMA + TELUGU_UNICODE['SSA'] + \
+         TELUGU_VIRAMA + TELUGU_UNICODE['NNA'], \
+    262: TELUGU_VIRAMA + TELUGU_UNICODE['JA'] + \
+         TELUGU_VIRAMA + TELUGU_UNICODE['NYA'], \
+    266: TELUGU_VIRAMA + TELUGU_UNICODE['SSA'] + \
+         TELUGU_VIRAMA + TELUGU_UNICODE['TTA'], \
+    267: TELUGU_VIRAMA + TELUGU_UNICODE['SSA'] + \
+         TELUGU_VIRAMA + TELUGU_UNICODE['TTHA'], \
+    # a second glyph for the ai length mark, which the font draws in two \
+    # widths \
+    265: TELUGU_UNICODE['AI_LENGTH_MARK'], \
+})
+NATS.update({258: TELUGU_UNICODE['AI_LENGTH_MARK'] + NATS[234], \
+             268: TELUGU_UNICODE['AI_LENGTH_MARK'] + NATS[266], \
+             269: TELUGU_UNICODE['AI_LENGTH_MARK'] + NATS[267]})
+# and the same mark with each of the 25 vattus the font draws it over, which
+# is the order its own blws lookup lists them in rather than the alphabet's -
+# the vattus a telugu word never writes this sign over are simply not there
+NATS.update({680 + i: TELUGU_UNICODE['AI_LENGTH_MARK'] + NATS[gid] \
+             for i, gid in enumerate((220, 221, 222, 223, 226, 227, 228, \
+                                      229, 230, 231, 232, 233, 235, 236, \
+                                      237, 248, 249, 253, 255, 256, 257, \
+                                      259, 260, 261, 262))})
+
+# the letters with a vowel sign written into them
+NATS.update(telugu_sign_blocks(307, NATS_SIGN_LETTERS, NATS_SIGNS, \
+                               set(TELUGU_ALPHABET_EXTRAS.values()), \
+                               NATS_NARROW_SIGNS))
+# and క్ష, which the font draws as one glyph and gives a block of its own,
+# at the very end of the font rather than in among the letters
+NATS.update({218: NATS_KSSA})
+NATS.update({669 + i: NATS_KSSA + sign for i, sign in enumerate(NATS_SIGNS)})
+NATS.update({705: NATS_KSSA + TELUGU_UNICODE['MATRA_E'] + \
+                  TELUGU_UNICODE['AI_LENGTH_MARK']})
+NATS.update({706: NATS[705] + NATS[233], 707: NATS[705] + NATS[256]})
+
+# పు with the vattu of ప under it, which is one glyph of the font and the
+# only one of that shape it draws
+NATS.update({679: NATS[522] + NATS[239]})
+
 BROKEN_FONTS = {'Arial Unicode MS'  : ARIAL_UNICODE_MS,   \
                 'Nirmala UI'        : NIRMALA_UI,         \
                 'Mangal'            : MANGAL,             \
@@ -1325,7 +1592,12 @@ BROKEN_FONTS = {'Arial Unicode MS'  : ARIAL_UNICODE_MS,   \
                 'TAU-Marutham-SC700'       : TAU_MARUTHAM, \
                 # the malayalam of the Kerala gazette, repaired by what its
                 # glyphs draw - see MEERA_OUTLINES \
-                'Meera'                    : MEERA}
+                'Meera'                    : MEERA, \
+                # the telugu of the Andhra Pradesh gazette. Its map is a
+                # positional split of the cluster rather than a reading of
+                # the glyphs, and the font itself says what they are - see
+                # NATS above \
+                'NATS'                     : NATS}
 
 # the glyphs to repair by what they draw rather than by their glyph id, for a
 # font whose subsets are renumbered - see MANGAL_OUTLINES above
@@ -1417,7 +1689,8 @@ FONT_CONVERTERS = {'Arial Unicode MS'  : 'arialuni_glyphs',   \
                    'Uni-Ila.Sundaram-07'      : 'ilasundaram_glyphs', \
                    'TAU-Marutham'             : 'marutham_glyphs',    \
                    'TAU-Marutham-SC700'       : 'marutham_glyphs',    \
-                   'Meera'                    : 'meera_glyphs'}
+                   'Meera'                    : 'meera_glyphs',    \
+                   'NATS'                     : 'nats_glyphs'}
 
 # the styles of a family, which a pdf carries as fonts of their own named
 # "Nirmala UI,Bold" or "NirmalaUI-Bold"
@@ -1457,7 +1730,17 @@ SINGLE_SUBST     = 1
 LIGATURE_SUBST   = 4
 EXTENSION_LOOKUP = 7
 
-HALANT = '्'
+HALANT = '\u094d'
+
+# the virama of every script a font here is read in, keyed by the block its
+# letters live in. A below base form is written as the virama and then its
+# consonant, so the one that has to be written in front of it is the one of
+# that consonant's own script - the devanagari halant in front of a telugu
+# letter would be no cluster at all
+VIRAMAS = {0x0900: HALANT,   0x0a00: '\u0a4d', 0x0b00: '\u0b4d', \
+           0x0c00: '\u0c4d', 0x0c80: '\u0ccd', 0x0d00: '\u0d4d', \
+           0x0b80: '\u0bcd'}
+VIRAMA_CHARS = frozenset(VIRAMAS.values())
 
 # the features that make a form which is written as a halant and then its
 # consonant - the below base, post base and pre base forms - and the ones
@@ -1465,6 +1748,28 @@ HALANT = '्'
 # the reph
 BELOW_FORM_FEATURES = frozenset(['blwf', 'pstf', 'pref'])
 HALF_FORM_FEATURES  = frozenset(['half', 'rphf'])
+
+# and the feature that makes a cluster the shaper draws as one glyph of its
+# own - క్ష and ज्ञ. A telugu or kannada shaper has moved the virama behind
+# the consonant it binds by the time this runs, so such a substitution takes
+# its parts in the order they are drawn and not the one they are written in,
+# see substituted_string()
+AKHAND_FEATURES = frozenset(['akhn'])
+
+# and the feature that makes the dead consonant, a letter written with the
+# virama behind it, which is the order it is spelled in anyway
+DEAD_FORM_FEATURES = frozenset(['haln'])
+
+def virama_of(ustr):
+    '''the virama of the script that a glyph's characters are in, the
+       devanagari halant for a glyph that names no indic character at all -
+       which is what the fonts this ran on before there was a second script
+       here always had'''
+    for char in ustr:
+        virama = VIRAMAS.get(ord(char) & ~0x7f)
+        if virama != None:
+            return virama
+    return HALANT
 
 def get_glyph_fixes(fontname):
     '''the glyphs to repair by hand for a font known to carry a broken map,
@@ -1783,7 +2088,24 @@ class ToUnicodeFixer:
         except Exception as e:
             self.logger.warning('Could not read the GSUB of a font: %s', e)
 
+        # a glyph that two lookups both make is spelled out by whichever of
+        # them is read first, so the ones that say what form the glyph is -
+        # the below base, the half and the dead consonant ones - are read
+        # before anything else, and an akhand ligature last of all. NATS
+        # lists one component sequence in its akhand lookup twice over, for
+        # the subjoined క్ష and for the dead one, and only its below base
+        # and dead consonant lookups tell those two apart
+        lookups.sort(key = lambda lookup: self.lookup_rank(lookup[2]))
         return lookups
+
+    def lookup_rank(self, tags):
+        '''the order the lookups of a GSUB are read in, see gsub_lookups()'''
+        if tags & BELOW_FORM_FEATURES or tags & HALF_FORM_FEATURES or \
+                DEAD_FORM_FEATURES & tags:
+            return 0
+        if tags & AKHAND_FEATURES:
+            return 2
+        return 1
 
     def substituted_string(self, parts, tags):
         '''the string of the glyph that a substitution made out of the
@@ -1792,14 +2114,26 @@ class ToUnicodeFixer:
         # how they are written; a below base, post base or pre base form is
         # a halant and its consonant, the other way round. A substitution
         # that takes the halant in as a glyph of its own already carries it,
-        # one that leaves it to the context has to be given it
+        # one that leaves it to the context has to be given it - and the
+        # halant that has to be written is the virama of the consonant's own
+        # script, see virama_of()
         if tags & BELOW_FORM_FEATURES:
-            if len(parts) == 2 and parts[1] == HALANT:
-                return HALANT + parts[0]
+            if len(parts) == 2 and parts[1] in VIRAMA_CHARS:
+                return parts[1] + parts[0]
             if len(parts) == 1:
-                return HALANT + parts[0]
+                return virama_of(parts[0]) + parts[0]
         elif tags & HALF_FORM_FEATURES and len(parts) == 1:
-            return parts[0] + HALANT
+            return parts[0] + virama_of(parts[0])
+        elif tags & AKHAND_FEATURES and len(parts) > 2 and \
+                parts[-1] in VIRAMA_CHARS:
+            # a cluster that a telugu or kannada shaper has already
+            # reordered: the virama it binds with sits behind the second
+            # consonant rather than in front of it, and any vowel sign of
+            # the syllable was drawn on the first letter and belongs behind
+            # the whole of it. The akhand ligature of a devanagari font
+            # takes its parts in the order they are written and so never
+            # reaches this
+            return parts[0] + parts[-1] + parts[-2] + ''.join(parts[1:-2])
 
         return ''.join(parts)
 

@@ -3,7 +3,8 @@ from indic2unicode.fonts.hindi import aryan2, surekh, chanakya, arialuni, \
 from indic2unicode.fonts.glyphs import arialuni_glyphs, nirmalaui_glyphs, \
                                        mangal_glyphs, nudiuni_glyphs, \
                                        tauelango_glyphs, ilasundaram_glyphs, \
-                                       marutham_glyphs, meera_glyphs
+                                       marutham_glyphs, meera_glyphs, \
+                                       nats_glyphs
 from indic2unicode.fonts.kannada import tunga, nudi, aklite
 from indic2unicode.fonts.tamil import tamelango, vanavil, tommy
 from indic2unicode.fonts.malayalam import revathi
@@ -35,6 +36,7 @@ class FontConv:
         ilasundaramObj = ilasundaram_glyphs.UniIlaSundaramGlyphs()
         maruthamObj    = marutham_glyphs.TauMaruthamGlyphs()
         meeraObj       = meera_glyphs.MeeraUniGlyphs()
+        natsObj        = nats_glyphs.NatsTeluguGlyphs()
         self.converters = { 
             'aryan2': aryanObj, 'divya':  aryanObj, 'surekh': surekhObj,
             'chanakya': chanakyaObj, 'krutidev': chanakyaObj,  
@@ -163,6 +165,17 @@ class FontConv:
             # get_font_converter(), which names only the fonts that really
             # were repaired in this document
             'meera_glyphs': meeraObj,
+            # the telugu of the Andhra Pradesh gazette, and no bare font
+            # name key here either, for the reason the converters above have
+            # none: this is a reordering pass for the text of a pdf that
+            # fix_tounicode.py has already repaired. That producer built the
+            # map by pairing the glyphs of a cluster with the characters of
+            # it, so an unrepaired NATS is not merely out of order - the
+            # first cluster a glyph was drawn in decides what it says
+            # everywhere, and అంతస్తు reaches an extractor as అంతసు. It is
+            # reached through get_font_converter(), which names only the
+            # fonts that really were repaired in this document
+            'nats_glyphs': natsObj,
         }
 
         self.uniqfonts = ['aryan2', 'surekh', 'chanakya', 'arialuni', \
@@ -173,7 +186,7 @@ class FontConv:
                           'tauelango_glyphs', 'ilasundaram_glyphs', \
                           'marutham_glyphs', 'vanavil', 'tommy', \
                           'revathi', 'meera_glyphs', 'priyaanka', \
-                          'yogesh']
+                          'nats_glyphs', 'yogesh']
  
     def to_unicode(self, fontname, text):
         return self.converters[fontname].to_unicode(text)
