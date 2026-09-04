@@ -115,3 +115,19 @@ class Yogesh(BaseLang):
             # already where unicode writes it
             'MATRAIRI2': ['ADHA_RA2', 'MATRA_I'], \
         }
+
+
+class Abhishek(BaseLang):
+    '''What only FourCMRAbhishek asks for. See fonts/marathi/abhishek.py'''
+
+    def __init__(self):
+        BaseLang.__init__(self)
+
+        self.tokendict = {\
+            # what a glyph that the broken map had no characters left to
+            # hand out is written with - the replacement character, and, in
+            # the bold face, the o with a tilde that the blank glyph of the
+            # font is given. Neither of them stands for anything on the
+            # page, so both are dropped
+            'SPACER' : '', \
+        }

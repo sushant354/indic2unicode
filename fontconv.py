@@ -8,7 +8,7 @@ from indic2unicode.fonts.glyphs import arialuni_glyphs, nirmalaui_glyphs, \
 from indic2unicode.fonts.kannada import tunga, nudi, aklite
 from indic2unicode.fonts.tamil import tamelango, vanavil, tommy
 from indic2unicode.fonts.malayalam import revathi
-from indic2unicode.fonts.marathi import yogesh
+from indic2unicode.fonts.marathi import abhishek, yogesh
 from indic2unicode.fonts.telugu import priyaanka
 
 class FontConv:
@@ -31,6 +31,7 @@ class FontConv:
         tommyObj     = tommy.Tommy()
         revathiObj   = revathi.Revathi()
         yogeshObj    = yogesh.Yogesh()
+        abhishekObj  = abhishek.Abhishek()
         priyaankaObj = priyaanka.Priyaanka()
         tauelangoObj = tauelango_glyphs.TauElangoPanchaliGlyphs()
         ilasundaramObj = ilasundaram_glyphs.UniIlaSundaramGlyphs()
@@ -120,6 +121,17 @@ class FontConv:
             # short one
             'yogesh': yogeshObj, 'DVBWTTYogeshNormal': yogeshObj,
             'DVBWTTYogeshBold': yogeshObj, 'DVBWTTYogeshItalic': yogeshObj,
+            # the other marathi of the same gazette, the one the Mumbai
+            # Suburban supplement is set in. A real opentype font, unlike
+            # Yogesh above, and one whose ToUnicode map is not wrong about
+            # what its glyphs say but about how much: two glyphs that stand
+            # next to each other are handed the character on their boundary
+            # each, so the extractor writes that character twice. The bare
+            # font name is a key here, unlike for the repaired fonts below:
+            # this converter reads the text of a pdf that nothing has
+            # repaired, and both faces the gazette carries share the fault
+            'abhishek': abhishekObj, 'FourCMRAbhishek': abhishekObj,
+            'FourCMRAbhishek-Bold': abhishekObj,
             # the telugu of the Telangana gazette. An 8 bit font of the
             # same kind again, and one whose bytes are those of mac roman
             # rather than of a windows table - the pdf embeds it as a
@@ -186,7 +198,7 @@ class FontConv:
                           'tauelango_glyphs', 'ilasundaram_glyphs', \
                           'marutham_glyphs', 'vanavil', 'tommy', \
                           'revathi', 'meera_glyphs', 'priyaanka', \
-                          'nats_glyphs', 'yogesh']
+                          'nats_glyphs', 'yogesh', 'abhishek']
  
     def to_unicode(self, fontname, text):
         return self.converters[fontname].to_unicode(text)
