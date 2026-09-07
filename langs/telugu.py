@@ -282,3 +282,114 @@ class Priyaanka(BaseLang):
         # the vattu of pa with the vowel sign u drawn into it, which is one
         # glyph of the font and two characters
         self.conjunct_tokens['VATTU_PA_U'] = ['VATTU_PA', 'MATRA_U']
+
+class Gautami(BaseLang):
+    '''the tokens that the text of a Gautami document carries beyond the
+       telugu of TeluguUnicode and Vattus above, and the glyphs of that font
+       that draw more than one character.
+
+       Gautami is a real opentype font - unlike Priyaanka above, which is an
+       8 bit display font - so nothing here stands for less than a
+       character. What it needs are the names of the syllables and the
+       clusters that the font draws in a single glyph, each of them spelled
+       out of the tokens it is made of:
+
+       1. The dead consonant, a letter written with the pollu of its
+          cluster. The font has a glyph per letter for it - కోర్ట్ is drawn
+          కో ర్ ్ట - and it is the letter and the virama, in that order,
+          which is the order the glyph draws them in and the order unicode
+          writes them in once the vattus of the cluster have moved in front
+          of that virama. See fonts/telugu/gautami.py.
+       2. The letters that a vowel sign is drawn into rather than written
+          beside. The signs i and ii replace the talakattu of a letter and
+          reshape it, so a syllable that carries either of them is one
+          glyph, and so are ఙు, జు, శు, క్షు and their long forms, the four
+          letters that end in the stroke the sign u is drawn with, and the
+          syllables that the signs o and oo are drawn into - ఘొ, ఝొ, మొ, యొ
+          and హో. హా is one glyph as well, the ా of a హ being drawn into
+          the stem of the letter.
+       3. క్ష and జ్ఞ, the two clusters telugu writes as a letter of their
+          own. The font draws each of them as one glyph, gives each a vattu
+          of its own and a dead form of its own, and spells them here the
+          way unicode does - the letter, the virama and the letter under it.
+       4. The vattu of pa with the vowel sign u drawn into it, which is one
+          glyph of the font and two characters, exactly as it is in
+          Priyaanka above.
+
+       The two archaic letters ౘ and ౙ are here as well: TeluguUnicode
+       above names neither of them, and Gautami draws both, with a vattu, a
+       dead form and the vowel signs of any other letter.
+    '''
+    # the letters that the font draws each vowel sign into, so that the
+    # syllable is one glyph of the font and two characters here
+    DRAWN_IN = {\
+        'MATRA_I'  : ['KHA', 'CA', 'CHA', 'JA', 'TA', 'NA', 'BA', 'BHA', \
+                      'MA', 'LA', 'LLA', 'VA', 'SHA', 'TSA', 'DZA'],     \
+        'MATRA_II' : ['KHA', 'CA', 'CHA', 'JA', 'TA', 'NA', 'BA', 'BHA', \
+                      'MA', 'LA', 'LLA', 'VA', 'SHA', 'TSA', 'DZA'],     \
+        'MATRA_U'  : ['NGA', 'JA', 'SHA', 'KSSA', 'DZA'],                \
+        'MATRA_UU' : ['NGA', 'JA', 'SHA', 'KSSA', 'DZA'],                \
+        'MATRA_O'  : ['GHA', 'JHA', 'MA', 'YA'],                         \
+        'MATRA_OO' : ['GHA', 'JHA', 'MA', 'YA', 'HA'],                   \
+        'MATRA_AA' : ['HA'],                                             \
+    }
+
+    # what a token of DRAWN_IN is called after the letter it belongs to
+    SIGN_SUFFIX = {'MATRA_AA': 'AA', 'MATRA_I' : 'I',  'MATRA_II': 'II', \
+                   'MATRA_U' : 'U',  'MATRA_UU': 'UU', 'MATRA_O' : 'O',  \
+                   'MATRA_OO': 'OO'}
+
+    def __init__(self):
+        BaseLang.__init__(self)
+        telUnicode = TeluguUnicode()
+        uMap       = telUnicode.tokendict
+        virama     = uMap['VIRAMA']
+
+        self.tokendict = {\
+            # the two archaic letters, which TeluguUnicode does not name,   \
+            # and the vattu of each of them                                 \
+            'TSA'              : 'ౘ',                                 \
+            'DZA'              : 'ౙ',                                 \
+            'VATTU_TSA'        : virama + 'ౘ',                        \
+            'VATTU_DZA'        : virama + 'ౙ',                        \
+                                                                            \
+            # the two vowel signs of the vocalic l, which TeluguUnicode      \
+            # does not name either                                          \
+            'MATRA_VOCALIC_L'  : 'ౢ',                                 \
+            'MATRA_VOCALIC_LL' : 'ౣ',                                 \
+        }
+
+        # the letters that a cluster of this font can be built out of: the
+        # telugu of TeluguUnicode, the two archaic letters above, and క్ష
+        # and జ్ఞ, which the font draws and treats as letters of their own
+        letters = [tokenName for tokenName, ustr in uMap.items() \
+                   if is_consonant(ustr)] + ['TSA', 'DZA']
+
+        self.conjunct_tokens = {\
+            # క్ష and జ్ఞ, and the vattu of each of them                    \
+            'KSSA'       : ['KA', 'VATTU_SSA'],                            \
+            'JNYA'       : ['JA', 'VATTU_NYA'],                            \
+            'VATTU_KSSA' : ['VATTU_KA', 'VATTU_SSA'],                      \
+            'VATTU_JNYA' : ['VATTU_JA', 'VATTU_NYA'],                      \
+                                                                           \
+            # the vattu of pa with the vowel sign u drawn into it           \
+            'VATTU_PA_U' : ['VATTU_PA', 'MATRA_U'],                        \
+        }
+
+        # the dead consonants, a letter and the pollu of its cluster. A
+        # conjunct token is expanded once and not again, so the two clusters
+        # are spelled out of their letters here rather than out of their own
+        # token
+        for tokenName in letters:
+            self.conjunct_tokens[tokenName + '_VIRAMA'] = [tokenName, 'VIRAMA']
+        self.conjunct_tokens['KSSA_VIRAMA'] = ['KA', 'VATTU_SSA', 'VIRAMA']
+        self.conjunct_tokens['JNYA_VIRAMA'] = ['JA', 'VATTU_NYA', 'VIRAMA']
+
+        # the syllables that the font draws in one glyph
+        for sign, consonants in self.DRAWN_IN.items():
+            for tokenName in consonants:
+                name = tokenName + '_' + self.SIGN_SUFFIX[sign]
+                if tokenName == 'KSSA':
+                    self.conjunct_tokens[name] = ['KA', 'VATTU_SSA', sign]
+                else:
+                    self.conjunct_tokens[name] = [tokenName, sign]
