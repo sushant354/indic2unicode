@@ -61,6 +61,17 @@ says can be spelled out from the subset alone and every glyph is repaired
 from NATS, a table of the blocks the font lays them out in that is checked
 against that GSUB glyph by glyph.
 
+The Maharashtra gazettes that are set in the DVOT family are broken the
+mildest way of all: their map is not wrong about a single glyph it names, it
+is only short. It names the glyphs that stand for one character on their own
+and leaves out every form the font draws as a letter of its own - the half
+consonants, the conjuncts it has a ligature for, the reph, and every matra
+that carries an anusvar or a reph - so जिल्हाधिकारी comes out of pdftotext as
+"िज हािधकारी", with the half la simply gone. That font carries no GSUB at
+all, and its cmap and its post name only the letters of the block, which the
+map already has right, so the glyphs it leaves out are repaired from
+DVOT_SUREKH and from nothing else.
+
 The glyphs themselves are drawn correctly, so the text on the page is right
 and only its extraction is wrong. The map is built again out of the font
 itself, which says what its glyphs are three times over: the cmap of the
@@ -78,7 +89,11 @@ fonts/glyphs/mangal_glyphs.py (Mangal), fonts/glyphs/nudiuni_glyphs.py
 (NudiUni), fonts/glyphs/tauelango_glyphs.py (TAUElangoPanchali) or
 fonts/glyphs/marutham_glyphs.py (TAU-Marutham) or
 fonts/glyphs/nats_glyphs.py (NATS) to be put in the order that
-unicode wants - see FONT_CONVERTERS below.
+unicode wants - see FONT_CONVERTERS below. The one converter there that is
+not a fonts/glyphs pass is fonts/marathi/dvotsurekh.py, which reads the DVOT
+family: an unrepaired DVOT is not wrong about the glyphs it does name, so
+the text of a repaired pdf and of an unrepaired one are the same text in the
+same order and one converter reads both.
 
 A font is looked up by the name the pdf carries for it in the font
 dictionary, which is the name an extractor reports. Some producers write no
@@ -1554,6 +1569,71 @@ NATS.update({706: NATS[705] + NATS[233], 707: NATS[705] + NATS[256]})
 # only one of that shape it draws
 NATS.update({679: NATS[522] + NATS[239]})
 
+# THE MARATHI OF THE MUMBAI SUBURBAN SUPPLEMENT
+#
+# The DVOT family is broken in a way of its own again, and it is the mildest
+# of them: its map is not wrong about a single glyph it names, it just does
+# not name them all. A map is written for the glyphs that stand for one
+# character on their own - the letters, the matras, the signs - and every
+# form the font draws as a letter of its own is left out of it: the half
+# consonants, the conjuncts it has a ligature for, the reph, and every matra
+# that carries an anusvar or a reph. 620 of the 13,691 glyphs of the test
+# document are such a glyph, and they are in 26% of its words.
+#
+# There is nothing to walk here and nothing to correct. The map has no entry
+# for those glyphs at all, so an extractor that falls back on the glyph id
+# writes the id as a character and one that does not - pdftotext - drops
+# them outright, जिल्हाधिकारी coming out as "िज हािधकारी". They are put back
+# by add_missing_glyphs, and this table is the whole of what it puts back:
+# the font carries no GSUB to spell a conjunct out of the glyphs it was made
+# of, and its cmap and its post name only the letters of the block, which the
+# map already has right.
+#
+# A face of this family says nothing about its glyphs that another does not.
+# DVOTSurekhMR and DVOTYogeshMR are two typefaces on one glyph order - they
+# were compared glyph by glyph and agree on all 691 of them, and no id the
+# two maps both name is read differently by them - so one table serves the
+# family and the holes only differ from document to document, a map naming
+# whatever glyphs its own document happened to draw. Every reading here was
+# taken off the outline of the glyph and checked against the OCR of the
+# gazette it was read from.
+#
+# A glyph is written the way it is drawn and not the way unicode writes it:
+# 'ीर्' carries the matra in front of the reph, which is where the font puts
+# them, and 'िर्' likewise - the second of those being the glyph that is
+# drawn in front of its consonant, which is where unicode wants its reph
+# already. The text of a repaired pdf is still in the order of the glyphs
+# and goes through fonts/marathi/dvotsurekh.py, which reads that order and
+# the glyph ids of an unrepaired pdf alike
+DVOT_SUREKH = { \
+    # the half consonants, in the order of the consonants they belong to \
+    175: 'क्',  177: 'ग्',  180: 'च्',  182: 'ज्',  220: 'ट्',  \
+    189: 'ण्',  190: 'त्',  192: 'द्',  193: 'ध्',  194: 'न्',  \
+    195: 'प्',  197: 'ब्',  198: 'भ्',  199: 'म्',  202: 'ल्',  \
+    203: 'व्',  204: 'श्',  205: 'ष्',  206: 'स्',               \
+    # the conjuncts the font draws as one letter, and the half form of the
+    # one of them that marathi puts in front of another letter - the ksha
+    # of लक्ष्मी \
+    169: 'क्ष', 209: 'क्ष्', 170: 'ज्ञ',                          \
+    270: 'क्र', 272: 'ग्र', 280: 'ट्र', 285: 'त्र', 287: 'द्र',  \
+    290: 'प्र', 292: 'ब्र', 296: 'व्र', 475: 'श्र',              \
+    452: 'त्त', 456: 'द्द', 457: 'द्ध', 460: 'द्भ', 463: 'द्य',  \
+    489: 'ह्य',                                                   \
+    # the ra that carries its matra inside the letter, the font drawing the
+    # u and the uu of a ra in the bowl of it rather than under it \
+    471: 'रु',  472: 'रू',                                        \
+    # the reph, and the eyelash ra of होणाऱ्या, which is a letter of its own
+    # in unicode rather than a reph and is drawn where unicode writes it \
+    171: 'र्',  201: 'ऱ्',                                        \
+    # the matras that carry a sign, a matra and the anusvar or the reph on
+    # it being one glyph here. The font draws matra_i and matra_i with an
+    # anusvar in two widths each, and only the narrow plain one is in the
+    # map \
+    526: 'ि',   523: 'िं',  527: 'िं',  524: 'िर्',              \
+    530: 'ीं',  531: 'ीर्', 514: 'ें',  515: 'ेर्',              \
+    535: 'ों',  536: 'ोर्', 597: 'ार्', 541: 'ांर्',             \
+}
+
 BROKEN_FONTS = {'Arial Unicode MS'  : ARIAL_UNICODE_MS,   \
                 'Nirmala UI'        : NIRMALA_UI,         \
                 'Mangal'            : MANGAL,             \
@@ -1597,7 +1677,16 @@ BROKEN_FONTS = {'Arial Unicode MS'  : ARIAL_UNICODE_MS,   \
                 # positional split of the cluster rather than a reading of
                 # the glyphs, and the font itself says what they are - see
                 # NATS above \
-                'NATS'                     : NATS}
+                'NATS'                     : NATS, \
+                # the marathi of the Maharashtra gazette. Its map is not
+                # wrong, only short: it names the glyphs that stand for one
+                # character and leaves out every form the font draws as a
+                # letter of its own - see DVOT_SUREKH above. The two
+                # typefaces the gazette carries share one glyph order, so
+                # one table serves both, and font_lookup_key folds the
+                # weights of each into the name here \
+                'DVOTSurekhMR'             : DVOT_SUREKH, \
+                'DVOTYogeshMR'             : DVOT_SUREKH}
 
 # the glyphs to repair by what they draw rather than by their glyph id, for a
 # font whose subsets are renumbered - see MANGAL_OUTLINES above
@@ -1690,12 +1779,20 @@ FONT_CONVERTERS = {'Arial Unicode MS'  : 'arialuni_glyphs',   \
                    'TAU-Marutham'             : 'marutham_glyphs',    \
                    'TAU-Marutham-SC700'       : 'marutham_glyphs',    \
                    'Meera'                    : 'meera_glyphs',    \
-                   'NATS'                     : 'nats_glyphs'}
+                   'NATS'                     : 'nats_glyphs', \
+                   # the one converter here that is not a _glyphs pass. An
+                   # unrepaired DVOT is not wrong about the glyphs it does
+                   # name, so its text is only out of order too, and
+                   # fonts/marathi/dvotsurekh.py reads the glyph ids of an
+                   # unrepaired pdf and the characters of a repaired one
+                   # with one set of rules \
+                   'DVOTSurekhMR'             : 'dvotsurekh', \
+                   'DVOTYogeshMR'             : 'dvotsurekh'}
 
 # the styles of a family, which a pdf carries as fonts of their own named
 # "Nirmala UI,Bold" or "NirmalaUI-Bold"
-STYLE_SUFFIX_RE = re.compile(r'(bold|italic|oblique|regular|light|medium'  \
-                             r'|semibold|black|condensed)+$')
+STYLE_SUFFIX_RE = re.compile(r'(bold|italic|oblique|regular|normal|light' \
+                             r'|medium|semibold|black|condensed)+$')
 
 def font_lookup_key(fontname):
     '''one font is embedded under more than one spelling of its name, Arial

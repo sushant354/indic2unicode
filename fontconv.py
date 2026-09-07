@@ -8,7 +8,7 @@ from indic2unicode.fonts.glyphs import arialuni_glyphs, nirmalaui_glyphs, \
 from indic2unicode.fonts.kannada import tunga, nudi, aklite
 from indic2unicode.fonts.tamil import tamelango, vanavil, tommy
 from indic2unicode.fonts.malayalam import revathi
-from indic2unicode.fonts.marathi import abhishek, yogesh
+from indic2unicode.fonts.marathi import abhishek, dvotsurekh, yogesh
 from indic2unicode.fonts.telugu import priyaanka
 
 class FontConv:
@@ -32,6 +32,7 @@ class FontConv:
         revathiObj   = revathi.Revathi()
         yogeshObj    = yogesh.Yogesh()
         abhishekObj  = abhishek.Abhishek()
+        dvotsurekhObj = dvotsurekh.DVOTSurekh()
         priyaankaObj = priyaanka.Priyaanka()
         tauelangoObj = tauelango_glyphs.TauElangoPanchaliGlyphs()
         ilasundaramObj = ilasundaram_glyphs.UniIlaSundaramGlyphs()
@@ -132,6 +133,31 @@ class FontConv:
             # repaired, and both faces the gazette carries share the fault
             'abhishek': abhishekObj, 'FourCMRAbhishek': abhishekObj,
             'FourCMRAbhishek-Bold': abhishekObj,
+            # the third marathi of the same gazette, the one the
+            # notifications of the Mumbai Suburban supplement are set in. A
+            # real opentype font like Abhishek above, and one whose
+            # ToUnicode map is not wrong about any glyph it names - it just
+            # names nothing but the 58 glyphs that stand for one character
+            # on their own, so every half consonant, every conjunct, every
+            # reph and every matra that carries a sign is missing from it
+            # and reaches an extractor as its glyph id. The bare font name
+            # is a key here, as it is for Abhishek: this converter reads the
+            # text of a pdf that nothing has repaired, and both faces the
+            # gazette carries share the same glyph ids
+            # This converter's table is keyed by glyph id and every DVOT
+            # face shares one glyph order, so the whole family reaches it -
+            # DVOTYogeshMR is the same layout in another typeface, checked
+            # glyph by glyph against DVOTSurekhMR. Beware of the two Yogesh
+            # of this gazette, which are different fonts under names that
+            # differ by three letters: DVOTYogeshMR is this one and
+            # DVBWTTYogesh is the legacy 8 bit font of yogesh.py above
+            'dvotsurekh': dvotsurekhObj,
+            'DVOTSurekhMRNormal': dvotsurekhObj,
+            'DVOTSurekhMRBold': dvotsurekhObj,
+            'DVOTSurekhMRItalic': dvotsurekhObj,
+            'DVOTYogeshMRNormal': dvotsurekhObj,
+            'DVOTYogeshMRBold': dvotsurekhObj,
+            'DVOTYogeshMRItalic': dvotsurekhObj,
             # the telugu of the Telangana gazette. An 8 bit font of the
             # same kind again, and one whose bytes are those of mac roman
             # rather than of a windows table - the pdf embeds it as a
@@ -198,7 +224,8 @@ class FontConv:
                           'tauelango_glyphs', 'ilasundaram_glyphs', \
                           'marutham_glyphs', 'vanavil', 'tommy', \
                           'revathi', 'meera_glyphs', 'priyaanka', \
-                          'nats_glyphs', 'yogesh', 'abhishek']
+                          'nats_glyphs', 'yogesh', 'abhishek', \
+                          'dvotsurekh']
  
     def to_unicode(self, fontname, text):
         return self.converters[fontname].to_unicode(text)

@@ -131,3 +131,47 @@ class Abhishek(BaseLang):
             # page, so both are dropped
             'SPACER' : '', \
         }
+
+
+class DVOTSurekh(BaseLang):
+    '''What only DVOT-Surekh asks for. See fonts/marathi/dvotsurekh.py'''
+
+    def __init__(self):
+        BaseLang.__init__(self)
+
+        devUni = DevanagariUnicode()
+        uMap   = devUni.tokendict
+        halant = uMap['HALANT']
+
+        self.tokendict = {\
+            # THE EYELASH RA of marathi. A reph that is drawn on a ya is
+            # written on the line in front of that ya rather than over the
+            # syllable - होणाऱ्या and not होणार्या - and unicode spells
+            # that letter rra, so it is a half rra here and no reph at all:
+            # it is already in front of its ya and it never moves
+            'ADHA_RRA'  : uMap['RRA'] + halant, \
+
+            # THE CONJUNCT the conjunct table of devanagari is missing. This
+            # font draws it as one letter, as it draws क्र, ग्र, त्र, द्र,
+            # प्र, ब्र and श्र, and all of those the table already has
+            'TTARA'     : uMap['TTA'] + halant + uMap['RA'], \
+
+            # the candra a of ॲन्टॉप हिल, a letter of the devanagari block
+            # that langs/devanagari.py has no token for
+            'CHANDRA_A' : 'ॲ', \
+        }
+
+        self.conjunct_tokens = {\
+            # THE MATRA I THAT CARRIES A REPH. The font draws the two as one
+            # glyph and draws that glyph in front of the consonant, so the
+            # reph is already where unicode writes it and only the matra
+            # travels - the reph is ADHA_RA2 and not ADHA_RA, which would
+            # move it back over the letter in front of it. निर्दिष्ट is
+            # ि न [ि+र्] द ष् ट
+            'MATRAIRI2'      : ['ADHA_RA2', 'MATRA_I'], \
+
+            # THE MATRA AA THAT CARRIES AN ANUSVAR AND A REPH, the glyph of
+            # वर्षां. The reph of this one is drawn behind the syllable, so
+            # it is ADHA_RA and moves back over it
+            'MATRAAABINDURI' : ['ADHA_RA', 'MATRA_AA', 'BINDU'], \
+        }
