@@ -72,6 +72,15 @@ all, and its cmap and its post name only the letters of the block, which the
 map already has right, so the glyphs it leaves out are repaired from
 DVOT_SUREKH and from nothing else.
 
+The Konkan divisional supplement of the same gazette is set in SakalMarathi,
+which numbers its glyphs the way the DVOT family does and whose map is short
+in the same place. That one does not leave the glyphs it cannot name empty
+though: its producer hands each of them a private use character out of a
+numbering it makes up per subset, so the reph is U+F040 in one subset of a
+document and U+F041 in the next and nothing outside that subset's map says
+what either of them is. Those readings are wrong rather than missing, so the
+walk below overwrites them out of SAKAL_MARATHI.
+
 The glyphs themselves are drawn correctly, so the text on the page is right
 and only its extraction is wrong. The map is built again out of the font
 itself, which says what its glyphs are three times over: the cmap of the
@@ -93,7 +102,9 @@ unicode wants - see FONT_CONVERTERS below. The one converter there that is
 not a fonts/glyphs pass is fonts/marathi/dvotsurekh.py, which reads the DVOT
 family: an unrepaired DVOT is not wrong about the glyphs it does name, so
 the text of a repaired pdf and of an unrepaired one are the same text in the
-same order and one converter reads both.
+same order and one converter reads both. fonts/marathi/sakal.py reads
+SakalMarathi the same two ways, the private use characters of the two
+numberings this corpus carries standing in for the glyph ids there.
 
 A font is looked up by the name the pdf carries for it in the font
 dictionary, which is the name an extractor reports. Some producers write no
@@ -1634,6 +1645,25 @@ DVOT_SUREKH = { \
     535: 'ों',  536: 'ोर्', 597: 'ार्', 541: 'ांर्',             \
 }
 
+# SakalMarathi numbers its glyphs the way the DVOT family does. Every id of
+# DVOT_SUREKH that the gazette this was read from draws stands for the same
+# letter in this font - each was checked against the OCR of the page it
+# stands on - and the three below are what that gazette draws beside them,
+# this font counting 713 glyphs against DVOT's 691.
+#
+# Its map is short the same way DVOT's is, but it does not leave the glyphs
+# it cannot name empty: this producer hands each of them a private use
+# character out of a numbering it makes up per subset, so U+F040 is the reph
+# of one subset and U+F041 the reph of the next. Those readings are not
+# missing but wrong, and the walk of fix_font overwrites them out of this
+# table. The text of a repaired pdf goes through fonts/marathi/sakal.py,
+# which reads the two numberings of that gazette as well
+SAKAL_MARATHI = dict(DVOT_SUREKH)
+SAKAL_MARATHI.update({\
+    # the half kha of संख्या, and the two conjuncts of याद्वारे and निश्चिती \
+    176: 'ख्', 462: 'द्व', 473: 'श्च',                            \
+})
+
 BROKEN_FONTS = {'Arial Unicode MS'  : ARIAL_UNICODE_MS,   \
                 'Nirmala UI'        : NIRMALA_UI,         \
                 'Mangal'            : MANGAL,             \
@@ -1686,7 +1716,10 @@ BROKEN_FONTS = {'Arial Unicode MS'  : ARIAL_UNICODE_MS,   \
                 # one table serves both, and font_lookup_key folds the
                 # weights of each into the name here \
                 'DVOTSurekhMR'             : DVOT_SUREKH, \
-                'DVOTYogeshMR'             : DVOT_SUREKH}
+                'DVOTYogeshMR'             : DVOT_SUREKH, \
+                # the fourth marathi of the same gazette, on the same glyph
+                # order as the two above - see SAKAL_MARATHI \
+                'SakalMarathi'             : SAKAL_MARATHI}
 
 # the glyphs to repair by what they draw rather than by their glyph id, for a
 # font whose subsets are renumbered - see MANGAL_OUTLINES above
@@ -1787,7 +1820,13 @@ FONT_CONVERTERS = {'Arial Unicode MS'  : 'arialuni_glyphs',   \
                    # unrepaired pdf and the characters of a repaired one
                    # with one set of rules \
                    'DVOTSurekhMR'             : 'dvotsurekh', \
-                   'DVOTYogeshMR'             : 'dvotsurekh'}
+                   'DVOTYogeshMR'             : 'dvotsurekh', \
+                   # nor is this one, for the same reason: an unrepaired
+                   # SakalMarathi is only out of order too, its map handing
+                   # the glyphs it cannot name a private use character
+                   # rather than nothing, and fonts/marathi/sakal.py reads
+                   # those and the characters of a repaired pdf alike \
+                   'SakalMarathi'             : 'sakal'}
 
 # the styles of a family, which a pdf carries as fonts of their own named
 # "Nirmala UI,Bold" or "NirmalaUI-Bold"

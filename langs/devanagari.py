@@ -255,6 +255,7 @@ class Conjuncts(BaseLang):
                                                               \
           'SHANA'   : uMap['SHA'] + halant + uMap['NA'],     \
           'SHACHA'  : uMap['SHA'] + halant + uMap['CHA'],     \
+          'SHACA'   : uMap['SHA'] + halant + uMap['CA'],      \
           'SSATTA'  : uMap['SSA'] + halant + uMap['TTA'],     \
           'VRA'     : uMap['VA'] + halant + uMap['RA'],       \
           'KRA'     : uMap['KA'] + halant + uMap['RA'],       \

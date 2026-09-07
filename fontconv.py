@@ -8,7 +8,7 @@ from indic2unicode.fonts.glyphs import arialuni_glyphs, nirmalaui_glyphs, \
 from indic2unicode.fonts.kannada import tunga, nudi, aklite
 from indic2unicode.fonts.tamil import tamelango, vanavil, tommy
 from indic2unicode.fonts.malayalam import revathi
-from indic2unicode.fonts.marathi import abhishek, dvotsurekh, yogesh
+from indic2unicode.fonts.marathi import abhishek, dvotsurekh, sakal, yogesh
 from indic2unicode.fonts.telugu import priyaanka
 
 class FontConv:
@@ -33,6 +33,7 @@ class FontConv:
         yogeshObj    = yogesh.Yogesh()
         abhishekObj  = abhishek.Abhishek()
         dvotsurekhObj = dvotsurekh.DVOTSurekh()
+        sakalObj     = sakal.Sakal()
         priyaankaObj = priyaanka.Priyaanka()
         tauelangoObj = tauelango_glyphs.TauElangoPanchaliGlyphs()
         ilasundaramObj = ilasundaram_glyphs.UniIlaSundaramGlyphs()
@@ -158,6 +159,19 @@ class FontConv:
             'DVOTYogeshMRNormal': dvotsurekhObj,
             'DVOTYogeshMRBold': dvotsurekhObj,
             'DVOTYogeshMRItalic': dvotsurekhObj,
+            # the fourth marathi of the same gazette, the one the tables of
+            # the Konkan divisional supplement are set in. The same glyph
+            # order as the DVOT family above and a map that is short in the
+            # same place, so it is that converter with three glyphs added to
+            # its table - but this producer hands a glyph it cannot name a
+            # private use character out of a numbering of its own rather
+            # than leaving the glyph id behind, and it numbers the glyphs of
+            # a subset afresh on every run. The bare font name is a key
+            # here, as it is for the two fonts above: this converter reads
+            # the text of a pdf that nothing has repaired, and it reads the
+            # text of a repaired one as well, that being the reading
+            # dvotsurekh.py already has
+            'sakal': sakalObj, 'SakalMarathi': sakalObj,
             # the telugu of the Telangana gazette. An 8 bit font of the
             # same kind again, and one whose bytes are those of mac roman
             # rather than of a windows table - the pdf embeds it as a
@@ -225,7 +239,7 @@ class FontConv:
                           'marutham_glyphs', 'vanavil', 'tommy', \
                           'revathi', 'meera_glyphs', 'priyaanka', \
                           'nats_glyphs', 'yogesh', 'abhishek', \
-                          'dvotsurekh']
+                          'dvotsurekh', 'sakal']
  
     def to_unicode(self, fontname, text):
         return self.converters[fontname].to_unicode(text)
