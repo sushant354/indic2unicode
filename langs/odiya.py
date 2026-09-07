@@ -42,6 +42,7 @@ CONJUNCT_TOKENS = [ \
     ('DHA', 'NA'),  ('DHA', 'MA'),  ('DHA', 'YYA'),                 \
     ('NA', 'TA'),   ('NA', 'THA'),  ('NA', 'DA'),   ('NA', 'DHA'),  \
     ('NA', 'NA'),   ('NA', 'MA'),   ('NA', 'DA', 'RA'),             \
+    ('NA', 'TA', 'RA'),                                             \
     ('PA', 'TA'),   ('PA', 'NA'),   ('PA', 'PA'),   ('PA', 'RA'),   \
     ('PA', 'LA'),   ('PA', 'LLA'),                                  \
     ('PHA', 'RA'),                                                  \
@@ -50,6 +51,7 @@ CONJUNCT_TOKENS = [ \
     ('MA', 'PA'),   ('MA', 'BA'),   ('MA', 'BHA'), ('MA', 'MA'),    \
     ('MA', 'RA'),                                                   \
     ('LA', 'KA'),   ('LA', 'PA'),   ('LA', 'LA'),   ('LA', 'MA'),   \
+    ('LLA', 'PA'),                                                  \
     ('SHA', 'CA'),  ('SHA', 'NA'),  ('SHA', 'RA'),  ('SHA', 'WA'),  \
     ('SSA', 'KA'),  ('SSA', 'TTA'), ('SSA', 'TTHA'),('SSA', 'NNA'), \
     ('SSA', 'MA'),  ('SSA', 'TTA', 'RA'),                           \

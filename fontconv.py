@@ -9,7 +9,7 @@ from indic2unicode.fonts.kannada import tunga, nudi, aklite
 from indic2unicode.fonts.tamil import tamelango, vanavil, tommy
 from indic2unicode.fonts.malayalam import revathi
 from indic2unicode.fonts.marathi import abhishek, dvotsurekh, sakal, yogesh
-from indic2unicode.fonts.odiya import kalinga
+from indic2unicode.fonts.odiya import kalinga, shree
 from indic2unicode.fonts.telugu import priyaanka
 
 class FontConv:
@@ -37,6 +37,7 @@ class FontConv:
         sakalObj     = sakal.Sakal()
         priyaankaObj = priyaanka.Priyaanka()
         kalingaObj   = kalinga.Kalinga()
+        shreeObj     = shree.Shree()
         tauelangoObj = tauelango_glyphs.TauElangoPanchaliGlyphs()
         ilasundaramObj = ilasundaram_glyphs.UniIlaSundaramGlyphs()
         maruthamObj    = marutham_glyphs.TauMaruthamGlyphs()
@@ -240,6 +241,17 @@ class FontConv:
             # two: this converter reads the text of a pdf that nothing has
             # repaired
             'kalinga': kalingaObj, 'Kalinga': kalingaObj,
+            # the other odiya of the same gazette, the one its land
+            # acquisition notifications are set in. A legacy 8 bit font of
+            # the Shree-Lipi typing package, embedded as a simple TrueType
+            # font with WinAnsiEncoding and no map at all, so its text
+            # extracts as the cp1252 characters of the bytes that were
+            # typed and ମାଲକାନଗିରି comes out as "þæàÿLÿæ[ÿSçÀÿç". The two
+            # faces the gazette carries share this layout - only the weight
+            # of the glyphs differs - so the pdf font name of each of them
+            # is a key here beside the short one
+            'shree': shreeObj, 'SHREE-ORI7-0601': shreeObj,
+            'SHREE-ORI7-0602': shreeObj,
         }
 
         self.uniqfonts = ['aryan2', 'surekh', 'chanakya', 'arialuni', \
@@ -251,7 +263,7 @@ class FontConv:
                           'marutham_glyphs', 'vanavil', 'tommy', \
                           'revathi', 'meera_glyphs', 'priyaanka', \
                           'nats_glyphs', 'yogesh', 'abhishek', \
-                          'dvotsurekh', 'sakal', 'kalinga']
+                          'dvotsurekh', 'sakal', 'kalinga', 'shree']
  
     def to_unicode(self, fontname, text):
         return self.converters[fontname].to_unicode(text)
