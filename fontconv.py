@@ -9,6 +9,7 @@ from indic2unicode.fonts.kannada import tunga, nudi, aklite
 from indic2unicode.fonts.tamil import tamelango, vanavil, tommy
 from indic2unicode.fonts.malayalam import revathi
 from indic2unicode.fonts.marathi import abhishek, dvotsurekh, sakal, yogesh
+from indic2unicode.fonts.odiya import kalinga
 from indic2unicode.fonts.telugu import priyaanka
 
 class FontConv:
@@ -35,6 +36,7 @@ class FontConv:
         dvotsurekhObj = dvotsurekh.DVOTSurekh()
         sakalObj     = sakal.Sakal()
         priyaankaObj = priyaanka.Priyaanka()
+        kalingaObj   = kalinga.Kalinga()
         tauelangoObj = tauelango_glyphs.TauElangoPanchaliGlyphs()
         ilasundaramObj = ilasundaram_glyphs.UniIlaSundaramGlyphs()
         maruthamObj    = marutham_glyphs.TauMaruthamGlyphs()
@@ -228,6 +230,16 @@ class FontConv:
             # reached through get_font_converter(), which names only the
             # fonts that really were repaired in this document
             'nats_glyphs': natsObj,
+            # the odiya of the Odisha Gazette. A unicode font like Arial
+            # Unicode MS and Nirmala UI above, and one whose pdfs carry a
+            # map that was broken the same way - the glyphs of a run were
+            # paired with the characters of it one by one and odiya shaping
+            # draws a syllable in a different number of glyphs than it is
+            # written in, so the pairing slips and ନିର୍ବାଚନ extracts as
+            # ନିବ୍ଥାଚନ. The bare font name is a key here, as it is for those
+            # two: this converter reads the text of a pdf that nothing has
+            # repaired
+            'kalinga': kalingaObj, 'Kalinga': kalingaObj,
         }
 
         self.uniqfonts = ['aryan2', 'surekh', 'chanakya', 'arialuni', \
@@ -239,7 +251,7 @@ class FontConv:
                           'marutham_glyphs', 'vanavil', 'tommy', \
                           'revathi', 'meera_glyphs', 'priyaanka', \
                           'nats_glyphs', 'yogesh', 'abhishek', \
-                          'dvotsurekh', 'sakal']
+                          'dvotsurekh', 'sakal', 'kalinga']
  
     def to_unicode(self, fontname, text):
         return self.converters[fontname].to_unicode(text)
