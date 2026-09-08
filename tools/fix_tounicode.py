@@ -24,6 +24,14 @@ only outlines, so nothing in it says what those glyphs are and they are
 repaired from MANGAL_OUTLINES, a table keyed by what a glyph draws rather
 than by its glyph id - this producer renumbers the glyphs of every subset.
 
+The union gazettes that are set in Mangal are broken the first way instead.
+That producer is Word, which subsets the font without renumbering it and
+leaves no hole in the map at all: every glyph is handed some character and
+the pairing slips on the ones shaping moved, so खंड extracts as िंर् and
+किया as ककया. Those subsets keep a cmap, a post and a GSUB, and the glyphs
+the shaper made that they still say nothing about are repaired from MANGAL,
+a table of the 890 glyph numbering that Word leaves alone.
+
 The Tamil Nadu gazettes that are set in TAUElangoPanchali are broken the
 first way again - the pairing slips on the vowel signs tamil draws in front
 of their consonant, so கூறிற்காக comes out as கூறிற்்கநா்க - but there the
@@ -1072,10 +1080,148 @@ TAU_MARUTHAM.update({ \
 # font program at all - so nothing says the glyph ids of that embedding are
 # this font's, and its 80 glyphs are left as the pdf has them.
 
-# Mangal is repaired by what its glyphs draw and not by their glyph ids, see
-# MANGAL_OUTLINES below, so it has no table of its own here. The entry is
-# what puts the font on the list of the ones that are repaired at all
-MANGAL = {}
+# The other producer of a Mangal pdf is Word, and it subsets the font without
+# renumbering it: every Mangal subset of the union gazette in union-mangal.pdf
+# counts all 890 glyphs of the font it was cut out of and keeps the glyph ids
+# that font gave them. Its map is broken the way Arial Unicode MS's and
+# Nirmala UI's are rather than the way the outline corpus below is - the
+# glyphs of a run were paired with the characters of the run one by one, so
+# the pairing slips on the glyphs devanagari shaping moved and every glyph is
+# handed some character, only not its own: खंड extracts as िंर् and किया as
+# ककया, matra_i having been handed the ka of the first cluster it was drawn
+# in and ka the matra_i.
+#
+# Those subsets do keep a cmap, a post and a GSUB, so the font itself says
+# what 109 of the 186 glyphs this document draws are and they are repaired
+# out of the font. The other 77 are the glyphs the shaper made that no subset
+# of it names anywhere - the reph, the half forms, the rakars, the conjuncts
+# the font draws whole, the width variants of matra_i and matra_ii, and the
+# matras it draws with an anusvar or a reph on them - and this table is the
+# whole of what is known about those. It is the whole of what is left, too:
+# it holds 77 entries, every one of them drawn in the document and not one of
+# them a glyph the font already names, so between the font and this table
+# every glyph of the document is answered.
+#
+# Each reading was taken off the outline of the glyph and checked against the
+# word it is drawn in on the page, which is recorded beside it. Checked
+# against a tesseract -l hin ocr of the five pages that
+# testdata/mangal_glyphs was cut from as well: 425 of the 439
+# distinct devanagari words the repaired text spells there come out of the
+# ocr character for character, and the fourteen that do not are words the
+# ocr itself broke in half - विभिन्न comes back from it as विभिन् and
+# दिल्ली as दिल्.
+#
+# It is keyed by glyph id, which this producer leaves alone, and held to the
+# 890 glyph numbering it was read off by the GlyphNumberings in BROKEN_FONTS
+# below: a Mangal subset of any other numbering - the outline corpus, the 675
+# glyph Mangal-Regular of this gazette's own cover page - is handed no table
+# at all and is repaired exactly the way it was before. The bold face is the
+# same font drawn heavier and numbers its glyphs alike, so one table serves
+# both weights, which is what font_lookup_key folds them together for.
+#
+# Two of these glyphs are in MANGAL_OUTLINES below as well, under a different
+# reading: the half pa here draws the same outline as the glyph recorded
+# there as प्प and the half la the same outline as the one recorded as ल्यू,
+# both of them read off a word - कोनडाप्पा, डब्ल्यू - whose tail the glyph
+# turns out not to carry. This table is the one that answers a subset of this
+# numbering, being looked up first, so nothing of that corpus is disturbed
+# here; the outline readings themselves are left as they are, that being a
+# document this repo carries no pdf of to check them against.
+MANGAL_GLYPH_COUNT = 890
+
+MANGAL = { \
+    # the reph, which the font draws on top of the last consonant of \
+    # the syllable it belongs to and stores behind the whole of it \
+    91 : 'र्',                            # seen in बोर्ड \
+    # the conjuncts the font draws as one glyph \
+    162: 'क्ष',                           # seen in अध्यक्ष \
+    163: 'ज्ञ',                           # seen in ज्ञान \
+    419: 'त्त',                           # seen in वित्तीय \
+    888: 'दृ',                            # seen in दृष्टि \
+    # the half forms, the consonant and its halant drawn as one glyph \
+    200: 'क्',                            # seen in व्यक्ति \
+    201: 'ख्',                            # seen in मुख्य \
+    202: 'ग्',                            # seen in योग्य \
+    203: 'घ्',                            # seen in निर्विघ्न \
+    205: 'च्',                            # seen in उच्च \
+    207: 'ज्',                            # seen in राज्य \
+    215: 'त्',                            # seen in चिकित्सा \
+    216: 'थ्',                            # seen in स्वास्थ्य \
+    218: 'ध्',                            # seen in अध्याय \
+    219: 'न्',                            # seen in अन्य \
+    220: 'प्',                            # seen in प्राप्त \
+    221: 'फ्',                            # seen in फ्लैट \
+    222: 'ब्',                            # seen in शब्द \
+    223: 'भ्',                            # seen in अभ्यावेशन \
+    224: 'म्',                            # seen in निम्नलिखित \
+    227: 'ल्',                            # seen in मूल्य \
+    229: 'व्',                            # seen in व्यवसाय \
+    230: 'श्',                            # seen in आवश्यक \
+    231: 'ष्',                            # seen in स्पष्टीकरण \
+    232: 'स्',                            # seen in स्थान \
+    233: 'ह्',                            # seen in चिह्न \
+    234: 'क्ष्',                          # seen in साक्ष्य \
+    255: 'ऩ्',                            # seen in अऩ्य \
+    450: 'त्',                            # seen in तात्विक \
+    618: 'ट्',                            # seen in मिट्टी \
+    619: 'ठ्',                            # seen in पाठ्यक्रम \
+    620: 'ड्',                            # seen in सल्फोनामाइड्स \
+    622: 'द्',                            # seen in द्वारा \
+    # the rakars, the half form and the ra drawn as one glyph \
+    272: 'क्र',                           # seen in प्रक्रिया \
+    274: 'ग्र',                           # seen in ग्रहण \
+    275: 'घ्र',                           # seen in शीघ्र \
+    282: 'ट्र',                           # seen in राष्ट्रीय \
+    284: 'ड्र',                           # seen in ड्राफ्ट \
+    287: 'त्र',                           # seen in राजपत्र \
+    288: 'थ्र',                           # seen in पाइरेथ्रम \
+    289: 'द्र',                           # seen in केन्द्रीय \
+    292: 'प्र',                           # seen in प्रस्तुत \
+    293: 'फ्र',                           # seen in इन्फ्रा \
+    294: 'ब्र',                           # seen in ब्राउन \
+    295: 'भ्र',                           # seen in भ्रष्टाचार \
+    301: 'व्र',                           # seen in प्रव्रजन \
+    302: 'श्र',                           # seen in श्रेणी \
+    304: 'स्र',                           # seen in स्रोत \
+    # ra with the u matras, which the font draws below it \
+    509: 'रु',                            # seen in रुपए \
+    510: 'रू',                            # seen in रूप \
+    # the width variants of matra_i, which the font draws to the left \
+    # of the consonant it belongs to \
+    464: 'ि',                             # seen in परिषद् \
+    465: 'ि',                             # seen in विहित \
+    466: 'ि',                             # seen in बिना \
+    467: 'ि',                             # seen in अधिनियम \
+    871: 'ि',                             # seen in लिए \
+    872: 'ि',                             # seen in लिखित \
+    873: 'ि',                             # seen in किसी \
+    874: 'ि',                             # seen in विकास \
+    875: 'ि',                             # seen in डिप्लोमा \
+    876: 'ि',                             # seen in अधिक \
+    879: 'ि',                             # seen in संक्षिप्त \
+    # the width variants of matra_ii \
+    547: 'ी',                             # seen in तारीख \
+    548: 'ी',                             # seen in ठीक \
+    551: 'ी',                             # seen in की \
+    569: 'ी',                             # seen in पुनरीक्षण \
+    # a matra and the anusvar the font draws on top of it \
+    581: 'ें',                            # seen in में \
+    583: 'ैं',                            # seen in हैं \
+    585: 'ों',                            # seen in सदस्यों \
+    587: 'ौं',                            # seen in सौंपा \
+    # a matra and the reph the font draws on top of it, the glyph that \
+    # Arial Unicode MS draws ीर् with. The matra stays where it is and \
+    # only the reph has to travel, so these are written in the order \
+    # they are drawn and the reph pass moves it back \
+    566: 'ेर्',                           # seen in निर्देश \
+    567: 'ेर्',                           # seen in कार्बेन्डाजिम \
+    568: 'ीर्',                           # seen in पूर्ववर्ती \
+    573: 'ीर्',                           # seen in सम्पर्की \
+    574: 'ोर्',                           # seen in पूर्वोक्त \
+    589: 'ंर्',                           # seen in निर्बंधनों \
+    591: 'ेंर्',                          # seen in शर्तें \
+    607: 'ोंर्',                          # seen in बोर्डों \
+}
 
 # The Mangal of these gazettes is subsetted with a map that hands a glyph the
 # shaper made <0000> outright - not the wrong character, no character at all -
@@ -1819,7 +1965,13 @@ BROKEN_FONTS = {'Arial Unicode MS'  : ARIAL_UNICODE_MS,   \
                 'Nirmala UI'        : GlyphNumberings({ \
                     NIRMALA_UI_GLYPH_COUNT      : NIRMALA_UI, \
                     NIRMALA_UI_ODIYA_GLYPH_COUNT: NIRMALA_UI_ODIYA}), \
-                'Mangal'            : MANGAL,             \
+                # the one numbering of Mangal that a table was read
+                # off, the 890 glyph font that Word subsets. The
+                # gazettes whose Mangal is renumbered per subset get
+                # no table here and are repaired by what their glyphs
+                # draw instead, see MANGAL_OUTLINES \
+                'Mangal'            : GlyphNumberings({ \
+                    MANGAL_GLYPH_COUNT: MANGAL}), \
                 # the weights of the unicode Nudi, which a pdf names
                 # apart and which share one glyph order, see
                 # NUDI_UNI_GLYPH_COUNT \
@@ -2701,19 +2853,27 @@ class ToUnicodeFixer:
 
         table = self.parse_cmap(doc, cmapxref)
 
-        # a font that is repaired from its outlines is one whose map hands a
-        # glyph no character at all. That hole is the fault the outline table
-        # was read for and the only one it can speak to: a subset of the same
-        # font that does describe its own glyphs - a cmap, a post, a GSUB -
-        # carries the other fault instead, the pairing that slips on the
-        # glyphs devanagari shaping moved, and this build repairs that one
-        # only in part. Repairing it in part is worse than not at all, since
-        # a map that is wrong in a way that happens to read correctly is then
-        # made wrong in a way that does not: the Mangal of
+        # a font that is repaired from its outlines alone is one whose map
+        # hands a glyph no character at all. That hole is the fault the
+        # outline table was read for and the only one it can speak to: a
+        # subset of the same font that does describe its own glyphs - a
+        # cmap, a post, a GSUB - carries the other fault instead, the
+        # pairing that slips on the glyphs devanagari shaping moved, and
+        # what the font says and that table between them repair it only in
+        # part. Repairing it in part is worse than not at all, since a map
+        # that is wrong in a way that happens to read correctly is then made
+        # wrong in a way that does not: the Mangal of
         # test/test_pdfs/sebicirculars4.pdf draws बोर्ड out of a map that has
         # the reph and the da the wrong way round, and repairing only the da
-        # turns it into बोडड. So such a font is left exactly as it is
-        if outlinefixes and not self.has_map_holes(table):
+        # turns it into बोडड. So such a font is left exactly as it is.
+        #
+        # A numbering that has a hand table of its own is not such a font.
+        # The table names every glyph of it the font itself cannot, so the
+        # repair is whole rather than partial and the pairing is put right
+        # wherever it slipped - this is the Mangal of union-mangal.pdf, whose
+        # map has no hole anywhere and names 100 of its glyphs wrong,
+        # see MANGAL
+        if outlinefixes and not glyphfixes and not self.has_map_holes(table):
             self.logger.debug('Font %d (%s) has no hole in its map, so it ' \
                               'is not the one the outline table was read ' \
                               'for and is left as it is', xref, fontname)

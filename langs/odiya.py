@@ -253,6 +253,10 @@ class Conjuncts(BaseLang):
           THA_MATRA_I being ଥି. It is a token rather than two because the
           font has one glyph for the pair, and a sign that jumps over the
           letter has to jump over the whole of it.
+       6. MATRA_I_CANDRABINDU, the ିଁ that a font draws in one glyph. It is
+          two characters and neither of them moves, so it is handed on as
+          the two rather than given a string of its own - see
+          conjunct_tokens below and fonts/odiya/akruti.py.
 
        Not every one of these is drawn as a glyph by every font - a font
        that spells one of them out carries no code for that token, and the
@@ -277,6 +281,14 @@ class Conjuncts(BaseLang):
             self.tokendict[tokenName + '_MATRA_I']   = consonant + matra_i
 
         self.tokendict['REPH'] = uMap['RA'] + virama
+
+        # the glyphs that stand for more than one token and whose tokens
+        # each stay where they are, so that nothing is gained by giving the
+        # pair a string of its own: the tokenizer hands the tokens on in
+        # place of the glyph and the passes see the two
+        self.conjunct_tokens = { \
+            'MATRA_I_CANDRABINDU' : ['MATRA_I', 'CANDRABINDU'], \
+        }
 
 class Kalinga(BaseLang):
     '''the tokens that the text of a Kalinga document carries beyond the

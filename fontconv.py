@@ -9,7 +9,7 @@ from indic2unicode.fonts.kannada import tunga, nudi, aklite
 from indic2unicode.fonts.tamil import tamelango, vanavil, tommy
 from indic2unicode.fonts.malayalam import revathi
 from indic2unicode.fonts.marathi import abhishek, dvotsurekh, sakal, yogesh
-from indic2unicode.fonts.odiya import kalinga, shree
+from indic2unicode.fonts.odiya import akruti, kalinga, shree
 from indic2unicode.fonts.telugu import priyaanka, gautami
 
 class FontConv:
@@ -39,6 +39,7 @@ class FontConv:
         gautamiObj   = gautami.Gautami()
         kalingaObj   = kalinga.Kalinga()
         shreeObj     = shree.Shree()
+        akrutiObj    = akruti.Akruti()
         tauelangoObj = tauelango_glyphs.TauElangoPanchaliGlyphs()
         ilasundaramObj = ilasundaram_glyphs.UniIlaSundaramGlyphs()
         maruthamObj    = marutham_glyphs.TauMaruthamGlyphs()
@@ -269,6 +270,19 @@ class FontConv:
             # is a key here beside the short one
             'shree': shreeObj, 'SHREE-ORI7-0601': shreeObj,
             'SHREE-ORI7-0602': shreeObj,
+            # the third odiya of the same gazette, the one the rest of its
+            # land acquisition notifications are set in. A legacy 8 bit
+            # font of the Akruti typing package, embedded the same way as
+            # Shree above and with a layout of its own, so ଓଡିଶା comes out
+            # as "IWògû". The three faces the gazette carries share this
+            # layout - the two Ashok differ only in the weight of the
+            # glyphs and Koshal is a display face on the same keys - so the
+            # pdf font name of each of them is a key here beside the short
+            # one
+            'akruti': akrutiObj,
+            'AkrutiOriAshok-99Normal': akrutiObj,
+            'AkrutiOriAshok-99Bold': akrutiObj,
+            'AkrutiOriKoshal-99Normal': akrutiObj,
         }
 
         self.uniqfonts = ['aryan2', 'surekh', 'chanakya', 'arialuni', \
@@ -281,7 +295,7 @@ class FontConv:
                           'revathi', 'meera_glyphs', 'priyaanka', \
                           'gautami', \
                           'nats_glyphs', 'yogesh', 'abhishek', \
-                          'dvotsurekh', 'sakal', 'kalinga', 'shree']
+                          'dvotsurekh', 'sakal', 'kalinga', 'shree', 'akruti']
  
     def to_unicode(self, fontname, text):
         return self.converters[fontname].to_unicode(text)
