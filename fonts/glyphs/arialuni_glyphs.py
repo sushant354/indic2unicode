@@ -7,13 +7,24 @@ from ..basefont import BaseFont, LITERAL
 from ..kannada.arialuni import ArialUniKannadaGlyphs
 import ply.lex as lex
 
-# the two scripts that a pdf set in Arial Unicode MS draws its indic text
-# in. The font is one font and the repaired pdf hands both of them to this
+# the scripts that a pdf set in one of these fonts draws its indic text in.
+# The font is one font and the repaired pdf hands every script of it to this
 # converter, but a syllable of each is put together in an order of its own,
-# so a run of text is split on these and each half is read by the pass that
-# knows it, see ArialUniGlyphs.split_scripts()
-DEVANAGARI_RE = re.compile('[\u0900-\u097f]')
+# so a run of text is split on these and each part is read by the pass that
+# knows it, see ArialUniGlyphs.split_scripts(). The danda is left out of the
+# devanagari: unicode gives it to that block and every one of these scripts
+# ends a sentence with it, so it says nothing about which pass a run belongs
+# to and stays with the run it was found in, the way a space does
+DEVANAGARI_RE = re.compile('[\u0900-\u0963\u0966-\u097f]')
 KANNADA_RE    = re.compile('[\u0c80-\u0cff]')
+ODIYA_RE      = re.compile('[\u0b00-\u0b7f]')
+
+# the pass that reads each of those scripts, as the name of the class
+# attribute that names it and the block it is written in. A font that has no
+# pass of its own for one of them - Arial Unicode MS draws no odiya - names
+# None there, and the text of that script is read as devanagari the way it
+# always was
+SCRIPT_CLASSES = [('kannadaclass', KANNADA_RE), ('odiyaclass', ODIYA_RE)]
 
 class ArialUniGlyphs(BaseFont):
     '''The text of a pdf whose ToUnicode map has been repaired by
@@ -43,6 +54,11 @@ class ArialUniGlyphs(BaseFont):
     # inherit this one name their own of
     kannadaclass = ArialUniKannadaGlyphs
 
+    # the pass that reads the odiya of it. Arial Unicode MS has none - the
+    # Odisha Gazette is not set in it - and Nirmala UI names one, see
+    # fonts/glyphs/nirmalaui_glyphs.py
+    odiyaclass   = None
+
     def __init__(self):
         BaseFont.__init__(self)
         self.langobjs  = []
@@ -50,8 +66,13 @@ class ArialUniGlyphs(BaseFont):
         self.langobjs.append(devanagari.Conjuncts())
         self.langobjs.append(devanagari.ArialUni())
 
-        # the kannada of the same font, which is read by a pass of its own
-        self.kannadaobj = self.kannadaclass()
+        # the other scripts of the same font, each of them read by a pass of
+        # its own, as the name of the class attribute that names that pass
+        self.scriptobjs = {}
+        for name, script_re in SCRIPT_CLASSES:
+            scriptclass = getattr(self, name)
+            if scriptclass != None:
+                self.scriptobjs[name] = scriptclass()
 
         self.lexer = self.get_lexer()
 
@@ -86,52 +107,60 @@ class ArialUniGlyphs(BaseFont):
                     self.halftokens.add(tokenName)
 
     def to_unicode(self, data):
-        '''the two scripts of the font are read by passes of their own, so
-           the text is split on its script first. A run of a pdf that draws
-           only devanagari - every pdf this converter was written for before
-           the kannada gazettes - is one segment and comes out of the same
-           two passes it always did'''
+        '''the scripts of the font are read by passes of their own, so the
+           text is split on its script first. A run of a pdf that draws only
+           devanagari - every pdf this converter was written for before the
+           kannada gazettes - is one segment and comes out of the same two
+           passes it always did'''
         out = []
-        for iskannada, segment in self.split_scripts(data):
-            if iskannada:
-                out.append(self.kannadaobj.to_unicode(segment))
-            else:
+        for script, segment in self.split_scripts(data):
+            if script == None:
                 out.append(BaseFont.to_unicode(self, segment))
+            else:
+                out.append(self.scriptobjs[script].to_unicode(segment))
         return ''.join(out)
 
     def split_scripts(self, data):
-        '''the text broken into runs of one script, as (is it kannada, text)
-           pairs. A character that belongs to neither script - a space, a
-           digit, the latin of the document, the punctuation - says nothing
-           about which pass should read it and stays with the run it was
-           found in, so a segment only ever ends where the script really
-           changes'''
-        segments  = []
-        iskannada = False
-        start     = 0
+        '''the text broken into runs of one script, as (script, text) pairs,
+           the script being the name of the pass that reads it and None for
+           the devanagari this converter reads itself. A character that
+           belongs to none of the scripts - a space, a digit, the latin of
+           the document, the punctuation - says nothing about which pass
+           should read it and stays with the run it was found in, so a
+           segment only ever ends where the script really changes'''
+        segments = []
+        script   = None
+        start    = 0
 
         for pos, char in enumerate(data):
-            if KANNADA_RE.match(char):
-                ischanged = not iskannada
-            elif DEVANAGARI_RE.match(char):
-                ischanged = iskannada
+            found = None
+            for name, script_re in SCRIPT_CLASSES:
+                if name in self.scriptobjs and script_re.match(char):
+                    found = name
+                    break
             else:
+                # a script this font has no pass of its own for is read as
+                # devanagari, the way it was before there was a second pass
+                if not DEVANAGARI_RE.match(char):
+                    continue
+
+            if found == script:
                 continue
 
-            if ischanged:
-                if pos > start:
-                    segments.append((iskannada, data[start:pos]))
-                start     = pos
-                iskannada = not iskannada
+            if pos > start:
+                segments.append((script, data[start:pos]))
+            start  = pos
+            script = found
 
-        segments.append((iskannada, data[start:]))
+        segments.append((script, data[start:]))
         return segments
 
     def log_error_summary(self):
-        '''the characters of both scripts that could not be read, the
-           kannada pass keeping a count of its own'''
+        '''the characters of every script that could not be read, each pass
+           keeping a count of its own'''
         BaseFont.log_error_summary(self)
-        self.kannadaobj.log_error_summary()
+        for scriptobj in self.scriptobjs.values():
+            scriptobj.log_error_summary()
 
     def get_lexer(self):
         tokens = []

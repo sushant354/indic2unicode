@@ -1,5 +1,6 @@
 from .arialuni_glyphs import ArialUniGlyphs
 from ..kannada.nirmalaui import NirmalaUIKannadaGlyphs
+from ..odiya.nirmalaui import NirmalaUIOdiyaGlyphs
 
 class NirmalaUIGlyphs(ArialUniGlyphs):
     '''The text of a pdf set in Nirmala UI whose ToUnicode map has been
@@ -23,7 +24,7 @@ class NirmalaUIGlyphs(ArialUniGlyphs):
        over the whole cluster: 'ि' + 'क' + '्र' is read as matra_i, half ka,
        ra and comes out as क्रि.
 
-       THE OTHER SCRIPT OF THE SAME FONT
+       THE OTHER SCRIPTS OF THE SAME FONT
 
        Nirmala UI sets the Karnataka gazette as well, and the kannada of it
        goes through fonts/kannada/nirmalaui.py - the same split on the script
@@ -32,5 +33,12 @@ class NirmalaUIGlyphs(ArialUniGlyphs):
        kannada pass of Arial Unicode MS whole: the two fonts draw a kannada
        syllable in a different number of glyphs but in the same order, and it
        is the repair and not the reordering that the difference is in.
+
+       It sets the Odisha Gazette too, and the odiya of it goes through
+       fonts/odiya/nirmalaui.py, which is a pass of its own rather than one
+       of these two: odiya draws ୋ, ୈ and ୌ in front of the letter they
+       belong to and in two pieces, and its reph behind the letter it sits
+       on, so ଘୋଷଣା comes out of the repaired pdf as େଘାଷଣା and ସର୍ବ as ସବର୍.
     '''
     kannadaclass = NirmalaUIKannadaGlyphs
+    odiyaclass   = NirmalaUIOdiyaGlyphs

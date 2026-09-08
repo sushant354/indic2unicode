@@ -48,18 +48,31 @@ CONJUNCT_TOKENS = [ \
     ('PHA', 'RA'),                                                  \
     ('BA', 'DA'),   ('BA', 'JA'),   ('BA', 'RA'),                   \
     ('BHA', 'RA'),                                                  \
-    ('MA', 'PA'),   ('MA', 'BA'),   ('MA', 'BHA'), ('MA', 'MA'),    \
-    ('MA', 'RA'),                                                   \
+    ('MA', 'NA'),   ('MA', 'PA'),   ('MA', 'BA'),   ('MA', 'BHA'),  \
+    ('MA', 'MA'),   ('MA', 'RA'),                                   \
     ('LA', 'KA'),   ('LA', 'PA'),   ('LA', 'LA'),   ('LA', 'MA'),   \
     ('LLA', 'PA'),                                                  \
-    ('SHA', 'CA'),  ('SHA', 'NA'),  ('SHA', 'RA'),  ('SHA', 'WA'),  \
+    ('SHA', 'CA'),  ('SHA', 'MA'),  ('SHA', 'NA'),  ('SHA', 'RA'),  \
+    ('SHA', 'WA'),                                                  \
     ('SSA', 'KA'),  ('SSA', 'TTA'), ('SSA', 'TTHA'),('SSA', 'NNA'), \
-    ('SSA', 'MA'),  ('SSA', 'TTA', 'RA'),                           \
+    ('SSA', 'MA'),  ('SSA', 'PA'),  ('SSA', 'TTA', 'RA'),           \
     ('SA', 'KA'),   ('SA', 'KHA'),  ('SA', 'TA'),   ('SA', 'THA'),  \
     ('SA', 'NA'),   ('SA', 'PA'),   ('SA', 'PHA'),  ('SA', 'MA'),   \
-    ('SA', 'RA'),   ('SA', 'LA'),   ('SA', 'WA'),                   \
+    ('SA', 'RA'),   ('SA', 'LA'),   ('SA', 'WA'),   ('SA', 'TA', 'RA'), \
     ('HA', 'NA'),   ('HA', 'NNA'),  ('HA', 'MA'),   ('HA', 'LA'),   \
 ]
+
+# the reph, the ର୍ that odiya draws as a stroke over the syllable it belongs
+# to, is spelled with the same two characters as a dead ra, and a font draws
+# the two with glyphs of their own. The text of a pdf that has been repaired
+# by tools/fix_tounicode.py keeps them apart by writing this after the reph:
+# a zero width joiner is what unicode writes behind a virama to ask for a
+# form of the letter rather than for a plain dead consonant, so the mark says
+# which of the two glyphs was drawn rather than standing for anything of its
+# own, and is dropped again once the syllable has been put in order. Without
+# it a converter has to guess - a reph that ends a run of the pdf and a dead
+# ra that ends a word look exactly alike
+REPH_MARK = '\u200d'
 
 class OdiyaUnicode(BaseLang):
     '''the unicode values of the odiya script.

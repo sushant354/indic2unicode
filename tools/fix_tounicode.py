@@ -131,7 +131,7 @@ import pymupdf
 from fontTools.pens.recordingPen import DecomposingRecordingPen
 from fontTools.ttLib import TTFont
 
-from indic2unicode.langs import kannada, tamil, telugu
+from indic2unicode.langs import kannada, odiya, tamil, telugu
 
 # the glyphs that the shaper made. They have no name of their own in the
 # font, so the string of every one of them is repaired by hand. The string
@@ -416,6 +416,138 @@ NIRMALA_UI = dict(NIRMALA_UI_KANNADA)
 # other subsets draw no kannada, so nothing goes wrong today - this is what
 # keeps it that way when one of them does
 NIRMALA_UI_GLYPH_COUNT = 4309
+
+# ---------------------------------------------------------------------------
+# THE ODIYA OF NIRMALA UI
+#
+# The Odisha Gazette is set in Nirmala UI as well, and the subsets it carries
+# there keep neither a cmap nor a post nor a GSUB either - only the outlines -
+# so nothing in the font says what a glyph is and the whole of the odiya comes
+# from the table below. What is wrong with the map is not what is wrong with
+# the kannada one, though: it is not short but slipped, the way the devanagari
+# of the Gazette is. The glyphs of a run were paired with the characters of
+# that run one by one and odiya shaping draws a syllable in a different number
+# of glyphs than it is written in - ୋ and ୈ are drawn in front of the letter
+# they belong to, the reph behind it, and a cluster is one ligature - so the
+# pairing slips on every glyph the shaper moved or made:
+#
+#   ଜ and ବ are both handed the 'ର୍' of the reph, the reph is handed 'ବ',
+#   the ୋ that stands in front of its letter is handed 'ନ୍ତ' and the ନ୍ତ
+#   ligature 'େ', ୟ is handed a space and ଶ the 'ଶ୍' of a half sha,
+#
+# so ଅବଗତି extracts as ଅର୍ଗତି, ଜମି as ର୍ମି, କ୍ଷେତ୍ରରେ as ନ୍ତକ୍ଷତ୍ରନ୍ତର and ଆଦର୍ଶ
+# as ଆଦଶ୍ବ. Which glyph ends up with which string depends on the first cluster
+# of the document that the glyph was drawn in, so it differs from document to
+# document and even from subset to subset: the regular and the bold of the
+# gazette this was read from hand ଘ and ୋ each other's strings one way round
+# in the one and the other way round in the other. Both subsets number their
+# glyphs alike, which is what makes the table below the answer to all of it.
+#
+# WHAT THE READINGS WERE READ OFF
+#
+# Every glyph the gazette draws was read off the page it is drawn on: the
+# glyphs of each run were taken out of the pdf with their ids, the run was
+# rendered and read, and each glyph was read again in the words it stands in
+# and against a tesseract OCR of the same page. That is what says that 2459 is
+# ଜ and 2474 ବ where the map has 'ର୍' for both, and that 2489, which the map
+# hands a space, is the ୟ of ନିୟମ, ସ୍ଥାୟୀ and ପ୍ରୟୋଗ.
+#
+# The letters are not read one by one but out of the order they are laid out
+# in, which is the order of the unicode block with the unassigned codepoints
+# left out: 30 of the 49 are anchored by the map itself or by the page, and
+# each of the other 19 is the one letter the order leaves for the one glyph
+# between two that are - 2456 is ଙ because 2455 is ଘ and 2457 is ଚ. The vowel
+# signs from 2494 are that same block order and are anchored the same way, ା
+# through ୃ by the map and େ and ୍ by the page.
+#
+# The gids of this table are the gids of a font program that counts 2764
+# glyphs, which is a fifth numbering of Nirmala UI beside the four the
+# kannada table names, so the two tables are held apart by their glyph counts
+# - see the GlyphNumberings of BROKEN_FONTS
+
+# the letters of the block, ଁ through ହ, which the font lays out from 2437 in
+# the order of the block. The codepoints left out are the ones unicode
+# assigns nothing to, and the font gives none of them a glyph
+NIRMALA_UI_ODIYA = {2437 + i: chr(code) \
+                    for i, code in enumerate( \
+                        c for c in range(0x0b01, 0x0b3a) \
+                        if c not in (0x0b04, 0x0b0d, 0x0b0e, 0x0b11, \
+                                     0x0b12, 0x0b29, 0x0b31, 0x0b34))}
+
+# the vowel signs and the virama, ା through ୍, laid out from 2494 in the order
+# of the block again. ୄ, the one of them this gazette never draws, is the one
+# codepoint the order leaves between ୃ and େ
+NIRMALA_UI_ODIYA.update({2494 + i: chr(code) \
+                         for i, code in enumerate( \
+                             c for c in range(0x0b3e, 0x0b4e) \
+                             if c not in (0x0b45, 0x0b46, 0x0b49, 0x0b4a))})
+
+NIRMALA_UI_ODIYA.update({ \
+    # ୟ, which the font draws with a glyph of its own outside the block above
+    # and the map hands a space \
+    2489: '\u0b5f',                                                 \
+                                                                    \
+    # the back half of ୈ and of ୌ, which odiya draws over the letter while
+    # the front half of both, େ, is drawn in front of it. The whole sign is
+    # one character in unicode and fonts/odiya/nirmalaui.py puts the two
+    # halves back together \
+    2507: '\u0b56', 2509: '\u0b57',                                 \
+                                                                    \
+    # the reph, the ର୍ that odiya draws as a stroke over the syllable it
+    # belongs to and that is stored behind the letter it sits on. It is
+    # spelled like a dead ra and the font draws the two with glyphs of their
+    # own, so it carries the mark that says which of the two it is, see
+    # langs/odiya.REPH_MARK \
+    2512: '\u0b30\u0b4d' + odiya.REPH_MARK,                         \
+                                                                    \
+    # the clusters of consonants that the font draws as a ligature of its
+    # own, spelled the way unicode writes them, the letters bound with a
+    # virama \
+    2520: 'କ୍ତ',   2524: 'କ୍ଷ',   2526: 'କ୍ଷ୍ମ', 2531: 'ଗ୍ନ',           \
+    2534: 'ଙ୍କ',   2538: 'ଙ୍ଗ',   2540: 'ଚ୍ଚ',   2541: 'ଚ୍ଛ',           \
+    2545: 'ଜ୍ଞ',   2548: 'ଞ୍ଛ',   2549: 'ଞ୍ଜ',   2550: 'ଞ୍ଝ',           \
+    2551: 'ଟ୍ଟ',   2554: 'ଣ୍ଟ',   2556: 'ଣ୍ଡ',   2559: 'ଣ୍ଣ',           \
+    2561: 'ତ୍ତ',   2573: 'ଦ୍ଦ',   2576: 'ଦ୍ୱ',   2580: 'ଧ୍ୟ',           \
+    2581: 'ନ୍ତ',   2582: 'ନ୍ତ୍ର', 2584: 'ନ୍ଥ',   2585: 'ନ୍ଦ',           \
+    2586: 'ନ୍ଦ୍ର', 2588: 'ନ୍ଧ',   2594: 'ପ୍ଲ',   2604: 'ମ୍ଭ',           \
+    2609: 'ଳ୍ପ',   2613: 'ଲ୍ଲ',   2616: 'ଶ୍ୱ',   2620: 'ଷ୍ଟ',           \
+    2621: 'ଷ୍ଣ',   2622: 'ଷ୍ପ',   2624: 'ସ୍କ',   2626: 'ସ୍ତ',           \
+    2627: 'ସ୍ତ୍ର', 2628: 'ସ୍ଥ',   2632: 'ସ୍ୱ',   2634: 'ହ୍ନ',           \
+    2635: 'ହ୍ମ',   2637: 'କ୍ର',   2639: 'ଗ୍ର',   2652: 'ତ୍ର',           \
+    2657: 'ପ୍ର',   2659: 'ବ୍ର',   2667: 'ଶ୍ର',                          \
+                                                                    \
+    # the consonants that odiya binds under a letter as a mark of its own,
+    # the phalas, which unicode writes as the virama and the letter \
+    2591: '୍ନ',   2750: '୍ୟ',                                        \
+                                                                    \
+    # the half forms, the letter and the virama that ends it. A cluster the
+    # font has no ligature for is drawn as one of these and a form of the
+    # consonant that follows, ପଦ୍ମ being 2692 and 2740 and ନିମ୍ନ 2699 and
+    # 2734 \
+    2692: 'ଦ୍',   2695: 'ପ୍',   2699: 'ମ୍',   2705: 'ଶ୍',   2706: 'ଷ୍', \
+                                                                    \
+    # the forms of a letter that the font draws behind a half form, which
+    # are glyphs of their own and the same letters \
+    2726: 'ଠ',    2734: 'ନ',    2740: 'ମ',    2743: 'ଲ',    2745: 'ବ', \
+                                                                    \
+    # the wide form of ି, which the font draws on the letters whose own
+    # shape leaves no room for the narrow one, ଅଧିକାର and ଥିବା among them \
+    2752: 'ି',                                                       \
+                                                                    \
+    # the odiya digits, ୦ through ୯ \
+    2754: '୦', 2755: '୧', 2756: '୨', 2757: '୩', 2758: '୪',           \
+    2759: '୫', 2760: '୬', 2761: '୭', 2762: '୮', 2763: '୯',           \
+                                                                    \
+    # the glyphs of the latin part of the font that the odiya of this
+    # gazette is written with, the danda that ends its sentences among them.
+    # The comma is the one of them that no map of it names at all \
+    3: ' ', 126: ',', 129: '.', 865: '।',                            \
+})
+
+# The glyph count of the font program NIRMALA_UI_ODIYA was read off, which is
+# what holds this table to that numbering and the kannada one to its own -
+# see the GlyphNumberings of BROKEN_FONTS and glyph_count
+NIRMALA_UI_ODIYA_GLYPH_COUNT = 2764
 
 # ---------------------------------------------------------------------------
 # NudiUni, the unicode Nudi of the Karnataka gazette
@@ -1664,8 +1796,29 @@ SAKAL_MARATHI.update({\
     176: 'ख्', 462: 'द्व', 473: 'श्च',                            \
 })
 
+class GlyphNumberings(dict):
+    '''the hand tables of a font that this corpus carries in more than one
+       numbering and has a table for more than one of them, keyed by the
+       glyph count of the font program each was read off.
+
+       One table per font is the ordinary case and needs none of this: a
+       font that is carried in a second numbering that nothing was read off
+       names its one table and the count that table holds for, and a subset
+       of the other numbering is repaired from the font alone - see
+       BROKEN_FONT_GLYPH_COUNTS. Nirmala UI is the font that outgrew that:
+       its kannada was read off a numbering of 4309 glyphs and its odiya off
+       one of 2764, and a gid means one thing in the one and another in the
+       other, so the count of the subset picks the table - see
+       fixes_for_numbering'''
+
 BROKEN_FONTS = {'Arial Unicode MS'  : ARIAL_UNICODE_MS,   \
-                'Nirmala UI'        : NIRMALA_UI,         \
+                # the two numberings of Nirmala UI that a table was read
+                # off, the kannada of the Karnataka gazette and the odiya
+                # of the Odisha one. The devanagari of the Gazette needs no
+                # table at all, its subsets keeping the GSUB of the font \
+                'Nirmala UI'        : GlyphNumberings({ \
+                    NIRMALA_UI_GLYPH_COUNT      : NIRMALA_UI, \
+                    NIRMALA_UI_ODIYA_GLYPH_COUNT: NIRMALA_UI_ODIYA}), \
                 'Mangal'            : MANGAL,             \
                 # the weights of the unicode Nudi, which a pdf names
                 # apart and which share one glyph order, see
@@ -1756,9 +1909,10 @@ RE_ENCODED_FONTS = {'TAU-Marutham', 'TAU-Marutham-SC700', 'Meera'}
 #
 # A font that is not named here has no such constraint, which is not a claim
 # that its ids are safe everywhere - only that this corpus has never carried
-# it in a second numbering. Nirmala UI is carried in four
-BROKEN_FONT_GLYPH_COUNTS = {'Nirmala UI'      : NIRMALA_UI_GLYPH_COUNT, \
-                            'NudiUni01e'      : NUDI_UNI_GLYPH_COUNT,  \
+# it in a second numbering. Nirmala UI, which is carried in five, is not here
+# either: it has a table for two of those numberings rather than one, so its
+# counts are the keys of its GlyphNumberings above
+BROKEN_FONT_GLYPH_COUNTS = {'NudiUni01e'      : NUDI_UNI_GLYPH_COUNT,  \
                             'NudiUni01k'      : NUDI_UNI_GLYPH_COUNT,  \
                             'NudiUni02e'      : NUDI_UNI_GLYPH_COUNT,  \
                             'NudiUniAnanth05e': NUDI_UNI_GLYPH_COUNT}
@@ -2595,7 +2749,9 @@ class ToUnicodeFixer:
 
     def fixes_for_numbering(self, doc, xref, fontname, glyphfixes, fixescount):
         '''the hand table of a font, emptied for a subset that does not number
-           its glyphs the way the table was read off.
+           its glyphs the way the table was read off, and picked out of the
+           numberings of a font that has a table for more than one of them -
+           see GlyphNumberings.
 
            A table read off one numbering of a family says nothing about the
            glyphs of another, so it is dropped for such a subset rather than
@@ -2604,6 +2760,18 @@ class ToUnicodeFixer:
            is not a table and still stands, so such a font is repaired from
            that alone, and a re-encoded font, which has nothing else, is left
            exactly as it is'''
+        if isinstance(glyphfixes, GlyphNumberings):
+            count = self.glyph_count(doc, xref)
+            table = glyphfixes.get(count)
+            if table != None:
+                return table
+
+            self.logger.info('Font %d (%s) counts %s glyphs and the tables ' \
+                             'for it were read off fonts of %s, so it is ' \
+                             'repaired from the font alone', xref, fontname, \
+                             count, sorted(glyphfixes))
+            return {}
+
         if fixescount == None or not glyphfixes:
             return glyphfixes
 
