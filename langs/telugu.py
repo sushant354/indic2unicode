@@ -8,6 +8,32 @@ def is_consonant(ustr):
     return len(ustr) == 1 and ('క' <= ustr <= 'హ' or \
                                ustr in ('ౘ', 'ౙ', 'ౚ'))
 
+# the vattu of ra that Nirmala UI draws in front of the letter it belongs to
+# rather than under it. It is spelled with the same two characters as the
+# vattu the font hangs below that letter, and the font draws the two with
+# glyphs of their own, so the text of a pdf that has been repaired by
+# tools/fix_tounicode.py keeps them apart by writing this into the pre-base
+# one, between its virama and its ra: a zero width joiner is what unicode
+# writes behind a virama to ask for a form of the letter rather than for a
+# plain dead consonant, so the mark says which of the two glyphs was drawn
+# rather than standing for anything of its own, and is dropped again once
+# the syllable has been put in order. Without it a converter has to guess
+# and cannot: శీ్ర and మే్రసి్త are the same run of a letter, a vowel sign, a
+# ్ర and a letter, and the first of them is శ్రీ while the second is
+# మేస్త్రి - see fonts/telugu/nirmalaui.py
+#
+# It is written inside the vattu rather than behind it because an extractor
+# hands each character of a glyph's string a share of the box that glyph
+# was drawn in and writes a space where the last of those shares ends short
+# of the glyph that follows: a mark written behind the vattu puts a space in
+# the middle of every word that carries one, ఆంధ్రప్రదేశ్ coming out as
+# "ఆం్ర‍ ధ్ర‍ పదేశ్", and one written inside it costs nothing. And it is
+# written behind the virama rather than in front of it so that the mark
+# stays with the telugu it belongs to: a run of text is split on its script
+# and a joiner is no script's, so a mark in front of the virama would be
+# left in the run before it wherever a pre-base ra opens one
+PREBASE_RA_MARK = '\u200d'
+
 class TeluguUnicode(BaseLang):
     '''the unicode values of the telugu script. The short and the long
        vowels are named the way unicode names them, so E is the short one
@@ -393,3 +419,23 @@ class Gautami(BaseLang):
                     self.conjunct_tokens[name] = ['KA', 'VATTU_SSA', sign]
                 else:
                     self.conjunct_tokens[name] = [tokenName, sign]
+
+class NirmalaUI(BaseLang):
+    '''the token that the text of a repaired Nirmala UI document carries
+       beyond the telugu of TeluguUnicode and Vattus above.
+
+       Nirmala UI draws the vattu of ra in two places. Under the letter it
+       belongs to, the way every other vattu is drawn, in శ్రీ - and in front of
+       that letter, as the stroke that ప్రభుత్వం and ఆంధ్రప్రదేశ్ are drawn
+       with, where the glyph is stored in front of its letter as well. Both
+       are spelled ్ర and the pre-base one carries PREBASE_RA_MARK between
+       its two characters to say which of the two was drawn, so it is a
+       token of its own here - the token itself stands for the two
+       characters of a vattu of ra and nothing more, the mark being read by
+       the lexer and dropped
+    '''
+    def __init__(self):
+        BaseLang.__init__(self)
+        uMap = TeluguUnicode().tokendict
+
+        self.tokendict = {'PREBASE_RA': uMap['VIRAMA'] + uMap['RA']}
