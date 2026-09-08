@@ -9,7 +9,8 @@ from indic2unicode.fontconv import FontConv
 
 class Regression:
     def __init__(self, populate, fontlist):
-        self.populate        = populate
+        self.logger       = logging.getLogger('regression')
+        self.populate     = populate
   
         self.fontConverter = FontConv()
         if fontlist:
@@ -53,7 +54,12 @@ class Regression:
             print('%s ... OK' % fontname)
 
     def to_unicode(self, fontname):
-        f = codecs.open(os.path.join(self.testdir, fontname), 'r', 'utf-8')
+        testfile = os.path.join(self.testdir, fontname)
+        if not os.path.exists(testfile):
+            self.logger.warning('%s does not exist. Skipping test for font: %s', testfile, fontname)
+            return False
+
+        f = codecs.open(testfile, 'r', 'utf-8')
         testdata = f.read()
         f.close()
         out = self.fontConverter.to_unicode(fontname, testdata)
@@ -67,10 +73,12 @@ class Regression:
         f.write(out)
         f.close()       
 
+        return True
+
     def run_tests(self):
         for fontname in self.fontnames:
-            self.to_unicode(fontname)
-            if not self.populate:
+            success = self.to_unicode(fontname)
+            if success and not self.populate:
                 self.compute_diff(fontname)
 
 def print_usage(progname):
@@ -94,11 +102,9 @@ if __name__ == '__main__':
             print_usage(sys.argv[0])
 
     logging.basicConfig(\
-        level    = logging.DEBUG,  \
+        level    = logging.INFO,  \
         format   = '%(asctime)s: %(name)s: %(levelname)s %(message)s', \
         datefmt  = '%Y-%m-%d %H:%M:%S', \
-        filename = 'conv.log', \
-        filemode = 'w' \
     )
 
     regressionObj = Regression(populate, fontlist)
