@@ -10,7 +10,7 @@ from indic2unicode.fonts.tamil import tamelango, vanavil, tommy
 from indic2unicode.fonts.malayalam import revathi
 from indic2unicode.fonts.marathi import abhishek, dvotsurekh, sakal, yogesh
 from indic2unicode.fonts.odiya import kalinga, shree
-from indic2unicode.fonts.telugu import priyaanka
+from indic2unicode.fonts.telugu import priyaanka, gautami
 
 class FontConv:
     def __init__(self):
@@ -36,6 +36,7 @@ class FontConv:
         dvotsurekhObj = dvotsurekh.DVOTSurekh()
         sakalObj     = sakal.Sakal()
         priyaankaObj = priyaanka.Priyaanka()
+        gautamiObj   = gautami.Gautami()
         kalingaObj   = kalinga.Kalinga()
         shreeObj     = shree.Shree()
         tauelangoObj = tauelango_glyphs.TauElangoPanchaliGlyphs()
@@ -182,6 +183,22 @@ class FontConv:
             # the mac roman byte it sits on. The pdf font name is a key
             # here beside the short one
             'priyaanka': priyaankaObj, 'PriyaankaBold': priyaankaObj,
+            # the telugu that the Andhra Pradesh gazette sets the
+            # notifications of its municipalities in. A real opentype font,
+            # unlike Priyaanka above, and one whose ToUnicode map is not
+            # wrong about a single glyph it names - it is only short, the
+            # way the map of the DVOT family is: it names the letters of the
+            # block, the vowel signs and the digits and leaves out
+            # everything the shaper made, so every vattu, every dead
+            # consonant and every syllable the font draws in one glyph
+            # reaches an extractor as its glyph id. The bare font name is a
+            # key here, as it is for the DVOT family: this converter reads
+            # the text of a pdf that nothing has repaired, and it reads the
+            # text of a repaired one as well, that being the reading it
+            # already has. Both faces the gazette carries share one glyph
+            # order
+            'gautami': gautamiObj, 'Gautami': gautamiObj,
+            'Gautami-Bold': gautamiObj,
             # no bare 'TAUElangoPanchali' key here, for the reason
             # mangal_glyphs and nudiuni_glyphs have none: this is a
             # reordering pass for the text of a pdf that fix_tounicode.py
@@ -262,6 +279,7 @@ class FontConv:
                           'tauelango_glyphs', 'ilasundaram_glyphs', \
                           'marutham_glyphs', 'vanavil', 'tommy', \
                           'revathi', 'meera_glyphs', 'priyaanka', \
+                          'gautami', \
                           'nats_glyphs', 'yogesh', 'abhishek', \
                           'dvotsurekh', 'sakal', 'kalinga', 'shree']
  
