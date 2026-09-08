@@ -7,7 +7,7 @@ from indic2unicode.fonts.glyphs import arialuni_glyphs, nirmalaui_glyphs, \
                                        nats_glyphs
 from indic2unicode.fonts.kannada import tunga, nudi, aklite
 from indic2unicode.fonts.tamil import tamelango, vanavil, tommy
-from indic2unicode.fonts.gujarati import krishnauni
+from indic2unicode.fonts.gujarati import krishna, krishnauni
 from indic2unicode.fonts.malayalam import revathi
 from indic2unicode.fonts.marathi import abhishek, dvotsurekh, sakal, yogesh
 from indic2unicode.fonts.odiya import akruti, kalinga, shree
@@ -42,6 +42,7 @@ class FontConv:
         shreeObj     = shree.Shree()
         akrutiObj    = akruti.Akruti()
         krishnaObj   = krishnauni.KrishnaUni()
+        krishna8Obj  = krishna.Krishna()
         tauelangoObj = tauelango_glyphs.TauElangoPanchaliGlyphs()
         ilasundaramObj = ilasundaram_glyphs.UniIlaSundaramGlyphs()
         maruthamObj    = marutham_glyphs.TauMaruthamGlyphs()
@@ -306,6 +307,22 @@ class FontConv:
             # comment of fonts/gujarati/krishnauni.py
             'krishnauni': krishnaObj, 'KrishnaUni': krishnaObj,
             'KrishnaUni,Bold': krishnaObj,
+            # the other gujarati of the same gazette, the one the orders of
+            # its district magistrates are set in. A legacy 8 bit font of a
+            # typing package, embedded as a simple TrueType font with
+            # WinAnsiEncoding and no map at all, so its text extracts as the
+            # cp1252 characters of the bytes that were typed and
+            # જિલ્લા મેજીસ્ટ્રેટ દ્વારા comes out as "ìÉSáë Üõ°VËÿõË ¦ëßë".
+            # The four faces the gazette carries share this layout - every
+            # byte the other three draw was read in the words it stands in
+            # against Krishna's own reading of it - so the pdf font name of
+            # each of them is a key here beside the short one. Beware of
+            # KrishnaUni above, which is a different font under a name that
+            # differs by three letters: it is a unicode opentype font and
+            # this is the legacy 8 bit one
+            'krishna': krishna8Obj, 'Krishna': krishna8Obj,
+            'KrishnaBold': krishna8Obj, 'Mani': krishna8Obj,
+            'Suchitra': krishna8Obj,
         }
 
         self.uniqfonts = ['aryan2', 'surekh', 'chanakya', 'arialuni', \
@@ -319,7 +336,7 @@ class FontConv:
                           'gautami', \
                           'nats_glyphs', 'yogesh', 'abhishek', \
                           'dvotsurekh', 'sakal', 'kalinga', 'shree', 'akruti', \
-                          'krishnauni']
+                          'krishnauni', 'krishna']
  
     def to_unicode(self, fontname, text):
         return self.converters[fontname].to_unicode(text)

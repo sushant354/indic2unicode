@@ -23,22 +23,25 @@ VOWEL_TOKENS = [ \
     'E',   'AI',  'CANDRA_O',   'O',   'AU',  \
 ]
 
-# the clusters of consonants that KrishnaUni draws as a ligature of its own,
-# read off the akhn, the pres and the vatu lookups of the font. Gujarati
-# binds a consonant to the one before it with a virama and a font that has a
-# glyph for the pair draws the whole cluster in one shape, so the cluster is
-# a token rather than a run of tokens - see the class comment of Conjuncts.
+# the clusters of consonants that a gujarati font draws as a ligature of its
+# own. The list is KrishnaUni's, read off the akhn, the pres and the vatu
+# lookups of that font, with the clusters Krishna has a key of its own for
+# added to it - ક્ષ and જ્ઞ, which KrishnaUni spells out. Gujarati binds a
+# consonant to the one before it with a virama and a font that has a glyph
+# for the pair draws the whole cluster in one shape, so the cluster is a
+# token rather than a run of tokens - see the class comment of Conjuncts.
 # A cluster the font has no ligature for is drawn as a half form and the
 # letter that follows it instead, e.g. લ્પ, and is two tokens
 CONJUNCT_TOKENS = [ \
     ('KA', 'KA'),   ('KA', 'CA'),   ('KA', 'TA'),   ('KA', 'NA'),   \
-    ('KA', 'RA'),   ('KA', 'LA'),   ('KA', 'VA'),                   \
+    ('KA', 'RA'),   ('KA', 'LA'),   ('KA', 'VA'),   ('KA', 'SSA'),  \
     ('KHA', 'NA'),  ('KHA', 'RA'),                                  \
     ('GA', 'NA'),   ('GA', 'RA'),                                   \
     ('GHA', 'NA'),  ('GHA', 'RA'),                                  \
     ('CA', 'CA'),   ('CA', 'NA'),   ('CA', 'RA'),   ('CA', 'VA'),   \
     ('CHA', 'RA'),  ('CHA', 'VA'),                                  \
-    ('JA', 'JA'),   ('JA', 'NA'),   ('JA', 'RA'),   ('JA', 'VA'),   \
+    ('JA', 'JA'),   ('JA', 'NA'),   ('JA', 'NYA'),  ('JA', 'RA'),   \
+    ('JA', 'VA'),                                                   \
     ('TTA', 'TTA'), ('TTA', 'YA'),  ('TTA', 'RA'),  ('TTA', 'VA'),  \
     ('DDA', 'TTA'), ('DDA', 'DDA'), ('DDA', 'DDHA'),                \
     ('DDA', 'YA'),  ('DDA', 'RA'),                                  \
@@ -280,6 +283,13 @@ class Conjuncts(BaseLang):
 
         self.tokendict['REPH'] = uMap['RA'] + virama
 
+        # the rakar, the ્ર that gujarati draws as a mark under the letter
+        # it is bound to rather than beside it. It is the virama and the ra
+        # of that binding in the order unicode writes them, unlike REPH
+        # above, and it is a token of its own because a font draws it with a
+        # glyph of its own
+        self.tokendict['RAKAR'] = virama + uMap['RA']
+
         # the letters and the clusters that a font draws together with the
         # sign behind them
         letters = {tokenName: uMap[tokenName] \
@@ -297,6 +307,7 @@ class Conjuncts(BaseLang):
         # reph of the last three still travels back to the head of its
         # syllable, the vowel sign of the pair staying where it is
         self.conjunct_tokens = { \
+            'MATRA_AA_MATRA_VOCALIC_R' : ['MATRA_AA', 'MATRA_VOCALIC_R'], \
             'MATRA_II_ANUSVARA'    : ['MATRA_II', 'ANUSVARA'],       \
             'MATRA_E_ANUSVARA'     : ['MATRA_E',  'ANUSVARA'],       \
             'MATRA_O_ANUSVARA'     : ['MATRA_O',  'ANUSVARA'],       \
