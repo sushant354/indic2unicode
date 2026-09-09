@@ -4,7 +4,7 @@ from indic2unicode.fonts.glyphs import arialuni_glyphs, nirmalaui_glyphs, \
                                        mangal_glyphs, nudiuni_glyphs, \
                                        tauelango_glyphs, ilasundaram_glyphs, \
                                        marutham_glyphs, meera_glyphs, \
-                                       nats_glyphs
+                                       freeserif_glyphs, nats_glyphs
 from indic2unicode.fonts.kannada import tunga, nudi, aklite
 from indic2unicode.fonts.tamil import tamelango, vanavil, tommy
 from indic2unicode.fonts.malayalam import revathi
@@ -44,6 +44,7 @@ class FontConv:
         ilasundaramObj = ilasundaram_glyphs.UniIlaSundaramGlyphs()
         maruthamObj    = marutham_glyphs.TauMaruthamGlyphs()
         meeraObj       = meera_glyphs.MeeraUniGlyphs()
+        freeserifObj   = freeserif_glyphs.FreeSerifUniGlyphs()
         natsObj        = nats_glyphs.NatsTeluguGlyphs()
         self.converters = { 
             'aryan2': aryanObj, 'divya':  aryanObj, 'surekh': surekhObj,
@@ -238,6 +239,19 @@ class FontConv:
             # get_font_converter(), which names only the fonts that really
             # were repaired in this document
             'meera_glyphs': meeraObj,
+            # the other unicode malayalam of the same gazette, and no bare
+            # font name key here either, for the reason the converters above
+            # have none: this is a reordering pass for the text of a pdf
+            # that fix_tounicode.py has already repaired. mPDF re-encodes
+            # the font per subset and hands every glyph the shaper made a
+            # private use codepoint rather than a character, so an
+            # unrepaired FreeSerif is not merely out of order - every
+            # cluster and every syllable of it is missing outright. The bare
+            # name would be the wrong thing to match on twice over, FreeSerif
+            # being a latin face as much as a malayalam one. It is reached
+            # through get_font_converter(), which names only the fonts that
+            # really were repaired in this document
+            'freeserif_glyphs': freeserifObj,
             # the telugu of the Andhra Pradesh gazette, and no bare font
             # name key here either, for the reason the converters above have
             # none: this is a reordering pass for the text of a pdf that
@@ -292,7 +306,8 @@ class FontConv:
                           'nudiuni_glyphs', 'tamelango', 'reginet', \
                           'tauelango_glyphs', 'ilasundaram_glyphs', \
                           'marutham_glyphs', 'vanavil', 'tommy', \
-                          'revathi', 'meera_glyphs', 'priyaanka', \
+                          'revathi', 'meera_glyphs', 'freeserif_glyphs', \
+                          'priyaanka', \
                           'gautami', \
                           'nats_glyphs', 'yogesh', 'abhishek', \
                           'dvotsurekh', 'sakal', 'kalinga', 'shree', 'akruti']

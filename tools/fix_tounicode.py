@@ -1957,6 +1957,236 @@ class GlyphNumberings(dict):
        other, so the count of the subset picks the table - see
        fixes_for_numbering'''
 
+# FreeSerif is repaired by what its glyphs draw and not by their glyph ids,
+# see FREE_SERIF_OUTLINES below, so it has no table of its own here. The
+# entry is what puts the font on the list of the ones that are repaired at all
+FREE_SERIF = {}
+
+# FreeSerif, the GNU FreeFont serif, which the Kerala gazette sets a
+# commissionerate's notifications in as it sets others in Meera. It is a
+# unicode opentype font and its glyphs really are malayalam - what is wrong
+# is the map that says which.
+#
+# The producer is mPDF and it re-encodes the font subset by subset, the way
+# the producer of MEERA_OUTLINES does: a byte of the content stream is the
+# number that subset gave the glyph, in the order that document happened to
+# want them, and the subset's cmap maps that byte back to the glyph. Where
+# it differs is in what it writes for the glyphs it cannot name. mPDF names
+# a glyph by the character its own cmap gives it, which is right for every
+# letter, vowel sign and chandrakkala the font draws on its own - the byte
+# that draws the one glyph of the letter says that letter - and says nothing
+# at all about a glyph the shaper made, since no character maps to one: it
+# hands each of those a private use codepoint instead. 109 of the 351 bytes
+# of the two subsets of test/test_pdfs/malayalam-freeserif.pdf are named
+# that way and they draw every cluster and every syllable of the document,
+# so കരുനാഗപ്പള്ളി extracted as കനാഗി and നമ്പർ as നർ. A private use codepoint
+# is not a wrong reading that a converter could undo - it says only that
+# this producer had no reading - which is why this is a repair and not a
+# decoder.
+#
+# The table is keyed by what a glyph draws and not by its glyph id, for the
+# reason MEERA_OUTLINES is: this producer renumbers every subset, and the
+# two subsets of that document have not one glyph id in common. It carries
+# every malayalam glyph of the document, the 53 the producer's own map
+# already names as well as the 109 it does not, so a subset that numbers its
+# bytes differently is read whole rather than in part.
+#
+# The 109 the map is silent about were read this way: the pdf's own byte
+# stream gives the glyphs of every word, the 53 named glyphs give part of
+# each word's text, and a tesseract -l mal ocr of the page gives the whole
+# of it, so a word with one unknown glyph in it names that glyph outright.
+# Every reading was then checked by rendering the glyph out of the embedded
+# subset and reading it against the page that draws it - which is what tells
+# ഞ്ചു from ഞ്ജു (മഞ്ചു and മഞ്ജുമോൾ), ു from ൂ (തു and തൂ), and the ends of
+# a name the ocr never read at all.
+#
+# The font draws a syllable of one cluster and one vowel sign as a single
+# glyph - ക്കു, ത്തൂ, ഞ്ജു - which Meera does not, and it draws some of them
+# in two widths, the wider one used where the sign's tail runs on under the
+# character behind it. Both widths are glyphs of their own and both are
+# here, which is why ത്തു, ബ്ദു, മൂ and യ്യ each have two entries.
+#
+# Checked against the ocr of the pages themselves, all 41 of them: of the
+# 9,138 malayalam words the repaired-and-reordered text produces, 8,404
+# (92.0 per cent) match the ocr of their own page character for character
+# once the chillus are spelled alike on both sides. It produces no (cid:N),
+# no word beginning with a vowel sign and one word with two vowel signs in a
+# row - മാാപിതാക്കൾ, which is the gazette's own typing and which the page
+# shows as it is. See fonts/malayalam/freeserif.py
+FREE_SERIF_OUTLINES = { \
+    # the vowels \
+    '73f4aa9569630f7b': 'അ',                          \
+    'e5c23516332dba90': 'ആ',                          \
+    '983b301c58ab73e0': 'ഇ',                          \
+    '1a710247f70d217f': 'ഈ',                          \
+    '3a81d47d3c3d426b': 'ഉ',                          \
+    '530070c1bd6e373f': 'എ',                          \
+    '1b482625de88aa3c': 'ഐ',                          \
+    'c4d4d1de830e154e': 'ഒ',                          \
+    'f071014bda6f1904': 'ഓ',                          \
+    # the consonants \
+    '97c477956913f174': 'ക',                          \
+    'dc2f08ceeb10c190': 'ഖ',                          \
+    '8561141803185de2': 'ഗ',                          \
+    'f93d42ed6d57543c': 'ച',                          \
+    '6cd5b45556fc4963': 'ജ',                          \
+    'b22f15d4ce6b7922': 'ട',                          \
+    '5da4b43c53728826': 'ഠ',                          \
+    'b161169e8ef7a576': 'ഡ',                          \
+    '03f1243d336a8dee': 'ണ',                          \
+    'c756db7801782a27': 'ത',                          \
+    '7bed45b7627c47ac': 'ഥ',                          \
+    'ed24239616bb36eb': 'ദ',                          \
+    '4dd49e53f3e01b16': 'ധ',                          \
+    '1670d0d1319414c3': 'ന',                          \
+    '933fb2a44fccacdd': 'പ',                          \
+    'e9ba6f2128abee7b': 'ഫ',                          \
+    'defa5050b460a8a7': 'ബ',                          \
+    '7ad8adf7ec4b883d': 'ഭ',                          \
+    'a337d862517e931f': 'മ',                          \
+    'ffadd3e67cb889ce': 'യ',                          \
+    'e33f883c0ce3d0af': 'ര',                          \
+    '389328fe9b42b8be': 'റ',                          \
+    'c9e8956247b24cc3': 'ല',                          \
+    '5f2e1e8530bad76c': 'ള',                          \
+    'd8e8b041dc7fbf8f': 'ഴ',                          \
+    'deca9f6f14503ece': 'വ',                          \
+    '9977dba0f5469b85': 'ശ',                          \
+    'f3dc1b96dc2e6fa3': 'ഷ',                          \
+    'adf4c92739ce2a7c': 'സ',                          \
+    '1a6e391ba4f0e106': 'ഹ',                          \
+    # the chillus \
+    'f343382aa7e12249': 'ൺ',                          \
+    '7ec289cebe4e72f1': 'ൻ',                          \
+    '67dd2906493b54a6': 'ർ',                          \
+    '57804a2c2e88ba25': 'ൽ',                          \
+    'fa380e926da8b770': 'ൾ',                          \
+    # the vowel signs, the anusvara and the chandrakkala \
+    '39838a9be33305e2': 'ം',                          \
+    'e352e84144f89393': 'ാ',                          \
+    'f533b03623930d44': 'ി',                          \
+    '3172c7b6b209f16d': 'ീ',                          \
+    'add625b304349e41': 'െ',                          \
+    '9d34190e0d44caa1': 'േ',                          \
+    '35e184cfa575561f': 'ൈ',                          \
+    'e6c532f08c320ee1': '്',                          \
+    '7e340fdaaebf967f': 'ൗ',                          \
+    # a consonant that is written as a mark on its letter \
+    '5f11e8c97de848d9': '്യ',     # read off the page \
+    '048adcc63f9388b2': '്ള',     # read off the page \
+    'ad9e144d4d13296b': '്വ',     # read off the page \
+    # a consonant with the chandrakkala on it \
+    'a24f954ae948f620': 'ട്',     # read off the page \
+    '4b81cfade9a3cb58': 'ണ്',     # read off the page \
+    'a2b9f7acc103b674': 'യ്',     # read off the page \
+    '425111f418ee755f': 'വ്',     # read off the page \
+    '3149a230ee31ca40': 'സ്',     # read off the page \
+    # the clusters the font draws as one glyph \
+    '1671573a06247e4d': 'ക്ക',    # read off the page \
+    'ec9ee5c1691ba435': 'ക്ര',    # read off the page \
+    '707940e70e0ac323': 'ക്ല',    # read off the page \
+    'd8b1c17e005d22e4': 'ക്ഷ',    # read off the page \
+    'bdf8ab0fc97906e9': 'ക്ഷ്മ',  # read off the page \
+    'b4d1291910a2b2e8': 'ക്സ',    # read off the page \
+    'b2b8470d624f403b': 'ഗ്ല',    # read off the page \
+    '21f196cf6a1ee81b': 'ങ്ക',    # read off the page \
+    'd3b9dae3e8e389d9': 'ങ്ങ',    # read off the page \
+    'c7f971290bf533fe': 'ച്ച',    # read off the page \
+    'cf6416eb5aaf7f5a': 'ഞ്ച',    # read off the page \
+    'f407bb4ac6384f34': 'ഞ്ജ',    # read off the page \
+    '533da1a1e553b77f': 'ഞ്ഞ',    # read off the page \
+    'c927a9913cfaa2fb': 'ട്ട',    # read off the page \
+    '6db738acf207cc71': 'ണ്ട',    # read off the page \
+    '0060c7f85b19d85f': 'ണ്ണ',    # read off the page \
+    '7b24513698060328': 'ത്ത',    # read off the page \
+    'ca22ba003048884b': 'ത്മ',    # read off the page \
+    '8ca939f568753710': 'ത്ര',    # read off the page \
+    'fc79171220c81cfc': 'ദ്ദ',    # read off the page \
+    '2c69d8190ecaa031': 'ദ്ധ',    # read off the page \
+    'c4b74cfe80eeb335': 'ദ്മ',    # read off the page \
+    '1e174fcebdb83688': 'ന്ത',    # read off the page \
+    '111158e4ca0b0400': 'ന്ദ',    # read off the page \
+    '2b56382f9cfd2460': 'ന്ദ്ര',  # read off the page \
+    'e6765a0569ef00e9': 'ന്ധ',    # read off the page \
+    '7100ac8cb43f5464': 'ന്ന',    # read off the page \
+    '06ca09eea415f32c': 'ന്റ',    # read off the page \
+    '3525f0786345c13d': 'പ്പ',    # read off the page \
+    'c675f9140a38ac10': 'പ്ര',    # read off the page \
+    'f30de10d6ae14b2a': 'പ്സ',    # read off the page \
+    '95a42ea094b37557': 'ബ്ര',    # read off the page \
+    '67d7298f2856799c': 'മ്പ',    # read off the page \
+    'd81cc6a29806c0e7': 'മ്മ',    # read off the page \
+    '69e300a9309f0074': 'യ്യ',    # read off the page \
+    '7dc65fc4ad6546a4': 'യ്യ',    # read off the page \
+    '418c12c3368f62a5': 'റ്റ',    # read off the page \
+    '9703cd7d9a841e0e': 'ല്ല',    # read off the page \
+    'c3afc1fcfafbe7fd': 'ള്ള',    # read off the page \
+    'c9fa86e5d75a306a': 'ശ്ര',    # read off the page \
+    'ef2f6dec6be02796': 'ശ്ശ',    # read off the page \
+    '5c3f8494e4eae3c8': 'ഷ്ട',    # read off the page \
+    'bbb97aaf7df1e750': 'ഷ്ണ',    # read off the page \
+    '658fec077d43d7a0': 'സ്ക',    # read off the page \
+    '645e6e92b0ad37c1': 'സ്ന',    # read off the page \
+    '9db9d013db2e2b93': 'സ്മ',    # read off the page \
+    '1617859a23a250b2': 'സ്റ്റ',  # read off the page \
+    'db5cecc99f944eed': 'സ്സ',    # read off the page \
+    # a cluster with a vowel sign written into it \
+    'bcec506bcd5dad41': 'ക്കു',   # read off the page \
+    '526202caa0258b16': 'ക്കൂ',   # read off the page \
+    'dd9e3b9327f27f91': 'ച്ചു',   # read off the page \
+    '7e53083ac99de70b': 'ഞ്ചു',   # read off the page \
+    '14f94f82db299ae1': 'ഞ്ജു',   # read off the page \
+    'b0266b35de9f8972': 'ഞ്ഞു',   # read off the page \
+    '3e6685073cebc903': 'ട്ടു',   # read off the page \
+    'd36fdce77c7ba450': 'ത്തു',   # read off the page \
+    '6ce6a1669d13be56': 'ത്തു',   # read off the page \
+    'ed705e1770f862f1': 'ത്തൂ',   # read off the page \
+    'e1e9fbce672dc236': 'ന്ദു',   # read off the page \
+    'bfffe71b2f731b10': 'ന്ധു',   # read off the page \
+    'b55c53243bb4a63e': 'ന്നു',   # read off the page \
+    'f753fc88dc73b49d': 'പ്പു',   # read off the page \
+    'bf9b4deb5b41a9ef': 'ബ്ദു',   # read off the page \
+    '46cb1e54f7f796fa': 'ബ്ദു',   # read off the page \
+    '052dd89b198c2b6a': 'റ്റു',   # read off the page \
+    '173d7851afe57904': 'ല്ലു',   # read off the page \
+    '298da09724fd9492': 'ള്ളു',   # read off the page \
+    '566bacd8f2e87683': 'ശ്രു',   # read off the page \
+    '575f6d3e61b98673': 'ഷ്ണു',   # read off the page \
+    'beff5711c3a91bdf': 'സ്മൃ',   # read off the page \
+    # a letter with a vowel sign written into it \
+    'bb1bd78dff9f2c93': 'കു',     # read off the page \
+    '5a97106cd4a90916': 'കൃ',     # read off the page \
+    '53476459098c64ec': 'ഗു',     # read off the page \
+    '1b3cc034c15f006b': 'ചൂ',     # read off the page \
+    '673a4c2418eeab13': 'ജു',     # read off the page \
+    '6ad89178ed7851ef': 'ടു',     # read off the page \
+    'd3aff98e46c93493': 'ണു',     # read off the page \
+    '42dd5a98d1aaaef2': 'തു',     # read off the page \
+    '5b844bccf05dfb9c': 'തൂ',     # read off the page \
+    'fb2a78be7b60e370': 'നു',     # read off the page \
+    '0ccb891933b8a64d': 'പു',     # read off the page \
+    '4c7bbb9da806fad0': 'ഫു',     # read off the page \
+    '7e6afa386a6d3da2': 'ബു',     # read off the page \
+    'cf7e9990e19fcec3': 'മു',     # read off the page \
+    'c8057e4b625c4a9d': 'മൂ',     # read off the page \
+    '761f9ffd727116d5': 'മൂ',     # read off the page \
+    '569bff169053c6e9': 'യു',     # read off the page \
+    'a715f047b3c296ca': 'യൂ',     # read off the page \
+    'b01790f9bcf71dd0': 'രു',     # read off the page \
+    '9c24eb2b6bc24c5f': 'രൂ',     # read off the page \
+    'f2697dfc6993294d': 'റു',     # read off the page \
+    '5e592c57bc654776': 'ലു',     # read off the page \
+    'e918fb29ba8e2ca1': 'ലൂ',     # read off the page \
+    'a2049fbaee099908': 'ളു',     # read off the page \
+    '0da61f13490eb04e': 'ഴു',     # read off the page \
+    'e081ff857a5c4275': 'വു',     # read off the page \
+    'e7f8ea0d48b74af1': 'ഷു',     # read off the page \
+    'bc88f0767ddff07b': 'സു',     # read off the page \
+    '260d7b4ccd9280ff': 'സൂ',     # read off the page \
+    '94d649d21807802e': 'സൃ',     # read off the page \
+    '2b4be844650bab23': 'ഹു',     # read off the page \
+}
+
 BROKEN_FONTS = {'Arial Unicode MS'  : ARIAL_UNICODE_MS,   \
                 # the two numberings of Nirmala UI that a table was read
                 # off, the kannada of the Karnataka gazette and the odiya
@@ -2008,6 +2238,10 @@ BROKEN_FONTS = {'Arial Unicode MS'  : ARIAL_UNICODE_MS,   \
                 # the malayalam of the Kerala gazette, repaired by what its
                 # glyphs draw - see MEERA_OUTLINES \
                 'Meera'                    : MEERA, \
+                # the other malayalam of the same gazette, repaired by what
+                # its glyphs draw for the same reason - see
+                # FREE_SERIF_OUTLINES \
+                'FreeSerif'                : FREE_SERIF, \
                 # the telugu of the Andhra Pradesh gazette. Its map is a
                 # positional split of the cluster rather than a reading of
                 # the glyphs, and the font itself says what they are - see
@@ -2028,7 +2262,9 @@ BROKEN_FONTS = {'Arial Unicode MS'  : ARIAL_UNICODE_MS,   \
 
 # the glyphs to repair by what they draw rather than by their glyph id, for a
 # font whose subsets are renumbered - see MANGAL_OUTLINES above
-BROKEN_FONT_OUTLINES = {'Mangal': MANGAL_OUTLINES, 'Meera': MEERA_OUTLINES}
+BROKEN_FONT_OUTLINES = {'Mangal'   : MANGAL_OUTLINES,     \
+                        'Meera'    : MEERA_OUTLINES,      \
+                        'FreeSerif': FREE_SERIF_OUTLINES}
 
 # the fonts whose subsets are re-encoded by the producer, so that nothing a
 # subset of them says about its own glyphs can be believed. Every other font
@@ -2049,7 +2285,14 @@ BROKEN_FONT_OUTLINES = {'Mangal': MANGAL_OUTLINES, 'Meera': MEERA_OUTLINES}
 # but reading the cmap as this producer's own encoding of the glyphs is what
 # glyph_seed_strings would do with it, handing gid 2 the character U+0002, so
 # nothing it says may be believed here either
-RE_ENCODED_FONTS = {'TAU-Marutham', 'TAU-Marutham-SC700', 'Meera'}
+#
+# FreeSerif is carried the same way and by mPDF, which is a third producer
+# again - simple TrueType fonts that name no /Encoding of their own, one byte
+# per glyph in the order the document wanted them - so nothing its subsets say
+# about their own glyphs may be believed either, and FREE_SERIF_OUTLINES is
+# the whole of its repair
+RE_ENCODED_FONTS = {'TAU-Marutham', 'TAU-Marutham-SC700', 'Meera', \
+                    'FreeSerif'}
 
 # the glyph count of the font program a hand table above was read from, for a
 # font that this corpus carries in more than one numbering. A subset that
@@ -2118,6 +2361,7 @@ FONT_CONVERTERS = {'Arial Unicode MS'  : 'arialuni_glyphs',   \
                    'TAU-Marutham'             : 'marutham_glyphs',    \
                    'TAU-Marutham-SC700'       : 'marutham_glyphs',    \
                    'Meera'                    : 'meera_glyphs',    \
+                   'FreeSerif'                : 'freeserif_glyphs', \
                    'NATS'                     : 'nats_glyphs', \
                    # the one converter here that is not a _glyphs pass. An
                    # unrepaired DVOT is not wrong about the glyphs it does
@@ -2657,6 +2901,39 @@ class ToUnicodeFixer:
                               '%d: %s', xref, e)
             return None
 
+    def glyph_order(self, font):
+        """the name of every glyph of a font, in glyph id order.
+
+           fontTools reads those names out of the post table and, where that
+           carries none, out of the cmap - so a font that keeps neither
+           leaves it with nothing to name a glyph by at all. The FreeSerif
+           subsets of test/test_pdfs/malayalam-freeserif.pdf are such a font
+           twice over: their post is version 3.0, which carries no names, and
+           mPDF writes their format 4 cmap subtable with an odd length, which
+           is illegal and which fontTools refuses to decompile.
+
+           No name is wanted here - everything a font is read for in this
+           module is keyed by glyph id or by what the glyph draws - so a font
+           whose names cannot be read is given names of this module's own
+           making rather than dropped. The ids they stand for are the ids
+           either way"""
+        try:
+            return font.getGlyphOrder()
+        except Exception as e:
+            self.logger.debug('The font does not say what its glyphs are ' \
+                              'called, naming them by their ids: %s', e)
+
+        try:
+            order = ['glyph%05d' % gid \
+                     for gid in range(font['maxp'].numGlyphs)]
+            font.setGlyphOrder(order)
+            if 'glyf' in font:
+                font['glyf'].glyphOrder = order
+            return order
+        except Exception as e:
+            self.logger.warning('Could not read the glyphs of a font: %s', e)
+            return []
+
     def glyph_signature(self, doc, xref, gid):
         '''what the glyph of an id draws, as a signature of its outline.
 
@@ -2679,11 +2956,11 @@ class ToUnicodeFixer:
         if font == None:
             return None
 
-        try:
-            order = font.getGlyphOrder()
-            if gid < 0 or gid >= len(order):
-                return None
+        order = self.glyph_order(font)
+        if gid < 0 or gid >= len(order):
+            return None
 
+        try:
             glyphset = font.getGlyphSet()
             pen      = DecomposingRecordingPen(glyphset)
             glyphset[order[gid]].draw(pen)
@@ -2966,8 +3243,8 @@ class ToUnicodeFixer:
         if font == None:
             return {}
 
+        order = self.glyph_order(font)
         try:
-            order  = font.getGlyphOrder()
             tables = font['cmap'].tables if 'cmap' in font else []
         except Exception as e:
             # a subset that keeps no cmap and no glyph names at all: nothing
@@ -2989,7 +3266,20 @@ class ToUnicodeFixer:
         glyphs   = {}
 
         for table in tables:
-            for code, gname in getattr(table, 'cmap', {}).items():
+            try:
+                subtable = table.cmap
+            except Exception as e:
+                # a subtable that the producer wrote malformed. mPDF gives
+                # the format 4 subtable of a FreeSerif subset an odd length,
+                # which is illegal and which fontTools refuses to decompile;
+                # the (1, 0) subtable of the same cmap answers the same
+                # question and is well formed, so a subtable that cannot be
+                # read is passed over rather than losing the font
+                self.logger.debug('A cmap subtable of the font %d cannot ' \
+                                  'be read, passing it over: %s', xref, e)
+                continue
+
+            for code, gname in subtable.items():
                 gid = gids.get(gname)
                 if gid == None:
                     continue
