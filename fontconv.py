@@ -7,6 +7,7 @@ from indic2unicode.fonts.glyphs import arialuni_glyphs, nirmalaui_glyphs, \
                                        freeserif_glyphs, nats_glyphs
 from indic2unicode.fonts.kannada import tunga, nudi, aklite
 from indic2unicode.fonts.tamil import tamelango, vanavil, tommy
+from indic2unicode.fonts.gujarati import krishna, krishnauni
 from indic2unicode.fonts.malayalam import revathi
 from indic2unicode.fonts.marathi import abhishek, dvotsurekh, sakal, yogesh
 from indic2unicode.fonts.odiya import akruti, kalinga, shree
@@ -40,6 +41,8 @@ class FontConv:
         kalingaObj   = kalinga.Kalinga()
         shreeObj     = shree.Shree()
         akrutiObj    = akruti.Akruti()
+        krishnaObj   = krishnauni.KrishnaUni()
+        krishna8Obj  = krishna.Krishna()
         tauelangoObj = tauelango_glyphs.TauElangoPanchaliGlyphs()
         ilasundaramObj = ilasundaram_glyphs.UniIlaSundaramGlyphs()
         maruthamObj    = marutham_glyphs.TauMaruthamGlyphs()
@@ -297,6 +300,43 @@ class FontConv:
             'AkrutiOriAshok-99Normal': akrutiObj,
             'AkrutiOriAshok-99Bold': akrutiObj,
             'AkrutiOriKoshal-99Normal': akrutiObj,
+            # the gujarati of the Gujarat Government Gazette. A unicode font
+            # like Arial Unicode MS, Nirmala UI and Kalinga above, and one
+            # whose pdfs carry a map that was broken the same way - the
+            # glyphs of a run were paired with the characters of it one by
+            # one and gujarati draws a syllable in a different number of
+            # glyphs than it is written in, so the pairing slips and કરવા
+            # extracts as ર્રવા. The bare font name is a key here, as it is
+            # for those three: this converter reads the text of a pdf that
+            # nothing has repaired.
+            # The bold face is a key here as well, and it is read by the
+            # converter of the regular face rather than by one of its own.
+            # The two faces are subsets with a map each, and each map was
+            # broken over the first drawing of its own glyphs, so 'ર્' is ka
+            # in the regular face and ma in the bold one - but one string of
+            # characters is all that reaches a converter and the two cannot
+            # be told apart in it. The regular face draws 24993 of the 25694
+            # glyphs of the test document and is the one that is read; the
+            # headings the bold face sets come out wrong, see the class
+            # comment of fonts/gujarati/krishnauni.py
+            'krishnauni': krishnaObj, 'KrishnaUni': krishnaObj,
+            'KrishnaUni,Bold': krishnaObj,
+            # the other gujarati of the same gazette, the one the orders of
+            # its district magistrates are set in. A legacy 8 bit font of a
+            # typing package, embedded as a simple TrueType font with
+            # WinAnsiEncoding and no map at all, so its text extracts as the
+            # cp1252 characters of the bytes that were typed and
+            # જિલ્લા મેજીસ્ટ્રેટ દ્વારા comes out as "ìÉSáë Üõ°VËÿõË ¦ëßë".
+            # The four faces the gazette carries share this layout - every
+            # byte the other three draw was read in the words it stands in
+            # against Krishna's own reading of it - so the pdf font name of
+            # each of them is a key here beside the short one. Beware of
+            # KrishnaUni above, which is a different font under a name that
+            # differs by three letters: it is a unicode opentype font and
+            # this is the legacy 8 bit one
+            'krishna': krishna8Obj, 'Krishna': krishna8Obj,
+            'KrishnaBold': krishna8Obj, 'Mani': krishna8Obj,
+            'Suchitra': krishna8Obj,
         }
 
         self.uniqfonts = ['aryan2', 'surekh', 'chanakya', 'arialuni', \
@@ -310,7 +350,8 @@ class FontConv:
                           'priyaanka', \
                           'gautami', \
                           'nats_glyphs', 'yogesh', 'abhishek', \
-                          'dvotsurekh', 'sakal', 'kalinga', 'shree', 'akruti']
+                          'dvotsurekh', 'sakal', 'kalinga', 'shree', 'akruti', \
+                          'krishnauni', 'krishna']
  
     def to_unicode(self, fontname, text):
         return self.converters[fontname].to_unicode(text)

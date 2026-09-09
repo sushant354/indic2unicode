@@ -133,6 +133,14 @@ class NatsGlyphs(BaseFont):
 
         return self.tokens_to_unicode(tokentypes)
 
+    def extra_rules(self):
+        '''the rules of a font of this script whose pattern is more than the
+           string of the token it reads, as a token name -> pattern dict.
+           NATS has none - every glyph of it says exactly what it stands for
+           - and fonts/telugu/nirmalaui.py has one, the vattu of ra that is
+           drawn in front of its letter and carries a mark to say so'''
+        return {}
+
     def get_lexer(self):
         '''a rule per token of langs/telugu.py whose string is telugu. The
            repaired map hands out those strings themselves - a glyph of this
@@ -146,6 +154,13 @@ class NatsGlyphs(BaseFont):
            one token and not two'''
         rules  = {}
         tokens = []
+
+        # the rules that a font of this script needs beyond the strings the
+        # language names, which are read first: a token that has one here is
+        # skipped by the loop below, its pattern being more than its string
+        for tokenName, pattern in self.extra_rules().items():
+            rules['t_' + tokenName] = pattern
+            tokens.append(tokenName)
 
         for obj in self.langobjs:
             for tokenName, ustr in obj.tokendict.items():

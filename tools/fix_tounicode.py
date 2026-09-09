@@ -1715,12 +1715,14 @@ TELUGU_CODEPOINTS = [chr(code) \
                                          (0x0c60, 0x0c63), (0x0c66, 0x0c6f)) \
                      for code in range(first, last + 1)]
 
-# the 35 letters క..హ of that block without ఴ, which is the order every
-# block below runs through. ఴ is left out because the font draws no form of
-# it: it is in the codepoint block above, at glyph 158, and nowhere else
-NATS_LETTERS = [char for char in TELUGU_CODEPOINTS \
-                if TELUGU_UNICODE['KA'] <= char <= TELUGU_UNICODE['HA'] \
-                and char != TELUGU_UNICODE['LLLA']]
+# the 35 letters క..హ of that block without ఴ, which is the order the blocks
+# of both telugu fonts below run through. ఴ is left out because neither font
+# draws a form of it: NATS keeps it in the codepoint block above, at glyph
+# 158, and nowhere else, and Nirmala UI leaves the gap out of its blocks
+# altogether
+TELUGU_LETTERS = [char for char in TELUGU_CODEPOINTS \
+                  if TELUGU_UNICODE['KA'] <= char <= TELUGU_UNICODE['HA'] \
+                  and char != TELUGU_UNICODE['LLLA']]
 
 # and the same letters with ౘ and ౙ back in the alphabetical places the
 # codepoint block does not give them - the block puts those two past the
@@ -1739,12 +1741,12 @@ def telugu_alphabet(letters, extras):
             out.append(extras[letter])
     return out
 
-NATS_SIGN_LETTERS = telugu_alphabet(NATS_LETTERS, TELUGU_ALPHABET_EXTRAS)
+NATS_SIGN_LETTERS = telugu_alphabet(TELUGU_LETTERS, TELUGU_ALPHABET_EXTRAS)
 
 # where ర sits in that alphabet: the font gives it four subjoined glyphs of
 # its own where every other letter has one, so the block of them is written
 # in two pieces around it
-NATS_RA_INDEX = NATS_LETTERS.index(TELUGU_UNICODE['RA'])
+NATS_RA_INDEX = TELUGU_LETTERS.index(TELUGU_UNICODE['RA'])
 
 # the ten vowel signs the font writes into a letter, in the order it lays
 # their blocks out - which is the codepoint order of the block with ృ, ౄ and
@@ -1763,9 +1765,9 @@ NATS_NARROW_SIGNS = [sign for sign in NATS_SIGNS \
                                      TELUGU_UNICODE['MATRA_E'], \
                                      TELUGU_UNICODE['MATRA_EE'])]
 
-# క్ష, the one cluster the font draws as a letter of its own, with a block of
-# the ten vowel signs to itself at the very end of the font
-NATS_KSSA = TELUGU_UNICODE['KA'] + TELUGU_VIRAMA + TELUGU_UNICODE['SSA']
+# క్ష, the one cluster that both telugu fonts below draw as a letter of its
+# own, with a block of the vowel signs to itself
+TELUGU_KSSA = TELUGU_UNICODE['KA'] + TELUGU_VIRAMA + TELUGU_UNICODE['SSA']
 
 def telugu_sign_blocks(gid, letters, signs, narrow, narrowsigns):
     '''the blocks of one glyph per vowel sign that the font draws for each
@@ -1792,7 +1794,7 @@ NATS.update({111 + i: char for i, char in enumerate(TELUGU_CODEPOINTS)})
 NATS.update({108: TELUGU_UNICODE['KA'] + TELUGU_VIRAMA})
 NATS.update({270 + i: letter + TELUGU_VIRAMA \
              for i, letter in enumerate(NATS_SIGN_LETTERS[1:])})
-NATS.update({306: NATS_KSSA + TELUGU_VIRAMA})
+NATS.update({306: TELUGU_KSSA + TELUGU_VIRAMA})
 
 # the subjoined consonants, which unicode writes the other way round - the
 # virama in front of the letter it binds. ర is the one letter the font draws
@@ -1800,12 +1802,12 @@ NATS.update({306: NATS_KSSA + TELUGU_VIRAMA})
 # under it among them (రాష్ట్ర is drawn రా ష ్ట ్ర, the last of those being
 # that glyph), and 246 sits in the middle of them drawing nothing at all
 NATS.update({219 + i: TELUGU_VIRAMA + letter \
-             for i, letter in enumerate(NATS_LETTERS[:NATS_RA_INDEX])})
+             for i, letter in enumerate(TELUGU_LETTERS[:NATS_RA_INDEX])})
 NATS.update({248 + i: TELUGU_VIRAMA + letter \
-             for i, letter in enumerate(NATS_LETTERS[NATS_RA_INDEX + 1:])})
+             for i, letter in enumerate(TELUGU_LETTERS[NATS_RA_INDEX + 1:])})
 NATS.update({gid: TELUGU_VIRAMA + TELUGU_UNICODE['RA'] \
              for gid in (245, 247, 263, 264)})
-NATS.update({256: TELUGU_VIRAMA + NATS_KSSA})
+NATS.update({256: TELUGU_VIRAMA + TELUGU_KSSA})
 
 # the vattus that the font draws as a single glyph, and the ai length mark
 # drawn together with the vattu that hangs under the same syllable - the
@@ -1848,15 +1850,135 @@ NATS.update(telugu_sign_blocks(307, NATS_SIGN_LETTERS, NATS_SIGNS, \
                                NATS_NARROW_SIGNS))
 # and క్ష, which the font draws as one glyph and gives a block of its own,
 # at the very end of the font rather than in among the letters
-NATS.update({218: NATS_KSSA})
-NATS.update({669 + i: NATS_KSSA + sign for i, sign in enumerate(NATS_SIGNS)})
-NATS.update({705: NATS_KSSA + TELUGU_UNICODE['MATRA_E'] + \
+NATS.update({218: TELUGU_KSSA})
+NATS.update({669 + i: TELUGU_KSSA + sign for i, sign in enumerate(NATS_SIGNS)})
+NATS.update({705: TELUGU_KSSA + TELUGU_UNICODE['MATRA_E'] + \
                   TELUGU_UNICODE['AI_LENGTH_MARK']})
 NATS.update({706: NATS[705] + NATS[233], 707: NATS[705] + NATS[256]})
 
 # పు with the vattu of ప under it, which is one glyph of the font and the
 # only one of that shape it draws
 NATS.update({679: NATS[522] + NATS[239]})
+
+# ---------------------------------------------------------------------------
+# THE TELUGU OF NIRMALA UI
+#
+# The Andhra Pradesh gazette is set in Nirmala UI as well as in NATS, and the
+# subsets it carries there are not the ones the kannada and the odiya of that
+# font were read off: these keep a cmap, a post and a GSUB, so the font
+# itself spells out almost every glyph the shaper made and the table below
+# only has to say what the font leaves out.
+#
+# What it leaves out is the vowel sign u. The subset names the signs of the
+# block in its cmap - ా, ి, ీ, ృ, ె, ే, ొ, ో, ౌ and the pollu are all there -
+# and drops the two entries for ు and ూ, so those two glyphs are anonymous
+# and so is every syllable the font ligates them into: 35 of the 269 glyphs
+# the gazette draws are a letter with one of the two written into it and
+# nothing in the subset says so. The map that the producer built is the same
+# slipped pairing the devanagari of the Gazette carries, and it happens to
+# read those glyphs correctly wherever the syllable it first drew them in
+# was spelled the way the pairing walks - 'ను', 'కు', 'తూ' - and wrongly
+# wherever it was not, handing రు the 'ర్డ' of వార్డుల, డు the 'డ్డ' of ఒడ్డు
+# and నూ the 'న్య' of a న్యాయ. So వార్డుల extracts as వార్డ్డల and ముగుస్తుంది
+# as ముగుసు్తంది.
+#
+# The table is read off the blocks the font lays its telugu out in, and its
+# readings agree with the map itself on 27 of those 35 glyphs - the eight it
+# differs on being the eight where the pairing slipped.
+#
+# WHAT THE BLOCKS ARE
+#
+# The font draws seventeen glyphs for every letter: the letter, the letter
+# with each of the thirteen vowel signs in the order of the block, two
+# glyphs this gazette never draws, and the dead letter. క is at 1681 and the
+# blocks run through the 35 letters of TELUGU_LETTERS, and క్ష, which telugu
+# writes as a letter of its own, has a block of the same shape at 2302. The
+# font names eleven of the seventeen itself, which is what anchors the
+# blocks: 1681 is uni0C15, 1682 is 'కా' out of the GSUB, 1697 is 'క్', and
+# the four glyphs the order leaves between 'కీ' and 'కె' are ు, ూ, ృ and ౄ,
+# in the order of the block. The two glyphs at 14 and 15 fall between ౌ and
+# the pollu, where the block of the script has nothing at all, so they are
+# left out rather than guessed at - no page of this gazette draws either.
+#
+# The vowel signs where they stand on their own are laid out from 2277 in
+# the same block order, and there too the font names all but the ones the
+# cmap drops: 2277 is uni0C3E, 2279 is uni0C40 and 2282 is uni0C43, so the
+# two glyphs between the last two are ు and ూ and the one behind ృ is ౄ.
+#
+# The vattus, the consonants telugu hangs under the letter before them, are
+# laid out in two runs and the font names all but seven of them. Only the
+# four that the order settles outright are here - the glyphs between two the
+# font does name, with exactly as many letters left for them as there are
+# glyphs - and ్ఞ, one of those four, is also the one of them this gazette
+# draws: విజ్ఞాన is drawn వి జా ్ఞ న.
+# ---------------------------------------------------------------------------
+
+# the thirteen vowel signs that the font writes into a letter, in the order
+# of the block, which is the order it lays its blocks out in. The pollu is
+# not among them - it ends the block of a letter rather than standing in the
+# middle of it - and the two codepoints unicode assigns nothing to are left
+# out, the font giving neither a glyph
+NIRMALA_UI_TELUGU_SIGNS = [chr(code) for code in range(0x0c3e, 0x0c4d) \
+                           if code not in (0x0c45, 0x0c49)]
+
+def telugu_letter_blocks(gid, letters, signs):
+    '''the block of seventeen glyphs that Nirmala UI draws for each letter in
+       turn: the letter itself, the letter with each of the vowel signs, two
+       glyphs that no page of this gazette draws and that the order of the
+       block says nothing about, and the dead letter'''
+    table = {}
+    for letter in letters:
+        table[gid] = letter
+        for i, sign in enumerate(signs):
+            table[gid + 1 + i] = letter + sign
+        table[gid + 16] = letter + TELUGU_VIRAMA
+        gid += 17
+    return table
+
+NIRMALA_UI_TELUGU = telugu_letter_blocks(1681, TELUGU_LETTERS, \
+                                         NIRMALA_UI_TELUGU_SIGNS)
+NIRMALA_UI_TELUGU.update(telugu_letter_blocks(2302, [TELUGU_KSSA], \
+                                              NIRMALA_UI_TELUGU_SIGNS))
+
+# the vowel signs where they stand on their own, the three of them the cmap
+# of the subset drops
+NIRMALA_UI_TELUGU.update({2280: TELUGU_UNICODE['MATRA_U'],  \
+                          2281: TELUGU_UNICODE['MATRA_UU'], \
+                          2283: TELUGU_UNICODE['MATRA_VOCALIC_RR']})
+
+# the vattus that the order of the block settles: ్ఝ and ్ఞ are the two
+# glyphs between the ్జ of 2339 and the ్ట of 2342 and ఝ and ఞ the two
+# letters the alphabet leaves between జ and ట, ్ఢ is the one glyph between
+# ్డ and ్ణ and ్ఱ the one between ్ర and ్ల. The other three the font
+# names nothing for are not here: the run that holds ్క, ్చ, ్న and the rest
+# carries a glyph more than the letters left for it, so neither of its two
+# anonymous glyphs is settled and neither is the one at 2338, which the
+# slack of that run leaves standing for either ్ఙ or ్ఛ
+NIRMALA_UI_TELUGU.update({2340: TELUGU_VIRAMA + TELUGU_UNICODE['JHA'], \
+                          2341: TELUGU_VIRAMA + TELUGU_UNICODE['NYA'], \
+                          2345: TELUGU_VIRAMA + TELUGU_UNICODE['DDHA'], \
+                          2352: TELUGU_VIRAMA + TELUGU_UNICODE['RRA']})
+
+# the vattu of ra that the font draws in front of the letter it belongs to
+# rather than under it, and the narrow form of it that it draws where the
+# letter carries a vattu of its own as well - రిజిస్ట్రార్ is drawn
+# రి జి ్ర సా ్ట. The font says as much itself: its GSUB makes 2351 in a
+# lookup its below base feature calls and these two in a lookup its pre-base
+# feature calls, but it says it in a chaining rule and the repair reads a
+# lookup on its own, so both come out of it spelled ్ర and nothing tells
+# them apart. So both are written here with langs/telugu.PREBASE_RA_MARK
+# inside them, which says which of the two glyphs was drawn - the font
+# spells them right and this says more than the font does, which is why it
+# is the reading that stands, see fix_font
+NIRMALA_UI_PREBASE_RA = TELUGU_VIRAMA + telugu.PREBASE_RA_MARK + \
+                        TELUGU_UNICODE['RA']
+NIRMALA_UI_TELUGU.update({2356: NIRMALA_UI_PREBASE_RA, \
+                          2357: NIRMALA_UI_PREBASE_RA})
+
+# The glyph count of the font program NIRMALA_UI_TELUGU was read off, which
+# is a numbering of Nirmala UI of its own again - see the GlyphNumberings of
+# BROKEN_FONTS and glyph_count
+NIRMALA_UI_TELUGU_GLYPH_COUNT = 4595
 
 # THE MARATHI OF THE MUMBAI SUBURBAN SUPPLEMENT
 #
@@ -2188,13 +2310,15 @@ FREE_SERIF_OUTLINES = { \
 }
 
 BROKEN_FONTS = {'Arial Unicode MS'  : ARIAL_UNICODE_MS,   \
-                # the two numberings of Nirmala UI that a table was read
-                # off, the kannada of the Karnataka gazette and the odiya
-                # of the Odisha one. The devanagari of the Gazette needs no
-                # table at all, its subsets keeping the GSUB of the font \
+                # the three numberings of Nirmala UI that a table was
+                # read off, the kannada of the Karnataka gazette, the odiya
+                # of the Odisha one and the telugu of the Andhra Pradesh
+                # one. The devanagari of the Gazette needs no table at all,
+                # its subsets keeping the GSUB of the font \
                 'Nirmala UI'        : GlyphNumberings({ \
-                    NIRMALA_UI_GLYPH_COUNT      : NIRMALA_UI, \
-                    NIRMALA_UI_ODIYA_GLYPH_COUNT: NIRMALA_UI_ODIYA}), \
+                    NIRMALA_UI_GLYPH_COUNT       : NIRMALA_UI, \
+                    NIRMALA_UI_ODIYA_GLYPH_COUNT : NIRMALA_UI_ODIYA, \
+                    NIRMALA_UI_TELUGU_GLYPH_COUNT: NIRMALA_UI_TELUGU}), \
                 # the one numbering of Mangal that a table was read
                 # off, the 890 glyph font that Word subsets. The
                 # gazettes whose Mangal is renumbered per subset get
@@ -2445,6 +2569,19 @@ AKHAND_FEATURES = frozenset(['akhn'])
 # and the feature that makes the dead consonant, a letter written with the
 # virama behind it, which is the order it is spelled in anyway
 DEAD_FORM_FEATURES = frozenset(['haln'])
+
+# the marks that a hand table writes into the string of a glyph to say which
+# of two glyphs that spell the same thing was drawn - the reph of odiya and
+# the arkavattu of kannada, which are spelled like a dead ra, and the vattu
+# of ra that Nirmala UI draws in front of its letter, which is spelled like
+# the one it hangs under it. A font that spells such a glyph out of its own
+# GSUB spells it without the mark, so it says the same thing as the table
+# and less of it, and there the table is the reading that stands - see
+# fix_font. This is what takes a mark back out of a string to ask whether
+# the two say the same thing
+FORM_MARKS = {ord(mark): None \
+              for mark in (kannada.ARKAVATTU_MARK, odiya.REPH_MARK, \
+                           telugu.PREBASE_RA_MARK)}
 
 def virama_of(ustr):
     '''the virama of the script that a glyph's characters are in, the
@@ -3164,8 +3301,19 @@ class ToUnicodeFixer:
             # made - what it is repaired to by hand, whatever the character
             # it was paired with in this document happens to be
             correct = strings.get(code)
+            handed  = glyphfixes.get(code)
             if correct == None:
-                correct = glyphfixes.get(code)
+                correct = handed
+            elif handed != None and handed != correct and \
+                    handed.translate(FORM_MARKS) == correct:
+                # what the font says and what the table says are the same
+                # string but for the mark that the table writes into it,
+                # which says which of the two glyphs that spell that string
+                # was drawn. The font cannot say that here - it says it in a
+                # chaining rule and a lookup is read on its own - so the
+                # table is the fuller of the two readings and is the one
+                # that stands, see FORM_MARKS
+                correct = handed
             if correct == None and outlinefixes:
                 # a font whose subsets are renumbered, so the glyph is looked
                 # up by what it draws rather than by the number it has here

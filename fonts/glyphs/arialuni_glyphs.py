@@ -18,13 +18,15 @@ import ply.lex as lex
 DEVANAGARI_RE = re.compile('[\u0900-\u0963\u0966-\u097f]')
 KANNADA_RE    = re.compile('[\u0c80-\u0cff]')
 ODIYA_RE      = re.compile('[\u0b00-\u0b7f]')
+TELUGU_RE     = re.compile('[\u0c00-\u0c7f]')
 
 # the pass that reads each of those scripts, as the name of the class
 # attribute that names it and the block it is written in. A font that has no
 # pass of its own for one of them - Arial Unicode MS draws no odiya - names
 # None there, and the text of that script is read as devanagari the way it
 # always was
-SCRIPT_CLASSES = [('kannadaclass', KANNADA_RE), ('odiyaclass', ODIYA_RE)]
+SCRIPT_CLASSES = [('kannadaclass', KANNADA_RE), ('odiyaclass', ODIYA_RE), \
+                  ('teluguclass', TELUGU_RE)]
 
 class ArialUniGlyphs(BaseFont):
     '''The text of a pdf whose ToUnicode map has been repaired by
@@ -58,6 +60,11 @@ class ArialUniGlyphs(BaseFont):
     # Odisha Gazette is not set in it - and Nirmala UI names one, see
     # fonts/glyphs/nirmalaui_glyphs.py
     odiyaclass   = None
+
+    # and the pass that reads its telugu, which Arial Unicode MS has none of
+    # either - the Andhra Pradesh gazette is not set in it - while Nirmala UI
+    # names one again
+    teluguclass  = None
 
     def __init__(self):
         BaseFont.__init__(self)
