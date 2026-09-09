@@ -23,7 +23,8 @@ CONSONANT_TOKENS = [ \
 # Conjuncts below. Only the clusters that the fonts of this package have a
 # glyph for are listed: the 33 that fonts/malayalam/revathi.py carries a code
 # for, the 89 that fonts/malayalam/meera.py reads, which are a superset of
-# them, and the six more that fonts/malayalam/freeserif.py adds. A font that
+# them, the six more that fonts/malayalam/freeserif.py adds and the three
+# more that fonts/malayalam/kartika.py does - ബ്ബ, ഹ്ന and ഹ്മ. A font that
 # draws one this leaves out simply has no glyph whose token is missing here
 CONJUNCT_TOKENS = [ \
     ('KA', 'KA'),      ('KA', 'TTA'),     ('KA', 'TTA', 'RA'), \
@@ -49,7 +50,8 @@ CONJUNCT_TOKENS = [ \
     ('PA', 'TTA'),     ('PA', 'TA'),      ('PA', 'PA'),        \
     ('PA', 'RA'),      ('PA', 'LA'),      ('PA', 'SA'),        \
     ('PHA', 'RA'),     ('PHA', 'RRA', 'RRA'),                  \
-    ('BA', 'DA'),      ('BA', 'RA'),      ('BA', 'LA'),        \
+    ('BA', 'DA'),      ('BA', 'BA'),      ('BA', 'RA'),        \
+    ('BA', 'LA'),                                              \
     ('MA', 'PA'),      ('MA', 'PA', 'RA'), ('MA', 'MA'),       \
     ('YA', 'KA', 'KA'), ('YA', 'TA'),     ('YA', 'PA'),        \
     ('YA', 'YA'),                                              \
@@ -67,7 +69,7 @@ CONJUNCT_TOKENS = [ \
     ('SA', 'TA', 'RA'), ('SA', 'THA'),    ('SA', 'PA'),        \
     ('SA', 'MA'),      ('SA', 'NA'),      ('SA', 'RRA', 'RRA'), \
     ('SA', 'SA'),                                              \
-    ('HA', 'RA'),                                              \
+    ('HA', 'NA'),      ('HA', 'MA'),      ('HA', 'RA'),        \
 ]
 
 class MalayalamUnicode(BaseLang):

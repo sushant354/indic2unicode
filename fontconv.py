@@ -8,7 +8,7 @@ from indic2unicode.fonts.glyphs import arialuni_glyphs, nirmalaui_glyphs, \
 from indic2unicode.fonts.kannada import tunga, nudi, aklite
 from indic2unicode.fonts.tamil import tamelango, vanavil, tommy
 from indic2unicode.fonts.gujarati import krishna, krishnauni
-from indic2unicode.fonts.malayalam import revathi
+from indic2unicode.fonts.malayalam import revathi, kartika
 from indic2unicode.fonts.marathi import abhishek, dvotsurekh, sakal, yogesh
 from indic2unicode.fonts.odiya import akruti, kalinga, shree
 from indic2unicode.fonts.telugu import priyaanka, gautami
@@ -32,6 +32,7 @@ class FontConv:
         vanavilObj   = vanavil.Vanavil()
         tommyObj     = tommy.Tommy()
         revathiObj   = revathi.Revathi()
+        kartikaObj   = kartika.Kartika()
         yogeshObj    = yogesh.Yogesh()
         abhishekObj  = abhishek.Abhishek()
         dvotsurekhObj = dvotsurekh.DVOTSurekh()
@@ -334,6 +335,29 @@ class FontConv:
             # KrishnaUni above, which is a different font under a name that
             # differs by three letters: it is a unicode opentype font and
             # this is the legacy 8 bit one
+            # the unicode malayalam of the Kerala gazette, the one Windows
+            # ships and the one its extraordinary issues are set in. A
+            # unicode font like Arial Unicode MS, Nirmala UI, Kalinga and
+            # KrishnaUni above, and one whose pdfs carry a map that was
+            # broken the same way - the glyphs of a run were paired with the
+            # characters of it one by one and malayalam draws a syllable in
+            # a different number of glyphs than it is written in, so the
+            # pairing slips and കേരള extracts as മകരള. The bare font name is
+            # a key here, as it is for those four: this converter reads the
+            # text of a pdf that nothing has repaired.
+            # The bold face is a key here as well, and it is read by the
+            # converter of the regular face rather than by one of its own.
+            # The gazette sets its headings in it and its masthead is a
+            # stamp in a third subset, and each of the three carries a map
+            # broken over its own first drawings, so 'ക' is ക in one face
+            # and ക്ക in another - but one string of characters is all that
+            # reaches a converter and the faces cannot be told apart in it.
+            # The regular face draws 9825 of the 10116 malayalam glyphs of
+            # the test document and is the one that is read; the headings
+            # and the masthead come out wrong, see the class comment of
+            # fonts/malayalam/kartika.py
+            'kartika': kartikaObj, 'Kartika': kartikaObj,
+            'Kartika-Bold': kartikaObj,
             'krishna': krishna8Obj, 'Krishna': krishna8Obj,
             'KrishnaBold': krishna8Obj, 'Mani': krishna8Obj,
             'Suchitra': krishna8Obj,
@@ -351,7 +375,7 @@ class FontConv:
                           'gautami', \
                           'nats_glyphs', 'yogesh', 'abhishek', \
                           'dvotsurekh', 'sakal', 'kalinga', 'shree', 'akruti', \
-                          'krishnauni', 'krishna']
+                          'krishnauni', 'krishna', 'kartika']
  
     def to_unicode(self, fontname, text):
         return self.converters[fontname].to_unicode(text)
