@@ -12,6 +12,7 @@ from indic2unicode.fonts.malayalam import revathi, kartika, notoserif
 from indic2unicode.fonts.marathi import abhishek, dvotsurekh, sakal, yogesh
 from indic2unicode.fonts.odiya import akruti, kalinga, shree
 from indic2unicode.fonts.telugu import priyaanka, gautami
+from indic2unicode.fonts.punjabi import asees
 
 class FontConv:
     def __init__(self):
@@ -46,6 +47,7 @@ class FontConv:
         krishnaObj   = krishnauni.KrishnaUni()
         krishna8Obj  = krishna.Krishna()
         maniObj      = mani.Mani()
+        aseesObj     = asees.Asees()
         tauelangoObj = tauelango_glyphs.TauElangoPanchaliGlyphs()
         ilasundaramObj = ilasundaram_glyphs.UniIlaSundaramGlyphs()
         maruthamObj    = marutham_glyphs.TauMaruthamGlyphs()
@@ -384,6 +386,14 @@ class FontConv:
             # names the font, not the fault, so a caller matching on it has
             # to know which producer the pdf came from
             'notoserif': notoserifObj, 'NotoSerifMalayalam': notoserifObj,
+            # the punjabi of the Punjab Government Gazette, the one the
+            # notifications of its district offices are set in. A legacy 8
+            # bit font, embedded as a simple TrueType font with
+            # WinAnsiEncoding and no map at all like Krishna above, so its
+            # text extracts as the ascii characters of the bytes that were
+            # typed and ਗੁਰਦਾਸਪੁਰ comes out as "r[odk;g[o". The pdf font
+            # name is a key here beside the short one
+            'asees': aseesObj, 'Asees': aseesObj,
         }
 
         self.uniqfonts = ['aryan2', 'surekh', 'chanakya', 'arialuni', \
@@ -399,7 +409,7 @@ class FontConv:
                           'nats_glyphs', 'yogesh', 'abhishek', \
                           'dvotsurekh', 'sakal', 'kalinga', 'shree', 'akruti', \
                           'krishnauni', 'krishna', 'mani', 'kartika', \
-                          'notoserif']
+                          'notoserif', 'asees']
  
     def to_unicode(self, fontname, text):
         return self.converters[fontname].to_unicode(text)
