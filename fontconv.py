@@ -7,7 +7,7 @@ from indic2unicode.fonts.glyphs import arialuni_glyphs, nirmalaui_glyphs, \
                                        freeserif_glyphs, nats_glyphs
 from indic2unicode.fonts.kannada import tunga, nudi, aklite
 from indic2unicode.fonts.tamil import tamelango, vanavil, tommy
-from indic2unicode.fonts.gujarati import krishna, krishnauni
+from indic2unicode.fonts.gujarati import krishna, krishnauni, mani
 from indic2unicode.fonts.malayalam import revathi, kartika, notoserif
 from indic2unicode.fonts.marathi import abhishek, dvotsurekh, sakal, yogesh
 from indic2unicode.fonts.odiya import akruti, kalinga, shree
@@ -45,6 +45,7 @@ class FontConv:
         akrutiObj    = akruti.Akruti()
         krishnaObj   = krishnauni.KrishnaUni()
         krishna8Obj  = krishna.Krishna()
+        maniObj      = mani.Mani()
         tauelangoObj = tauelango_glyphs.TauElangoPanchaliGlyphs()
         ilasundaramObj = ilasundaram_glyphs.UniIlaSundaramGlyphs()
         maruthamObj    = marutham_glyphs.TauMaruthamGlyphs()
@@ -331,8 +332,10 @@ class FontConv:
             # જિલ્લા મેજીસ્ટ્રેટ દ્વારા comes out as "ìÉSáë Üõ°VËÿõË ¦ëßë".
             # The four faces the gazette carries share this layout - every
             # byte the other three draw was read in the words it stands in
-            # against Krishna's own reading of it - so the pdf font name of
-            # each of them is a key here beside the short one. Beware of
+            # against Krishna's own reading of it - so the pdf font names of
+            # Krishna, KrishnaBold and Suchitra are keys here beside the
+            # short one, and Mani's names a converter of its own below.
+            # Beware of
             # KrishnaUni above, which is a different font under a name that
             # differs by three letters: it is a unicode opentype font and
             # this is the legacy 8 bit one
@@ -360,8 +363,14 @@ class FontConv:
             'kartika': kartikaObj, 'Kartika': kartikaObj,
             'Kartika-Bold': kartikaObj,
             'krishna': krishna8Obj, 'Krishna': krishna8Obj,
-            'KrishnaBold': krishna8Obj, 'Mani': krishna8Obj,
-            'Suchitra': krishna8Obj,
+            'KrishnaBold': krishna8Obj, 'Suchitra': krishna8Obj,
+            # the face of the same typing package that the gazette sets the
+            # headings of those orders and the tables of their forms in. The
+            # same layout as Krishna, and that converter with the half forms
+            # ભ્ and ય્ added to its table and the ં that is typed in front of
+            # a ુ put back behind it - see fonts/gujarati/mani.py. The pdf
+            # font name is a key here beside the short one
+            'mani': maniObj, 'Mani': maniObj,
             # the other unicode malayalam of the same gazette, the one its
             # delimitation notifications are set in. A unicode font like
             # Kartika above, and one whose pdfs carry a map that was broken
@@ -389,7 +398,8 @@ class FontConv:
                           'gautami', \
                           'nats_glyphs', 'yogesh', 'abhishek', \
                           'dvotsurekh', 'sakal', 'kalinga', 'shree', 'akruti', \
-                          'krishnauni', 'krishna', 'kartika', 'notoserif']
+                          'krishnauni', 'krishna', 'mani', 'kartika', \
+                          'notoserif']
  
     def to_unicode(self, fontname, text):
         return self.converters[fontname].to_unicode(text)

@@ -1,4 +1,5 @@
 import re
+import types
 
 from indic2unicode.langs import gujarati
 from ..basefont import BaseFont, LITERAL
@@ -21,6 +22,8 @@ class Krishna(BaseFont):
        Suchitra, which set the headings and the table headers. Every byte
        the last three draw was read in the words it stands in and is the
        character Krishna draws on that byte, so one converter reads all four.
+       Mani is read by fonts/gujarati/mani.py, which is this converter with
+       the glyphs another document draws in that face added to it.
 
        The pdf carries the regular face twice over, as this simple font on
        the bytes that were typed and as a Type0 subset whose ToUnicode map
@@ -117,6 +120,10 @@ class Krishna(BaseFont):
     # the vowel signs that carry the upright of the letter they sit on and
     # so complete a half form, ા being the upright by itself
     UPRIGHT_SIGNS = ['MATRA_II', 'MATRA_O', 'MATRA_AU']
+
+    # the glyphs, by token, that a face of this layout is read with beyond
+    # the table of get_lexer() - see fonts/gujarati/mani.py
+    MORE_GLYPHS = {}
 
     def __init__(self):
         BaseFont.__init__(self)
@@ -408,8 +415,16 @@ class Krishna(BaseFont):
             t.value = char
             return t
 
-        # only the tokens that the font has a glyph for
-        rules  = locals()
-        tokens = [tokenName for tokenName in tokens if 't_' + tokenName in rules]
+        rules = dict(locals())
+        for tokenName, glyphs in self.MORE_GLYPHS.items():
+            rules['t_' + tokenName] = pat(*glyphs)
 
-        return lex.lex()
+        # only the tokens that the font has a glyph for
+        rules['tokens'] = [tokenName for tokenName in tokens \
+                                     if 't_' + tokenName in rules]
+
+        # the glyphs of MORE_GLYPHS are added to the rules in a loop, so the
+        # rules are handed to ply in an object of their own rather than in
+        # the locals of this function. ply looks up the module of that object
+        rules['__module__'] = self.__class__.__module__
+        return lex.lex(object = types.SimpleNamespace(**rules))
