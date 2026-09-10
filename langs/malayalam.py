@@ -23,8 +23,9 @@ CONSONANT_TOKENS = [ \
 # Conjuncts below. Only the clusters that the fonts of this package have a
 # glyph for are listed: the 33 that fonts/malayalam/revathi.py carries a code
 # for, the 89 that fonts/malayalam/meera.py reads, which are a superset of
-# them, the six more that fonts/malayalam/freeserif.py adds and the three
-# more that fonts/malayalam/kartika.py does - ബ്ബ, ഹ്ന and ഹ്മ. A font that
+# them, the six more that fonts/malayalam/freeserif.py adds, the three more
+# that fonts/malayalam/kartika.py does - ബ്ബ, ഹ്ന and ഹ്മ - and the four more
+# that fonts/malayalam/notoserif.py does - ത്ന, ഫ്ല, മ്ല and സ്ല. A font that
 # draws one this leaves out simply has no glyph whose token is missing here
 CONJUNCT_TOKENS = [ \
     ('KA', 'KA'),      ('KA', 'TTA'),     ('KA', 'TTA', 'RA'), \
@@ -40,8 +41,8 @@ CONJUNCT_TOKENS = [ \
     ('TTA', 'TTA'),    ('TTA', 'RA'),                          \
     ('NNA', 'TTA'),    ('NNA', 'TTA', 'RA'), ('NNA', 'DDA'),   \
     ('NNA', 'NNA'),    ('NNA', 'MA'),                          \
-    ('TA', 'TA'),      ('TA', 'THA'),     ('TA', 'MA'),        \
-    ('TA', 'RA'),      ('TA', 'SA'),                           \
+    ('TA', 'TA'),      ('TA', 'THA'),     ('TA', 'NA'),        \
+    ('TA', 'MA'),      ('TA', 'RA'),      ('TA', 'SA'),        \
     ('DA', 'DA'),      ('DA', 'DHA'),     ('DA', 'MA'),        \
     ('DA', 'RA'),                                              \
     ('NA', 'TA'),      ('NA', 'TA', 'RA'), ('NA', 'DA'),       \
@@ -49,10 +50,11 @@ CONJUNCT_TOKENS = [ \
     ('NA', 'MA'),      ('NA', 'RRA'),                          \
     ('PA', 'TTA'),     ('PA', 'TA'),      ('PA', 'PA'),        \
     ('PA', 'RA'),      ('PA', 'LA'),      ('PA', 'SA'),        \
-    ('PHA', 'RA'),     ('PHA', 'RRA', 'RRA'),                  \
+    ('PHA', 'RA'),     ('PHA', 'RRA', 'RRA'), ('PHA', 'LA'),   \
     ('BA', 'DA'),      ('BA', 'BA'),      ('BA', 'RA'),        \
     ('BA', 'LA'),                                              \
     ('MA', 'PA'),      ('MA', 'PA', 'RA'), ('MA', 'MA'),       \
+    ('MA', 'LA'),                                              \
     ('YA', 'KA', 'KA'), ('YA', 'TA'),     ('YA', 'PA'),        \
     ('YA', 'YA'),                                              \
     ('RRA', 'RRA'),                                            \
@@ -68,7 +70,7 @@ CONJUNCT_TOKENS = [ \
     ('SA', 'KA'),      ('SA', 'TTA', 'RA'), ('SA', 'TA'),      \
     ('SA', 'TA', 'RA'), ('SA', 'THA'),    ('SA', 'PA'),        \
     ('SA', 'MA'),      ('SA', 'NA'),      ('SA', 'RRA', 'RRA'), \
-    ('SA', 'SA'),                                              \
+    ('SA', 'SA'),      ('SA', 'LA'),                           \
     ('HA', 'NA'),      ('HA', 'MA'),      ('HA', 'RA'),        \
 ]
 

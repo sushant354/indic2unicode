@@ -8,7 +8,7 @@ from indic2unicode.fonts.glyphs import arialuni_glyphs, nirmalaui_glyphs, \
 from indic2unicode.fonts.kannada import tunga, nudi, aklite
 from indic2unicode.fonts.tamil import tamelango, vanavil, tommy
 from indic2unicode.fonts.gujarati import krishna, krishnauni
-from indic2unicode.fonts.malayalam import revathi, kartika
+from indic2unicode.fonts.malayalam import revathi, kartika, notoserif
 from indic2unicode.fonts.marathi import abhishek, dvotsurekh, sakal, yogesh
 from indic2unicode.fonts.odiya import akruti, kalinga, shree
 from indic2unicode.fonts.telugu import priyaanka, gautami
@@ -33,6 +33,7 @@ class FontConv:
         tommyObj     = tommy.Tommy()
         revathiObj   = revathi.Revathi()
         kartikaObj   = kartika.Kartika()
+        notoserifObj = notoserif.NotoSerifMalayalam()
         yogeshObj    = yogesh.Yogesh()
         abhishekObj  = abhishek.Abhishek()
         dvotsurekhObj = dvotsurekh.DVOTSurekh()
@@ -361,6 +362,19 @@ class FontConv:
             'krishna': krishna8Obj, 'Krishna': krishna8Obj,
             'KrishnaBold': krishna8Obj, 'Mani': krishna8Obj,
             'Suchitra': krishna8Obj,
+            # the other unicode malayalam of the same gazette, the one its
+            # delimitation notifications are set in. A unicode font like
+            # Kartika above, and one whose pdfs carry a map that was broken
+            # the same way - the glyphs of a run were paired with the
+            # characters of it one by one, so the pairing slips and
+            # പ്രകാരം extracts as പ്പോരം. The bare font name is a key here,
+            # as it is for Kartika: this converter reads the text of a pdf
+            # that nothing has repaired. Beware of a NotoSerifMalayalam that
+            # some other producer embedded with a sound map, which extracts
+            # correct text that this converter would scramble - the key
+            # names the font, not the fault, so a caller matching on it has
+            # to know which producer the pdf came from
+            'notoserif': notoserifObj, 'NotoSerifMalayalam': notoserifObj,
         }
 
         self.uniqfonts = ['aryan2', 'surekh', 'chanakya', 'arialuni', \
@@ -375,7 +389,7 @@ class FontConv:
                           'gautami', \
                           'nats_glyphs', 'yogesh', 'abhishek', \
                           'dvotsurekh', 'sakal', 'kalinga', 'shree', 'akruti', \
-                          'krishnauni', 'krishna', 'kartika']
+                          'krishnauni', 'krishna', 'kartika', 'notoserif']
  
     def to_unicode(self, fontname, text):
         return self.converters[fontname].to_unicode(text)
