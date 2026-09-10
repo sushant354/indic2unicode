@@ -2,6 +2,7 @@ from .arialuni_glyphs import ArialUniGlyphs
 from ..kannada.nirmalaui import NirmalaUIKannadaGlyphs
 from ..odiya.nirmalaui import NirmalaUIOdiyaGlyphs
 from ..telugu.nirmalaui import NirmalaUITeluguGlyphs
+from ..malayalam.nirmalaui import NirmalaUIMalayalamGlyphs
 
 class NirmalaUIGlyphs(ArialUniGlyphs):
     '''The text of a pdf set in Nirmala UI whose ToUnicode map has been
@@ -48,7 +49,14 @@ class NirmalaUIGlyphs(ArialUniGlyphs):
        ముగుసు్తంది. That one is fonts/telugu/nats.py, which reads the other
        telugu of the same gazette, with the vattu of ra that this font draws
        in front of its letter added: ప్రభుత్వం comes out as ్రపభుత్వం.
+
+       And the Kerala gazette, whose malayalam goes through
+       fonts/malayalam/nirmalaui.py. That one is fonts/malayalam/meera.py,
+       which reads the Meera of the same gazette, with the ്ര that this font
+       draws in front of its letter added: കേരള comes out of the repaired
+       pdf as േകരള and പ്രവർത്തനം as ്രപവർത്തനം.
     '''
-    kannadaclass = NirmalaUIKannadaGlyphs
-    odiyaclass   = NirmalaUIOdiyaGlyphs
-    teluguclass  = NirmalaUITeluguGlyphs
+    kannadaclass   = NirmalaUIKannadaGlyphs
+    odiyaclass     = NirmalaUIOdiyaGlyphs
+    teluguclass    = NirmalaUITeluguGlyphs
+    malayalamclass = NirmalaUIMalayalamGlyphs

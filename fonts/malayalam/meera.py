@@ -174,6 +174,8 @@ class MeeraGlyphs(BaseFont):
                 # literal path of t_error
                 if not MALAYALAM_RE.search(ustr) or 't_' + tokenName in rules:
                     continue
+                if not self.is_glyph_string(tokenName, ustr):
+                    continue
                 rules['t_' + tokenName] = re.escape(ustr)
                 tokens.append(tokenName)
 
@@ -202,3 +204,10 @@ class MeeraGlyphs(BaseFont):
         # ply looks up the module of that object
         rules['__module__'] = self.__class__.__module__
         return lex.lex(object = types.SimpleNamespace(**rules))
+
+    def is_glyph_string(self, tokenName, ustr):
+        '''whether the repaired map can hand out the string of a token as
+           the string of one glyph or of a run of them that stands together.
+           Every string of the language can for this font, see
+           fonts/malayalam/nirmalaui.py for one that leaves some out'''
+        return True

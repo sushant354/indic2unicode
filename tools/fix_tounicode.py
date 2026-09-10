@@ -1980,6 +1980,45 @@ NIRMALA_UI_TELUGU.update({2356: NIRMALA_UI_PREBASE_RA, \
 # BROKEN_FONTS and glyph_count
 NIRMALA_UI_TELUGU_GLYPH_COUNT = 4595
 
+# ---------------------------------------------------------------------------
+# THE MALAYALAM OF NIRMALA UI
+#
+# The Kerala gazette sets the issues that Word writes in Nirmala UI, and the
+# subsets it carries there count the 4595 glyphs of the telugu above - one
+# numbering, the malayalam of it laid out from 1435 and the telugu from 1681
+# - and keep a cmap, a post and a GSUB just as those do. The map Word built
+# is the slipped pairing of the devanagari of the Gazette again, so the sign
+# െ is handed 'സ', േ 'ക്ഷ', ൈ 'വ', ്ര 'പ്' and പ a space, and കേരള extracts
+# as ക്ഷകര്ള; the font itself spells out every one of those glyphs.
+#
+# What it cannot spell out is a cluster of a letter that the document never
+# draws on its own. A subset names the characters it draws outside a cluster
+# in its cmap and nothing else, and ങ and ഞ are all but never drawn outside
+# one, so ങ്ക, ങ്ങ and ഞ്ഞ are anonymous in test/test_pdfs/
+# malayalam-nirmalaui.pdf and are left with whatever the pairing handed them
+# - the right string there, by the luck of the first syllable each was
+# drawn in, and nothing says it will be the next time.
+#
+# The GSUB still names the glyphs such a cluster is made of: its akhand
+# lookup makes 1528 out of 1455, the chandrakkala and the ക of 1451, and 1529
+# out of 1455 twice. The letters are laid out in the order of the block and
+# the subset names enough of them to settle the ones it does not - ങ is the
+# one glyph between the ഘ of 1454 and the ച of 1456, ഛ the one between that
+# ച and the ജ of 1458, and ഝ and ഞ the two between that ജ and the ട of 1461
+# - so what the akhand lookup makes of those letters is settled too, and it
+# is what is here: every cluster of ങ, ഛ and ഞ the lookup makes that is
+# written in malayalam as one.
+# ---------------------------------------------------------------------------
+NIRMALA_UI_MALAYALAM = { \
+    1528: 'ങ്ക', 1529: 'ങ്ങ', 1531: 'ച്ഛ', 1534: 'ജ്ഞ', 1536: 'ഞ്ച', \
+    1537: 'ഞ്ഞ', \
+}
+
+# the one table of that numbering, which carries both scripts - the gids of
+# the two are apart, so neither reads a glyph of the other
+NIRMALA_UI_4595 = dict(NIRMALA_UI_TELUGU)
+NIRMALA_UI_4595.update(NIRMALA_UI_MALAYALAM)
+
 # THE MARATHI OF THE MUMBAI SUBURBAN SUPPLEMENT
 #
 # The DVOT family is broken in a way of its own again, and it is the mildest
@@ -2313,12 +2352,14 @@ BROKEN_FONTS = {'Arial Unicode MS'  : ARIAL_UNICODE_MS,   \
                 # the three numberings of Nirmala UI that a table was
                 # read off, the kannada of the Karnataka gazette, the odiya
                 # of the Odisha one and the telugu of the Andhra Pradesh
-                # one. The devanagari of the Gazette needs no table at all,
-                # its subsets keeping the GSUB of the font \
+                # one, which is the numbering the malayalam of the Kerala
+                # gazette is carried in as well. The devanagari of the
+                # Gazette needs no table at all, its subsets keeping the
+                # GSUB of the font \
                 'Nirmala UI'        : GlyphNumberings({ \
                     NIRMALA_UI_GLYPH_COUNT       : NIRMALA_UI, \
                     NIRMALA_UI_ODIYA_GLYPH_COUNT : NIRMALA_UI_ODIYA, \
-                    NIRMALA_UI_TELUGU_GLYPH_COUNT: NIRMALA_UI_TELUGU}), \
+                    NIRMALA_UI_TELUGU_GLYPH_COUNT: NIRMALA_UI_4595}), \
                 # the one numbering of Mangal that a table was read
                 # off, the 890 glyph font that Word subsets. The
                 # gazettes whose Mangal is renumbered per subset get

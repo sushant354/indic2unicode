@@ -19,6 +19,7 @@ DEVANAGARI_RE = re.compile('[\u0900-\u0963\u0966-\u097f]')
 KANNADA_RE    = re.compile('[\u0c80-\u0cff]')
 ODIYA_RE      = re.compile('[\u0b00-\u0b7f]')
 TELUGU_RE     = re.compile('[\u0c00-\u0c7f]')
+MALAYALAM_RE  = re.compile('[\u0d00-\u0d7f]')
 
 # the pass that reads each of those scripts, as the name of the class
 # attribute that names it and the block it is written in. A font that has no
@@ -26,7 +27,8 @@ TELUGU_RE     = re.compile('[\u0c00-\u0c7f]')
 # None there, and the text of that script is read as devanagari the way it
 # always was
 SCRIPT_CLASSES = [('kannadaclass', KANNADA_RE), ('odiyaclass', ODIYA_RE), \
-                  ('teluguclass', TELUGU_RE)]
+                  ('teluguclass', TELUGU_RE), \
+                  ('malayalamclass', MALAYALAM_RE)]
 
 class ArialUniGlyphs(BaseFont):
     '''The text of a pdf whose ToUnicode map has been repaired by
@@ -65,6 +67,11 @@ class ArialUniGlyphs(BaseFont):
     # either - the Andhra Pradesh gazette is not set in it - while Nirmala UI
     # names one again
     teluguclass  = None
+
+    # and the pass that reads its malayalam, which Arial Unicode MS has none
+    # of either - the Kerala gazette is not set in it - while Nirmala UI
+    # names one again
+    malayalamclass = None
 
     def __init__(self):
         BaseFont.__init__(self)
