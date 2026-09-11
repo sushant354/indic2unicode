@@ -12,7 +12,7 @@ from indic2unicode.fonts.malayalam import revathi, kartika, notoserif
 from indic2unicode.fonts.marathi import abhishek, dvotsurekh, sakal, yogesh
 from indic2unicode.fonts.odiya import akruti, kalinga, shree
 from indic2unicode.fonts.telugu import priyaanka, gautami
-from indic2unicode.fonts.punjabi import asees
+from indic2unicode.fonts.punjabi import asees, raavi 
 
 class FontConv:
     def __init__(self):
@@ -48,6 +48,7 @@ class FontConv:
         krishna8Obj  = krishna.Krishna()
         maniObj      = mani.Mani()
         aseesObj     = asees.Asees()
+        raaviObj     = raavi.RaaviFont()
         tauelangoObj = tauelango_glyphs.TauElangoPanchaliGlyphs()
         ilasundaramObj = ilasundaram_glyphs.UniIlaSundaramGlyphs()
         maruthamObj    = marutham_glyphs.TauMaruthamGlyphs()
@@ -394,6 +395,15 @@ class FontConv:
             # typed and ਗੁਰਦਾਸਪੁਰ comes out as "r[odk;g[o". The pdf font
             # name is a key here beside the short one
             'asees': aseesObj, 'Asees': aseesObj,
+            # the punjabi of a Punjab Government Gazette that Microsoft Print
+            # To PDF made, the headings in the margin of its acts. The font
+            # is Raavi, which that producer embeds as a CIDFont+Fn with a map
+            # that has no entry for the glyphs the shaper made, so ਨਾਂ
+            # extracts as 'ਨ\x7f', and in the order the glyphs are drawn, so
+            # ਨਿਯਮ extracts as 'ਿਨਯਮ'. The pdf font name is no key here: the
+            # producer numbers the fonts of every document afresh, and
+            # CIDFont+F7 of another one can be any font at all
+            'raavi': raaviObj,
         }
 
         self.uniqfonts = ['aryan2', 'surekh', 'chanakya', 'arialuni', \
@@ -409,7 +419,7 @@ class FontConv:
                           'nats_glyphs', 'yogesh', 'abhishek', \
                           'dvotsurekh', 'sakal', 'kalinga', 'shree', 'akruti', \
                           'krishnauni', 'krishna', 'mani', 'kartika', \
-                          'notoserif', 'asees']
+                          'notoserif', 'asees', 'raavi']
  
     def to_unicode(self, fontname, text):
         return self.converters[fontname].to_unicode(text)

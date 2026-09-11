@@ -18,10 +18,12 @@ CONSONANT_TOKENS = [ \
 # the consonants that gurmukhi writes under the letter they are bound to,
 # the pairin. ੍ਹ, ੍ਰ and ੍ਵ are the three that modern punjabi writes; ੍ਯ and
 # the other four are the subjoined letters of the older orthography that
-# the scriptures are printed in and that a font for them draws as well.
-# Unicode writes each of them as the virama and the letter, behind the
-# consonant it hangs under
-PAIRI_TOKENS = ['HA', 'RA', 'VA', 'YA', 'CA', 'TTA', 'TA', 'NA']
+# the scriptures are printed in and that a font for them draws as well, and
+# the last four are the ones Raavi draws under a letter beyond those - see
+# fonts/punjabi/cidfont.py. Unicode writes each of them as the virama and
+# the letter, behind the consonant it hangs under
+PAIRI_TOKENS = ['HA', 'RA', 'VA', 'YA', 'CA', 'TTA', 'TA', 'NA', \
+                'GA', 'TTHA', 'THA', 'DA']
 
 # the three pairin of modern punjabi, which a font that draws a cluster in
 # one shape has a glyph of the pair for - see Conjuncts below
@@ -287,3 +289,27 @@ class Asees(BaseLang):
                       'SEVEN', 'EIGHT', 'NINE']
         for digit, name in enumerate(digitnames):
             self.tokendict['ASCII_' + name] = '%d' % digit
+
+class Raavi(BaseLang):
+    '''the glyphs of Raavi that draw more than one character of the text
+       in one shape and that are none of the pieces Conjuncts above names: a
+       vowel with the bindi or the addak drawn on it, ੌ with the addak over
+       it and a pairi with the ੁ or the ੂ hung under it. Neither of the
+       reordering passes moves the pieces of any of them apart, so the
+       tokenizer hands the tokens of the pieces on in place of the glyph -
+       see fonts/punjabi/cidfont.py
+    '''
+    def __init__(self):
+        BaseLang.__init__(self)
+
+        for vowelName in ['U', 'UU', 'OO']:
+            for signName in ['BINDI', 'ADDAK']:
+                self.conjunct_tokens[vowelName + '_' + signName] = \
+                        [vowelName, signName]
+
+        self.conjunct_tokens['MATRA_AU_ADDAK'] = ['MATRA_AU', 'ADDAK']
+
+        for pairiName in CLUSTER_PAIRI_TOKENS:
+            for signName in ['MATRA_U', 'MATRA_UU']:
+                self.conjunct_tokens['PAIRI_' + pairiName + '_' + signName] = \
+                        ['PAIRI_' + pairiName, signName]
