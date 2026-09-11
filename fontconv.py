@@ -8,7 +8,8 @@ from indic2unicode.fonts.glyphs import arialuni_glyphs, nirmalaui_glyphs, \
 from indic2unicode.fonts.kannada import tunga, nudi, aklite
 from indic2unicode.fonts.tamil import tamelango, vanavil, tommy, tmchanakya
 from indic2unicode.fonts.gujarati import krishna, krishnauni, mani
-from indic2unicode.fonts.malayalam import revathi, kartika, notoserif
+from indic2unicode.fonts.malayalam import revathi, kartika, notoserif, \
+                                          ttrevathi
 from indic2unicode.fonts.marathi import abhishek, dvotsurekh, sakal, yogesh
 from indic2unicode.fonts.odiya import akruti, kalinga, shree
 from indic2unicode.fonts.telugu import priyaanka, gautami
@@ -34,6 +35,7 @@ class FontConv:
         tommyObj     = tommy.Tommy()
         tmchanakyaObj = tmchanakya.TMChanakya()
         revathiObj   = revathi.Revathi()
+        ttrevathiObj = ttrevathi.TTRevathi()
         kartikaObj   = kartika.Kartika()
         notoserifObj = notoserif.NotoSerifMalayalam()
         yogeshObj    = yogesh.Yogesh()
@@ -145,6 +147,13 @@ class FontConv:
             # that the whole ML- family of fonts shares. The pdf font name
             # is a key here beside the short one
             'revathi': revathiObj, 'ML-Revathi-Normal': revathiObj,
+            # the TrueType build of the same font, and a key of its own
+            # because the pdf carries it differently: a subset with
+            # WinAnsiEncoding, so its text is the windows 1252 characters of
+            # the bytes that were typed where Revathi's is the mac roman
+            # names of them, and ദർഘാസ് comes out as ZÀLmkv rather than
+            # Z¿Lmkv. The pdf font name is a key here beside the short one
+            'ttrevathi': ttrevathiObj, 'ML-TTRevathi-Normal': ttrevathiObj,
             # the marathi of the Maharashtra gazette. An 8 bit font of the
             # same kind again, and one whose bytes are those of the windows
             # 1252 table. The three faces of it that the gazette carries
@@ -428,7 +437,8 @@ class FontConv:
                           'nudiuni_glyphs', 'tamelango', 'reginet', \
                           'tauelango_glyphs', 'ilasundaram_glyphs', \
                           'marutham_glyphs', 'vanavil', 'tommy', \
-                          'revathi', 'meera_glyphs', 'freeserif_glyphs', \
+                          'revathi', 'ttrevathi', 'meera_glyphs', \
+                          'freeserif_glyphs', \
                           'priyaanka', \
                           'gautami', \
                           'nats_glyphs', 'yogesh', 'abhishek', \
