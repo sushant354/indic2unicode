@@ -6,7 +6,7 @@ from indic2unicode.fonts.glyphs import arialuni_glyphs, nirmalaui_glyphs, \
                                        marutham_glyphs, meera_glyphs, \
                                        freeserif_glyphs, nats_glyphs
 from indic2unicode.fonts.kannada import tunga, nudi, aklite
-from indic2unicode.fonts.tamil import tamelango, vanavil, tommy
+from indic2unicode.fonts.tamil import tamelango, vanavil, tommy, tmchanakya
 from indic2unicode.fonts.gujarati import krishna, krishnauni, mani
 from indic2unicode.fonts.malayalam import revathi, kartika, notoserif
 from indic2unicode.fonts.marathi import abhishek, dvotsurekh, sakal, yogesh
@@ -32,6 +32,7 @@ class FontConv:
         tamelangoObj = tamelango.TamElango()
         vanavilObj   = vanavil.Vanavil()
         tommyObj     = tommy.Tommy()
+        tmchanakyaObj = tmchanakya.TMChanakya()
         revathiObj   = revathi.Revathi()
         kartikaObj   = kartika.Kartika()
         notoserifObj = notoserif.NotoSerifMalayalam()
@@ -125,6 +126,20 @@ class FontConv:
             # name is a key here beside the short one, this font naming
             # itself after nothing but itself
             'tommy': tommyObj, 'Sun-TommyTamilNormal': tommyObj,
+            # the tamil of the Kerala gazette, the one it sets the tamil
+            # translations of its acts in. An 8 bit font of the same kind
+            # again, embedded as a Type 1 font whose glyphs are named by
+            # PDFDocEncoding and latin 1, so கேரள அரசு comes out as
+            # '˙LW[ AW—'. The three faces the gazette carries share this
+            # layout - every byte the Bold and the Italic draw is the letter
+            # the Normal draws there - so the pdf font name of each of them
+            # is a key here beside the short one. Beware of 'chanakya'
+            # above, which is the devanagari Chanakya of the Kruti Dev
+            # family and a different font altogether
+            'tmchanakya': tmchanakyaObj,
+            'TM-Chanakya-Normal': tmchanakyaObj,
+            'TM-Chanakya-Bold': tmchanakyaObj,
+            'TM-Chanakya-Italic': tmchanakyaObj,
             # the malayalam of the Kerala gazette. An 8 bit font of the
             # same kind again, and one whose bytes are the ML-TT layout
             # that the whole ML- family of fonts shares. The pdf font name
@@ -419,7 +434,7 @@ class FontConv:
                           'nats_glyphs', 'yogesh', 'abhishek', \
                           'dvotsurekh', 'sakal', 'kalinga', 'shree', 'akruti', \
                           'krishnauni', 'krishna', 'mani', 'kartika', \
-                          'notoserif', 'asees', 'raavi']
+                          'notoserif', 'asees', 'raavi', 'tmchanakya']
  
     def to_unicode(self, fontname, text):
         return self.converters[fontname].to_unicode(text)

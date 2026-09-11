@@ -161,6 +161,12 @@ class TamilUnicode(BaseLang):
           'RDQUOTE'          : '”',   \
           'ENDASH'           : '–',   \
           'EMDASH'           : '—',   \
+                                          \
+          # the hyphen a dtp package writes into a word to say where it   \
+          # may be broken across a line. The font draws it as a glyph of  \
+          # no width, so it is no character of the text - see            \
+          # fonts/tamil/tmchanakya.py                                     \
+          'SOFT_HYPHEN'      : '',    \
         }
 
 class Conjuncts(BaseLang):

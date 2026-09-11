@@ -226,6 +226,12 @@ class TamElango(BaseFont):
         'NNA_U' : '\u03bc', \
     }
 
+    # the bytes whose glyph the pdf names after a character that
+    # self.encoding does not put on that byte, and the character an
+    # extractor turns that name into. Every glyph of this font is named by
+    # cp1252 itself - see fonts/tamil/tmchanakya.py for a font that is not
+    code_chars = {}
+
     # the vowel signs that are drawn in front of the letter they belong to.
     # Each of them waits for one token - a letter is one token here however
     # many glyphs the font draws it in, which is what makes this a one
@@ -278,6 +284,11 @@ class TamElango(BaseFont):
         glyphchars = {}
 
         for tokenName, code in self.glyphcodes.items():
+            if code in self.code_chars:
+                glyphchars[tokenName] = self.code_chars[code] + \
+                                        self.glyph_aliases.get(tokenName, '')
+                continue
+
             try:
                 char = bytes([code]).decode(self.encoding)
             except UnicodeDecodeError:
